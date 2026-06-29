@@ -4,8 +4,6 @@ from enum import Enum
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.users.model import User
-
 
 class EnvironmentEnum(str, Enum):
     DEV = "DEV"
@@ -21,9 +19,6 @@ class LoginFieldEnum(str, Enum):
 class EmailServiceEnum(str, Enum):
     MAILTRAP = "mailtrap"
     MAILJET = "mailjet"
-    RESEND = "resend"
-    SENDPULSE = "sendpulse"
-    MAILERLITE = "mailerlite"
 
 
 class Settings(BaseSettings):
@@ -32,7 +27,7 @@ class Settings(BaseSettings):
 
     # Services setting
     LOGIN_FIELD: LoginFieldEnum = LoginFieldEnum.EMAIL  # Login primary UI key
-    EMAIL_SERVICE: EmailServiceEnum = EmailServiceEnum.RESEND
+    EMAIL_SERVICE: EmailServiceEnum = EmailServiceEnum.MAILTRAP
 
     # Auth / JWT
     SECRET_KEY: str = "abracadabra"
@@ -53,21 +48,6 @@ class Settings(BaseSettings):
     MAILJET_API_KEY: str | None
     MAILJET_SECRET_KEY: str | None
 
-    # Email (Resend)
-    RESEND_API_KEY: str | None
-
-    # Email (Mailerlite)
-    MAILERLITE_API_KEY: str | None
-
-    # Email (SendPulse)
-    SENDPULSE_API_USER: str | None
-    SENDPULSE_SECRET_KEY: str | None
-
-    # Google OAuth
-    GOOGLE_CLIENT_ID: str
-    GOOGLE_CLIENT_SECRET: str
-    GOOGLE_REDIRECT_URI: str
-
     def validate_login_field(self) -> None:
         if self.LOGIN_FIELD.value not in User.model_fields:
             raise ValueError(
@@ -84,18 +64,6 @@ class Settings(BaseSettings):
         if self.EMAIL_SERVICE == EmailServiceEnum.MAILJET:
             if not self.MAILJET_API_KEY or not self.MAILJET_SECRET_KEY:
                 raise ValueError("Mailjet credentials are not configured")
-
-        if self.EMAIL_SERVICE == EmailServiceEnum.RESEND:
-            if not self.RESEND_API_KEY:
-                raise ValueError("Resend credentials are not configured")
-
-        if self.EMAIL_SERVICE == EmailServiceEnum.MAILERLITE:
-            if not self.MAILERLITE_API_KEY:
-                raise ValueError("Mailerlite API key is not configured")
-
-        if self.EMAIL_SERVICE == EmailServiceEnum.SENDPULSE:
-            if not self.SENDPULSE_API_USER or not self.SENDPULSE_SECRET_KEY:
-                raise ValueError("SendPulse credentials are not configured")
 
     @property
     def is_dev(self) -> bool:
