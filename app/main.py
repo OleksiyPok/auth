@@ -6,8 +6,8 @@ import uvicorn
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 
-from app.auth.routes.registration import router as registration_router
-from app.core.db_config import engine
+# from app.auth.routes.registration import router as registration_router
+from app.core.config import engine
 
 
 @asynccontextmanager
@@ -22,8 +22,8 @@ app = FastAPI(
     title="Fast API", lifespan=lifespan, swagger_ui_parameters={"docExpansion": "none"}
 )
 
-app.include_router(auth_router)
-app.include_router(users_router)
+# app.include_router(auth_router)
+# app.include_router(users_router)
 
 
 if __name__ == "__main__":

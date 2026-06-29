@@ -2,8 +2,6 @@
 
 from enum import Enum
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 class EnvironmentEnum(str, Enum):
     DEV = "DEV"
@@ -47,31 +45,3 @@ class Settings(BaseSettings):
     # Email (Mailjet)
     MAILJET_API_KEY: str | None
     MAILJET_SECRET_KEY: str | None
-
-    def validate_login_field(self) -> None:
-        if self.LOGIN_FIELD.value not in User.model_fields:
-            raise ValueError(
-                f"Invalid LOGIN_FIELD '{self.LOGIN_FIELD.value}'. "
-                "User model has no such field."
-            )
-
-    def validate_email_service(self) -> None:
-
-        if self.EMAIL_SERVICE == EmailServiceEnum.MAILTRAP:
-            if not self.MAILTRAP_USER or not self.MAILTRAP_SMTP_PASSWORD:
-                raise ValueError("Mailtrap credentials are not configured")
-
-        if self.EMAIL_SERVICE == EmailServiceEnum.MAILJET:
-            if not self.MAILJET_API_KEY or not self.MAILJET_SECRET_KEY:
-                raise ValueError("Mailjet credentials are not configured")
-
-    @property
-    def is_dev(self) -> bool:
-        return self.ENV == EnvironmentEnum.DEV
-
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
-
-settings = Settings()
-settings.validate_login_field()
-settings.validate_email_service()
