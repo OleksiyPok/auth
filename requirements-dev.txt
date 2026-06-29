@@ -1,0 +1,6 @@
+-r requirements.txt
+
+pytest
+pytest-mock
+
+pre_commit==4.6.0
