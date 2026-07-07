@@ -6,15 +6,14 @@ import uvicorn
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 
-# from app.auth.router import router as registration_router
-
-# from app.core.db import engine
+from app.db.engine import engine
+from app.router import router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("App starting...")
-    # SQLModel.metadata.create_all(engine)
+    SQLModel.metadata.create_all(engine)
     yield
     print("App shutting down...")
 
@@ -24,7 +23,7 @@ app = FastAPI(
 )
 
 
-# app.include_router(registration_router)
+app.include_router(router)
 
 
 if __name__ == "__main__":
