@@ -1,8 +1,8 @@
 # scripts/black_isort_formatter.py
 
 #!/usr/bin/env python
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Path from PyCharm click

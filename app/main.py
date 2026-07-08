@@ -13,13 +13,21 @@ from app.router import router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("App starting...")
-    SQLModel.metadata.create_all(engine)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+
     yield
+
     print("App shutting down...")
+
+    await engine.dispose()
 
 
 app = FastAPI(
-    title="Fast API", lifespan=lifespan, swagger_ui_parameters={"docExpansion": "none"}
+    title="Fast API",
+    lifespan=lifespan,
+    swagger_ui_parameters={"docExpansion": "none"},
 )
 
 
@@ -27,7 +35,6 @@ app.include_router(router)
 
 
 if __name__ == "__main__":
-    # Important: disable reload while debugging
     uvicorn.run(
         "app.main:app",
         host="127.0.0.1",

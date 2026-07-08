@@ -8,5 +8,4 @@ class RegisterResponseSchema(UserBase):
 
 
 class RegisterRequestSchema(UserBase):
-    username: str
-    email: str
+    login: str

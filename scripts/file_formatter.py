@@ -1,8 +1,8 @@
 # scripts/file_formatter.py
 
 #!/usr/bin/env python
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Check if a file path was provided

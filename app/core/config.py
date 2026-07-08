@@ -13,6 +13,7 @@ class Settings(BaseSettings):
         extra="ignore",
         case_sensitive=False,
     )
+    DEBUG: bool = False
 
     APP_NAME: str = static_config.APP_NAME
     APP_VERSION: str = static_config.APP_VERSION
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = static_config.API_V1_PREFIX
     API_V2_PREFIX: str = static_config.API_V2_PREFIX
 
-    DATABASE_URL: str = "sqlite:///./app.db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./app.db"
 
 
 settings = Settings()

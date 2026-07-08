@@ -1,12 +1,15 @@
 # app/auth/router.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
 
+from app.auth.dependencies import get_auth_service
 from app.auth.schemas import RegisterRequestSchema, RegisterResponseSchema
-from app.db.session import get_session
+from app.auth.service import AuthService
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(
+    prefix="/auth",
+    tags=["Auth"],
+)
 
 
 @router.post(
@@ -16,15 +19,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
     response_model=RegisterResponseSchema,
     status_code=status.HTTP_201_CREATED,
 )
-def register_route(data: RegisterRequestSchema, session: Session = Depends(get_session)):
-    # print(user_data.model_dump_json(indent=2))
+async def register_route(
+    data: RegisterRequestSchema,
+    service: AuthService = Depends(get_auth_service),
+):
     try:
-        return {
-            "id": "a267",  # debug
-            "username": data.username,  # debug
-            "email": data.email,  # debug
-        }
-        # return register_user(user_data, session)
+        return await service.register(data)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    # pass
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

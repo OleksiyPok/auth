@@ -1,16 +1,16 @@
 # app/users/interfaces.py
 
-# from abc import ABC, abstractmethod
-# from typing import Optional
+from abc import ABC, abstractmethod
 
-# from app.users.schemas import UserCreate, UserOut
+from app.users.models import User
 
 
-# class UserRepository(ABC):
-#     @abstractmethod
-#     def create(self, user: UserCreate) -> UserOut:
-#         pass
+class UserRepositoryInterface(ABC):
+    @abstractmethod
+    async def create(self, user: User) -> User: ...
 
-#     @abstractmethod
-#     def get_by_email(self, email: str) -> Optional[UserOut]:
-#         pass
+    @abstractmethod
+    async def get_by_id(self, user_id: str) -> User | None: ...
+
+    @abstractmethod
+    async def get_by_login(self, login: str) -> User | None: ...
