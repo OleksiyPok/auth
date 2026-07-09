@@ -7,7 +7,8 @@ from sqlalchemy import Column
 from sqlmodel import Field, SQLModel
 from uuid_extensions import (
     uuid7,
-)  # TODO: replace with stdlib uuid.uuid7 after upgrading to Python 3.14+
+)
+# TODO: replace with stdlib uuid.uuid7 after upgrading to Python 3.14+
 
 from app.db.types import UTCDateTime
 
