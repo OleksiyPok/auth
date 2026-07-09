@@ -1,33 +1,43 @@
 # scripts/project_formatter.py
 
 import subprocess
+import sys
 from pathlib import Path
 
-# Project directory = current working directory
-project_dir = Path.cwd()
 
-print(f"Formatting all Python files in {project_dir}...")
+def run_formatter(project_dir: Path) -> None:
+    python = sys.executable
 
-# Run isort
-subprocess.run(
-    [
-        str(project_dir / ".venv" / "Scripts" / "python.exe"),
-        "-m",
-        "isort",
-        str(project_dir),
-    ],
-    check=True,
-)
+    print("Running isort...")
 
-# Run black
-subprocess.run(
-    [
-        str(project_dir / ".venv" / "Scripts" / "python.exe"),
-        "-m",
-        "black",
-        str(project_dir),
-    ],
-    check=True,
-)
+    subprocess.run(
+        [
+            python,
+            "-m",
+            "isort",
+            str(project_dir),
+        ],
+        check=True,
+    )
 
-print("Formatting complete!")
+    print("Running black...")
+
+    subprocess.run(
+        [
+            python,
+            "-m",
+            "black",
+            str(project_dir),
+        ],
+        check=True,
+    )
+
+    print("Formatting complete.")
+
+
+def main():
+    run_formatter(Path.cwd())
+
+
+if __name__ == "__main__":
+    main()
