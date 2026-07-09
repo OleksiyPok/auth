@@ -33,3 +33,7 @@ class UserRepository(UserRepositoryInterface):
     ) -> User | None:
         result = await self._session.execute(select(User).where(User.login == login))
         return result.scalar_one_or_none()
+
+    async def get_all(self) -> list[User]:
+        result = await self._session.execute(select(User))
+        return list(result.scalars().all())

@@ -1,7 +1,6 @@
 # app/users/models.py
 
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
 
 from sqlalchemy import Column
 from sqlmodel import Field, SQLModel
