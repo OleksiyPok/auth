@@ -1,11 +1,11 @@
 # app/auth/schemas.py
 
-from app.users.models import UserBase
+from sqlmodel import SQLModel
 
 
-class RegisterResponseSchema(UserBase):
+class RegisterResponseSchema(SQLModel):
     id: str
 
 
-class RegisterRequestSchema(UserBase):
+class RegisterRequestSchema(SQLModel):
     login: str
