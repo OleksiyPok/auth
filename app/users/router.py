@@ -19,7 +19,7 @@ router = APIRouter(
     response_model=list[UserResponseSchema],
     status_code=status.HTTP_200_OK,
 )
-async def get_users(
+async def get_all(
     service: UserService = Depends(get_user_service),
 ):
     return await service.get_all()

@@ -19,7 +19,7 @@ router = APIRouter(
     response_model=RegisterResponseSchema,
     status_code=status.HTTP_201_CREATED,
 )
-async def register_route(
+async def register(
     data: RegisterRequestSchema,
     service: AuthService = Depends(get_auth_service),
 ):
