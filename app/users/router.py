@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.users.dependencies import get_user_service
-from app.users.schemas import UserResponseSchema
+from app.users.schemas import DeleteUserResponseSchema, UserResponseSchema
 from app.users.service import UserService
 
 router = APIRouter(
@@ -23,3 +23,17 @@ async def get_all(
     service: UserService = Depends(get_user_service),
 ):
     return await service.get_all()
+
+
+@router.delete(
+    "/{user_id}",
+    summary="Delete user",
+    description="Delete a user.",
+    status_code=status.HTTP_200_OK,
+    response_model=UserResponseSchema,
+)
+async def delete(
+    user_id: str,
+    service: UserService = Depends(get_user_service),
+):
+    return await service.delete(user_id)

@@ -37,3 +37,17 @@ class UserRepository(UserRepositoryInterface):
     async def get_all(self) -> list[User]:
         result = await self._session.execute(select(User))
         return list(result.scalars().all())
+
+    async def delete(
+        self,
+        user_id: str,
+    ) -> User | None:
+        user = await self.get_by_id(user_id)
+
+        if user is None:
+            return None
+
+        await self._session.delete(user)
+        await self._session.commit()
+
+        return user

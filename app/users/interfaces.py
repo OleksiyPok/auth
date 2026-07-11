@@ -17,3 +17,6 @@ class UserRepositoryInterface(ABC):
 
     @abstractmethod
     async def get_all(self) -> list[User]: ...
+
+    @abstractmethod
+    async def delete(self, user_id) -> User | None: ...
