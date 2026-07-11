@@ -25,6 +25,20 @@ async def get_all(
     return await service.get_all()
 
 
+@router.get(
+    "/{user_id}",
+    summary="Get a user",
+    description="Get a registered user.",
+    response_model=UserResponseSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def get_by_id(
+    user_id: str,
+    service: UserService = Depends(get_user_service),
+):
+    return await service.get_by_id(user_id)
+
+
 @router.delete(
     "/{user_id}",
     summary="Delete user",
