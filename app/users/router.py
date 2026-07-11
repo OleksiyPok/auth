@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.users.dependencies import get_user_service
-from app.users.schemas import DeleteUserResponseSchema, UserResponseSchema
+from app.users.schemas import UserResponseSchema
 from app.users.service import UserService
 
 router = APIRouter(
