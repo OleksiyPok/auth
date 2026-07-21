@@ -12,14 +12,6 @@ class UserRepository(UserRepositoryInterface):
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def create(self, user: User) -> User:
-        self._session.add(user)
-
-        await self._session.commit()
-        await self._session.refresh(user)
-
-        return user
-
     async def get_by_id(
         self,
         user_id: str,
@@ -38,16 +30,27 @@ class UserRepository(UserRepositoryInterface):
         result = await self._session.execute(select(User))
         return list(result.scalars().all())
 
+    async def create(
+        self,
+        user: User,
+    ) -> User:
+        self._session.add(user)
+        await self._session.commit()
+        await self._session.refresh(user)
+        return user
+
+    async def update(
+        self,
+        user: User,
+    ) -> User:
+        await self._session.commit()
+        await self._session.refresh(user)
+        return user
+
     async def delete(
         self,
-        user_id: str,
-    ) -> User | None:
-        user = await self.get_by_id(user_id)
-
-        if user is None:
-            return None
-
+        user: User,
+    ) -> User:
         await self._session.delete(user)
         await self._session.commit()
-
         return user

@@ -18,7 +18,7 @@ class AuthService:
     async def register(
         self,
         data: RegisterRequestSchema,
-    ) -> RegisterResponseSchema:
+    ) -> User:
 
         if await self._repository.get_by_login(data.login):
             raise HTTPException(
@@ -29,11 +29,6 @@ class AuthService:
                 },
             )
 
-        user = User(login=data.login)
+        user = User.model_validate(data)
 
-        user = await self._repository.create(user)
-
-        return RegisterResponseSchema(
-            id=user.id,
-            login=user.login,
-        )
+        return await self._repository.create(user)
