@@ -11,7 +11,7 @@ class UserUpdateRequestSchema(SQLModel):
     last_name: str | None = None
 
 
-class UserAdminUpdateRequestSchema(UserUpdateRequestSchema):
+class UserUpdateByAdminRequestSchema(UserUpdateRequestSchema):
     is_active: bool | None = None
 
 
@@ -25,7 +25,7 @@ class UserResponseSchema(SQLModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserAdminResponseSchema(UserResponseSchema):
+class UserDetailedResponseSchema(UserResponseSchema):
     is_active: bool
     created_at: datetime
     updated_at: datetime
