@@ -3,7 +3,12 @@
 from fastapi import APIRouter, Depends, status
 
 from app.users.dependencies import get_user_service
-from app.users.schemas import UserResponseSchema, UserUpdateRequestSchema
+from app.users.schemas import (
+    UserDetailedResponseSchema,
+    UserResponseSchema,
+    UserUpdateByAdminRequestSchema,
+    UserUpdateRequestSchema,
+)
 from app.users.service import UserService
 
 router = APIRouter(
@@ -29,7 +34,7 @@ async def get_all(
     "/{user_id}",
     summary="Get a user",
     description="Get a registered user.",
-    response_model=UserResponseSchema,
+    response_model=UserDetailedResponseSchema,
     status_code=status.HTTP_200_OK,
 )
 async def get_by_id(
@@ -55,19 +60,19 @@ async def update_self(
     return await service.update_self(current_user, data)
 
 
-# @router.patch(
-#     "/{user_id}",
-#     summary="Update a user",
-#     description="Update a registered user.",
-#     response_model=UserResponseSchema,
-#     status_code=status.HTTP_200_OK,
-# )
-# async def update(
-#     user_id: str,
-#     data: UserRequestSuperadminSchema,
-#     service: UserService = Depends(get_user_service),
-# ):
-#     return await service.update(user_id, data)
+@router.patch(
+    "/{user_id}",
+    summary="Update a user",
+    description="Update a registered user.",
+    response_model=UserDetailedResponseSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def update_by_admin(
+    user_id: str,
+    data: UserUpdateByAdminRequestSchema,
+    service: UserService = Depends(get_user_service),
+):
+    return await service.update_by_admin(user_id, data)
 
 
 @router.delete(
