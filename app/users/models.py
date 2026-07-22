@@ -23,11 +23,18 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True, nullable=False)
 
     created_at: datetime = Field(
-        sa_column=Column(UTCDateTime(), nullable=False),
+        sa_column=Column(
+            UTCDateTime(),
+            nullable=False,
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
 
     updated_at: datetime = Field(
-        sa_column=Column(UTCDateTime(), nullable=False),
+        sa_column=Column(
+            UTCDateTime(),
+            nullable=False,
+            onupdate=lambda: datetime.now(timezone.utc),
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
