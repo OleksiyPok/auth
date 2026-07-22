@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 
+from app.core.config import settings
 from app.db.engine import engine
 from app.router import router
 
@@ -25,9 +26,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Fast API",
+    title=settings.APP_NAME,
     lifespan=lifespan,
-    swagger_ui_parameters={"docExpansion": "none"},
+    swagger_ui_parameters={
+        "docExpansion": "none",
+        # "tagsSorter": "alpha",
+        # "operationsSorter": "method",
+        "operationsSorter": "alpha",
+    },
 )
 
 
