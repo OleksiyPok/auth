@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.auth.dependencies import get_auth_service
 from app.auth.schemas import (
     LoginRequestSchema,
+    RefreshTokenRequestSchema,
     RegisterRequestSchema,
     RegisterResponseSchema,
     TokenResponseSchema,
@@ -19,7 +20,7 @@ router = APIRouter(
 
 
 @router.post(
-    "/register/",
+    "/register",
     summary="Register user account",
     description="Creates a new user account.",
     response_model=RegisterResponseSchema,
@@ -46,3 +47,14 @@ async def login(
     )
 
     return await service.login(data)
+
+
+@router.post(
+    "/refresh",
+    response_model=TokenResponseSchema,
+)
+async def refresh(
+    data: RefreshTokenRequestSchema,
+    service: AuthService = Depends(get_auth_service),
+):
+    return await service.refresh(data.refresh_token)

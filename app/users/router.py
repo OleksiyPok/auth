@@ -22,7 +22,7 @@ router = APIRouter(
 
 
 @router.get(
-    "/",
+    "",
     summary="Get all users",
     description="Get all registered users.",
     response_model=list[UserResponseSchema],

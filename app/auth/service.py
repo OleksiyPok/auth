@@ -160,3 +160,63 @@ class AuthService:
             )
 
         return user
+
+    async def refresh(
+        self,
+        refresh_token: str,
+    ) -> TokenResponseSchema:
+
+        session = await self._session_service.validate_refresh_token(
+            refresh_token,
+        )
+
+        if not session:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "INVALID_REFRESH_TOKEN",
+                    "message": "Invalid refresh token",
+                },
+            )
+
+        user = await self._repository.get_by_id(
+            session.user_id,
+        )
+
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "USER_NOT_FOUND",
+                    "message": "User not found",
+                },
+            )
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "USER_INACTIVE",
+                    "message": "User is inactive",
+                },
+            )
+
+        new_access_token = create_access_token(
+            subject=user.id,
+        )
+
+        new_refresh_token = self._session_service.generate_refresh_token()
+
+        await self._session_service.rotate_refresh_token(
+            session=session,
+            new_refresh_token=new_refresh_token,
+            expires_delta=timedelta(
+                days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
+            ),
+        )
+
+        return TokenResponseSchema(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer",
+        )
