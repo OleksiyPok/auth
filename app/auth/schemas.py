@@ -1,20 +1,32 @@
 # app/auth/schemas.py
 
-from pydantic import ConfigDict
-from sqlmodel import SQLModel
+from pydantic import BaseModel, ConfigDict
 
 
-class RegisterRequestSchema(SQLModel):
+class RegisterRequestSchema(BaseModel):
     login: str
+    password: str
+    email: str
     first_name: str
     last_name: str
 
 
-class RegisterResponseSchema(SQLModel):
+class RegisterResponseSchema(BaseModel):
     id: str
     login: str
+    email: str
     first_name: str
     last_name: str
     role: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LoginRequestSchema(BaseModel):
+    login: str
+    password: str
+
+
+class TokenResponseSchema(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

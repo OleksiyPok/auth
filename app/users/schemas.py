@@ -2,22 +2,24 @@
 
 from datetime import datetime
 
-from pydantic import ConfigDict
-from sqlmodel import SQLModel
+from pydantic import BaseModel, ConfigDict
 
 
-class UserUpdateRequestSchema(SQLModel):
+class UserUpdateRequestSchema(BaseModel):
+    email: str | None = None
     first_name: str | None = None
     last_name: str | None = None
 
 
 class UserUpdateByAdminRequestSchema(UserUpdateRequestSchema):
     is_active: bool | None = None
+    role: str | None = None
 
 
-class UserResponseSchema(SQLModel):
+class UserResponseSchema(BaseModel):
     id: str
     login: str
+    email: str
     first_name: str
     last_name: str
     role: str

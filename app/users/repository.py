@@ -43,6 +43,7 @@ class UserRepository(UserRepositoryInterface):
         self,
         user: User,
     ) -> User:
+        self._session.add(user)
         await self._session.commit()
         await self._session.refresh(user)
         return user

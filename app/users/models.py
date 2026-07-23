@@ -16,6 +16,8 @@ from app.users.enums import UserRole
 class User(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
     login: str
+    password_hash: str
+    email: str
     first_name: str
     last_name: str
     role: str = Field(default=UserRole.USER, nullable=False)

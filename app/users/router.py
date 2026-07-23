@@ -1,8 +1,12 @@
 # app/users/router.py
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, status
 
+from app.auth.dependencies import get_current_user
 from app.users.dependencies import get_user_service
+from app.users.models import User
 from app.users.schemas import (
     UserDetailedResponseSchema,
     UserResponseSchema,
@@ -25,9 +29,22 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
 )
 async def get_all(
-    service: UserService = Depends(get_user_service),
-):
+    service: Annotated[UserService, Depends(get_user_service)],
+) -> list[User]:
     return await service.get_all()
+
+
+@router.get(
+    "/me",
+    summary="Get current user",
+    description="Get current authenticated user.",
+    response_model=UserResponseSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def get_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    return current_user
 
 
 @router.get(
@@ -39,8 +56,8 @@ async def get_all(
 )
 async def get_by_id(
     user_id: str,
-    service: UserService = Depends(get_user_service),
-):
+    service: Annotated[UserService, Depends(get_user_service)],
+) -> User:
     return await service.get_by_id(user_id)
 
 
@@ -53,10 +70,10 @@ async def get_by_id(
 )
 async def update_self(
     data: UserUpdateRequestSchema,
-    # current_user: User = Depends(get_current_user),
-    service: UserService = Depends(get_user_service),
-):
-    current_user = await service.get_by_login("test")
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[UserService, Depends(get_user_service)],
+) -> User:
+
     return await service.update_self(current_user, data)
 
 
@@ -70,8 +87,8 @@ async def update_self(
 async def update_by_admin(
     user_id: str,
     data: UserUpdateByAdminRequestSchema,
-    service: UserService = Depends(get_user_service),
-):
+    service: Annotated[UserService, Depends(get_user_service)],
+) -> User:
     return await service.update_by_admin(user_id, data)
 
 
@@ -84,6 +101,6 @@ async def update_by_admin(
 )
 async def delete(
     user_id: str,
-    service: UserService = Depends(get_user_service),
+    service: Annotated[UserService, Depends(get_user_service)],
 ):
     return await service.delete(user_id)
