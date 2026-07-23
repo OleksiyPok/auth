@@ -1,5 +1,7 @@
 # app/auth/service.py
 
+from datetime import timedelta
+
 from fastapi import HTTPException
 
 from app.auth.schemas import (
@@ -7,6 +9,7 @@ from app.auth.schemas import (
     RegisterRequestSchema,
     TokenResponseSchema,
 )
+from app.core.config import settings
 from app.core.security import (
     InvalidAccessTokenError,
     create_access_token,
@@ -14,6 +17,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.sessions.service import SessionService
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 
@@ -23,8 +27,10 @@ class AuthService:
     def __init__(
         self,
         repository: UserRepositoryInterface,
+        session_service: SessionService,
     ):
         self._repository = repository
+        self._session_service = session_service
 
     async def register(
         self,
@@ -91,8 +97,17 @@ class AuthService:
             subject=user.id,
         )
 
+        refresh_token = self._session_service.generate_refresh_token()
+
+        await self._session_service.create_session(
+            user_id=user.id,
+            refresh_token=refresh_token,
+            expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        )
+
         return TokenResponseSchema(
             access_token=access_token,
+            refresh_token=refresh_token,
             token_type="bearer",
         )
 
