@@ -82,11 +82,14 @@ class SessionService:
         return await self._repository.update(session)
 
     async def revoke(
-        self,
-        session: Session,
+            self,
+            session: Session,
     ) -> None:
+        now = datetime.now(timezone.utc)
+
         session.is_active = False
-        session.updated_at = datetime.now(timezone.utc)
+        session.revoked_at = now
+        session.updated_at = now
 
         await self._repository.update(session)
 
@@ -99,3 +102,15 @@ class SessionService:
         token: str,
     ) -> str:
         return hashlib.sha256(token.encode()).hexdigest()
+
+    async def deactivate_user_sessions(
+        self,
+        user_id: str,
+    ) -> None:
+        await self._repository.deactivate_user_sessions(user_id)
+
+    async def get_active_user_sessions(
+        self,
+        user_id: str,
+    ) -> list[Session]:
+        return await self._repository.get_active_user_sessions(user_id)

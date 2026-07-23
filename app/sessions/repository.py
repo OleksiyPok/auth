@@ -1,9 +1,9 @@
 # app/sessions/repository.py
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import cast
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -94,4 +94,59 @@ class SessionRepository(SessionRepositoryInterface):
         session: Session,
     ) -> None:
         await self._session.delete(session)
+        await self._session.commit()
+
+    async def get_active_user_sessions(
+        self,
+        user_id: str,
+    ) -> list[Session]:
+        statement = (
+            select(Session)
+            .where(
+                cast(
+                    ColumnElement[str],
+                    Session.user_id,
+                )
+                == user_id
+            )
+            .where(
+                cast(
+                    ColumnElement[bool],
+                    Session.is_active,
+                )
+            )
+            .order_by(
+                desc(
+                    cast(
+                        ColumnElement[datetime],
+                        Session.created_at,
+                    )
+                )
+            )
+        )
+
+        result = await self._session.execute(statement)
+        return list(result.scalars().all())
+
+    async def deactivate_user_sessions(
+        self,
+        user_id: str,
+    ) -> None:
+        statement = (
+            update(Session)
+            .where(
+                cast(
+                    ColumnElement[str],
+                    Session.user_id,
+                )
+                == user_id
+            )
+            .values(
+                is_active=False,
+                revoked_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+            )
+        )
+
+        await self._session.execute(statement)
         await self._session.commit()

@@ -60,6 +60,11 @@ class Session(SQLModel, table=True):
         nullable=False,
     )
 
+    revoked_at: datetime | None = Field(
+        default=None,
+        sa_type=UTCDateTime,
+    )
+
     expires_at: datetime = Field(
         sa_type=UTCDateTime,
         nullable=False,

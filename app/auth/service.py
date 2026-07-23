@@ -17,6 +17,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.sessions.schemas import SessionResponseSchema
 from app.sessions.service import SessionService
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
@@ -220,3 +221,38 @@ class AuthService:
             refresh_token=new_refresh_token,
             token_type="bearer",
         )
+
+    async def logout(
+        self,
+        refresh_token: str,
+    ) -> None:
+
+        session = await self._session_service.get_by_refresh_token(
+            refresh_token,
+        )
+
+        if session:
+            await self._session_service.revoke(session)
+
+    async def logout_all(
+        self,
+        user: User,
+    ) -> None:
+
+        await self._session_service.deactivate_user_sessions(
+            user.id,
+        )
+
+    async def get_sessions(
+        self,
+        user: User,
+    ) -> list[SessionResponseSchema]:
+
+        sessions = await self._session_service.get_active_user_sessions(
+            user.id,
+        )
+
+        return [
+            SessionResponseSchema.model_validate(session)
+            for session in sessions
+        ]

@@ -32,6 +32,18 @@ class SessionRepositoryInterface(ABC):
     ) -> list[Session]: ...
 
     @abstractmethod
+    async def get_active_user_sessions(
+        self,
+        user_id: str,
+    ) -> list[Session]: ...
+
+    @abstractmethod
+    async def deactivate_user_sessions(
+        self,
+        user_id: str,
+    ) -> None: ...
+
+    @abstractmethod
     async def update(
         self,
         session: Session,
