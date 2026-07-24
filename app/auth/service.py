@@ -277,7 +277,7 @@ class AuthService:
         if session:
             await self._session_service.revoke(session)
 
-    async def logout_all(
+    async def revoke_all_session(
         self,
         user: User,
     ) -> None:

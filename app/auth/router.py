@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.auth.dependencies import get_auth_service, get_current_user
+from app.auth.dependencies import get_auth_service
 from app.auth.schemas import (
     LoginRequestSchema,
     RefreshTokenRequestSchema,
@@ -12,8 +12,6 @@ from app.auth.schemas import (
     TokenResponseSchema,
 )
 from app.auth.service import AuthService
-from app.sessions.schemas import SessionResponseSchema
-from app.users.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -75,47 +73,38 @@ async def logout(
     data: RefreshTokenRequestSchema,
     service: AuthService = Depends(get_auth_service),
 ):
-    await service.logout(
-        data.refresh_token,
-    )
+    await service.logout(data.refresh_token)
 
 
-@router.post(
-    "/logout-all",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def logout_all(
-    current_user: User = Depends(get_current_user),
-    service: AuthService = Depends(get_auth_service),
-):
-    await service.logout_all(
-        current_user,
-    )
+# @router.get(
+#     "/sessions",
+#     response_model=list[SessionResponseSchema],
+# )
+# async def get_sessions(
+#     current_user: User = Depends(get_current_user),
+#     service: AuthService = Depends(get_auth_service),
+# ):
+#     return await service.get_sessions(current_user)
 
 
-@router.get(
-    "/sessions",
-    response_model=list[SessionResponseSchema],
-)
-async def get_sessions(
-    current_user: User = Depends(get_current_user),
-    service: AuthService = Depends(get_auth_service),
-):
-    return await service.get_sessions(
-        current_user,
-    )
+# @router.post(
+#     "/revoke_all_session",
+#     status_code=status.HTTP_204_NO_CONTENT,
+# )
+# async def revoke_all_session(
+#     current_user: User = Depends(get_current_user),
+#     service: AuthService = Depends(get_auth_service),
+# ):
+#     await service.revoke_all_session(current_user)
 
-
-@router.post(
-    "/sessions/{session_id}/revoke",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def revoke_session(
-    session_id: str,
-    current_user: User = Depends(get_current_user),
-    service: AuthService = Depends(get_auth_service),
-):
-    await service.revoke_session(
-        current_user,
-        session_id,
-    )
+#
+# @router.post(
+#     "/sessions/{session_id}/revoke",
+#     status_code=status.HTTP_204_NO_CONTENT,
+# )
+# async def revoke_session(
+#     session_id: str,
+#     current_user: User = Depends(get_current_user),
+#     service: AuthService = Depends(get_auth_service),
+# ):
+#     await service.revoke_session(current_user, session_id)
