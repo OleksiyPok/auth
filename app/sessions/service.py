@@ -3,6 +3,12 @@
 from datetime import datetime, timedelta, timezone
 
 from app.core.refresh_token import hash_refresh_token
+from app.sessions.exceptions import (
+    InvalidRefreshTokenError,
+    SessionExpiredError,
+    SessionNotFoundError,
+    SessionRevokedError,
+)
 from app.sessions.interfaces import SessionRepositoryInterface
 from app.sessions.models import Session
 from app.users.models import User
@@ -116,17 +122,19 @@ class SessionService:
     async def validate_refresh_token(
         self,
         refresh_token: str,
-    ) -> Session | None:
-        session = await self.get_by_refresh_token(refresh_token)
+    ) -> Session:
+        session = await self.get_by_refresh_token(
+            refresh_token,
+        )
 
         if not session:
-            return None
+            raise InvalidRefreshTokenError
 
         if not session.is_active:
-            return None
+            raise SessionRevokedError
 
         if session.expires_at <= datetime.now(timezone.utc):
-            return None
+            raise SessionExpiredError
 
         return session
 
@@ -140,3 +148,22 @@ class SessionService:
 
         for session in sessions:
             await self.revoke(session)
+
+    async def validate_session(
+        self,
+        session_id: str,
+    ) -> Session:
+        session = await self.get_by_id(
+            session_id,
+        )
+
+        if not session:
+            raise SessionNotFoundError
+
+        if not session.is_active:
+            raise SessionRevokedError
+
+        if session.expires_at <= datetime.now(timezone.utc):
+            raise SessionExpiredError
+
+        return session

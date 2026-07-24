@@ -18,6 +18,12 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.sessions.exceptions import (
+    InvalidRefreshTokenError,
+    SessionExpiredError,
+    SessionNotFoundError,
+    SessionRevokedError,
+)
 from app.sessions.service import SessionService
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
@@ -150,11 +156,12 @@ class AuthService:
                 },
             )
 
-        session = await self._session_service.get_by_id(
-            session_id,
-        )
+        try:
+            session = await self._session_service.validate_session(
+                session_id,
+            )
 
-        if not session:
+        except SessionNotFoundError:
             raise HTTPException(
                 status_code=401,
                 detail={
@@ -163,7 +170,7 @@ class AuthService:
                 },
             )
 
-        if not session.is_active:
+        except SessionRevokedError:
             raise HTTPException(
                 status_code=401,
                 detail={
@@ -172,7 +179,7 @@ class AuthService:
                 },
             )
 
-        if session.expires_at <= datetime.now(timezone.utc):
+        except SessionExpiredError:
             raise HTTPException(
                 status_code=401,
                 detail={
@@ -214,12 +221,35 @@ class AuthService:
             refresh_token,
         )
 
-        if not session:
+        try:
+            session = await self._session_service.validate_refresh_token(
+                refresh_token,
+            )
+
+        except InvalidRefreshTokenError:
             raise HTTPException(
                 status_code=401,
                 detail={
                     "code": "INVALID_REFRESH_TOKEN",
                     "message": "Invalid refresh token",
+                },
+            )
+
+        except SessionRevokedError:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "SESSION_REVOKED",
+                    "message": "Session revoked",
+                },
+            )
+
+        except SessionExpiredError:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "SESSION_EXPIRED",
+                    "message": "Session expired",
                 },
             )
 
@@ -247,6 +277,9 @@ class AuthService:
 
         new_access_token = create_access_token(
             subject=user.id,
+            additional_claims={
+                "sid": session.id,
+            },
         )
 
         new_refresh_token = generate_refresh_token()

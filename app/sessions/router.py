@@ -33,7 +33,7 @@ async def get_sessions(
     "/revoke_all_session",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def revoke_all_session(
+async def revoke_all_sessions(
     current_user: User = Depends(get_current_user),
     service: SessionService = Depends(get_sessions_service),
 ):
