@@ -56,6 +56,7 @@ async def get_me(
 )
 async def get_by_id(
     user_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> User:
     return await service.get_by_id(user_id)
@@ -87,6 +88,7 @@ async def update_self(
 async def update_by_admin(
     user_id: str,
     data: UserUpdateByAdminRequestSchema,
+    current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> User:
     return await service.update_by_admin(user_id, data)
@@ -101,6 +103,7 @@ async def update_by_admin(
 )
 async def delete(
     user_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[UserService, Depends(get_user_service)],
 ):
     return await service.delete(user_id)
