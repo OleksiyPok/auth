@@ -82,8 +82,8 @@ class SessionService:
         return await self._repository.update(session)
 
     async def revoke(
-            self,
-            session: Session,
+        self,
+        session: Session,
     ) -> None:
         now = datetime.now(timezone.utc)
 

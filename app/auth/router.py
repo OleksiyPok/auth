@@ -1,6 +1,6 @@
 # app/auth/router.py
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.auth.dependencies import get_auth_service, get_current_user
@@ -40,6 +40,7 @@ async def register(
     response_model=TokenResponseSchema,
 )
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     service: AuthService = Depends(get_auth_service),
 ):
@@ -48,7 +49,11 @@ async def login(
         password=form_data.password,
     )
 
-    return await service.login(data)
+    return await service.login(
+        data=data,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
 
 
 @router.post(
@@ -86,6 +91,7 @@ async def logout_all(
     await service.logout_all(
         current_user,
     )
+
 
 @router.get(
     "/sessions",

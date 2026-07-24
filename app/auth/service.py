@@ -60,6 +60,8 @@ class AuthService:
     async def login(
         self,
         data: LoginRequestSchema,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> TokenResponseSchema:
 
         user = await self._repository.get_by_login(data.login)
@@ -104,6 +106,8 @@ class AuthService:
             user_id=user.id,
             refresh_token=refresh_token,
             expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            ip_address=ip_address,
+            user_agent=user_agent,
         )
 
         return TokenResponseSchema(
@@ -252,7 +256,4 @@ class AuthService:
             user.id,
         )
 
-        return [
-            SessionResponseSchema.model_validate(session)
-            for session in sessions
-        ]
+        return [SessionResponseSchema.model_validate(session) for session in sessions]
