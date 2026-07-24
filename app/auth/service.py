@@ -1,6 +1,6 @@
 # app/auth/service.py
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
 
@@ -139,8 +139,9 @@ class AuthService:
             )
 
         user_id = payload.get("sub")
+        session_id = payload.get("sid")
 
-        if not user_id:
+        if not user_id or not session_id:
             raise HTTPException(
                 status_code=401,
                 detail={
@@ -149,7 +150,40 @@ class AuthService:
                 },
             )
 
-        user = await self._repository.get_by_id(user_id)
+        session = await self._session_service.get_by_id(
+            session_id,
+        )
+
+        if not session:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "SESSION_NOT_FOUND",
+                    "message": "Session not found",
+                },
+            )
+
+        if not session.is_active:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "SESSION_REVOKED",
+                    "message": "Session revoked",
+                },
+            )
+
+        if session.expires_at <= datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "SESSION_EXPIRED",
+                    "message": "Session expired",
+                },
+            )
+
+        user = await self._repository.get_by_id(
+            user_id,
+        )
 
         if not user:
             raise HTTPException(
@@ -165,7 +199,7 @@ class AuthService:
                 status_code=403,
                 detail={
                     "code": "USER_INACTIVE",
-                    "message": "User is inactive",
+                    "message": "User inactive",
                 },
             )
 
