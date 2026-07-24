@@ -1,10 +1,11 @@
 # app/sessions/router.py
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.auth.dependencies import get_auth_service, get_current_user
-from app.auth.service import AuthService
+from app.auth.dependencies import get_current_user
+from app.sessions.dependencies import get_sessions_service
 from app.sessions.schemas import SessionResponseSchema
+from app.sessions.service import SessionService
 from app.users.models import User
 
 router = APIRouter(
@@ -19,11 +20,13 @@ router = APIRouter(
 )
 async def get_sessions(
     current_user: User = Depends(get_current_user),
-    service: AuthService = Depends(get_auth_service),
+    service: SessionService = Depends(get_sessions_service),
 ):
-    return await service.get_sessions(
-        current_user,
+    sessions = await service.get_user_sessions(
+        current_user.id,
     )
+
+    return [SessionResponseSchema.model_validate(session) for session in sessions]
 
 
 @router.post(
@@ -32,9 +35,9 @@ async def get_sessions(
 )
 async def revoke_all_session(
     current_user: User = Depends(get_current_user),
-    service: AuthService = Depends(get_auth_service),
+    service: SessionService = Depends(get_sessions_service),
 ):
-    await service.revoke_all_session(
+    await service.revoke_all_sessions(
         current_user,
     )
 
@@ -46,9 +49,30 @@ async def revoke_all_session(
 async def revoke_session(
     session_id: str,
     current_user: User = Depends(get_current_user),
-    service: AuthService = Depends(get_auth_service),
+    service: SessionService = Depends(get_sessions_service),
 ):
+    session = await service.get_by_id(
+        session_id,
+    )
+
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found",
+            },
+        )
+
+    if session.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "ACCESS_DENIED",
+                "message": "Access denied",
+            },
+        )
+
     await service.revoke_session(
-        current_user,
         session_id,
     )

@@ -10,6 +10,7 @@ from app.auth.schemas import (
     TokenResponseSchema,
 )
 from app.core.config import settings
+from app.core.refresh_token import generate_refresh_token
 from app.core.security import (
     InvalidAccessTokenError,
     create_access_token,
@@ -17,7 +18,6 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
-from app.sessions.schemas import SessionResponseSchema
 from app.sessions.service import SessionService
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
@@ -96,7 +96,7 @@ class AuthService:
                 },
             )
 
-        refresh_token = self._session_service.generate_refresh_token()
+        refresh_token = generate_refresh_token()
 
         session = await self._session_service.create_session(
             user_id=user.id,
@@ -249,7 +249,7 @@ class AuthService:
             subject=user.id,
         )
 
-        new_refresh_token = self._session_service.generate_refresh_token()
+        new_refresh_token = generate_refresh_token()
 
         await self._session_service.rotate_refresh_token(
             session=session,
@@ -276,58 +276,3 @@ class AuthService:
 
         if session:
             await self._session_service.revoke(session)
-
-    async def revoke_all_session(
-        self,
-        user: User,
-    ) -> None:
-
-        await self._session_service.deactivate_user_sessions(
-            user.id,
-        )
-
-    async def get_sessions(
-        self,
-        user: User,
-    ) -> list[SessionResponseSchema]:
-
-        sessions = await self._session_service.get_active_user_sessions(
-            user.id,
-        )
-
-        return [SessionResponseSchema.model_validate(session) for session in sessions]
-
-    async def revoke_session(
-        self,
-        current_user: User,
-        session_id: str,
-    ) -> None:
-
-        session = await self._session_service.get_by_id(
-            session_id,
-        )
-
-        if not session:
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "code": "SESSION_NOT_FOUND",
-                    "message": "Session not found",
-                },
-            )
-
-        if session.user_id != current_user.id:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "ACCESS_DENIED",
-                    "message": "Access denied",
-                },
-            )
-
-        if not session.is_active:
-            return
-
-        await self._session_service.revoke(
-            session,
-        )

@@ -1,11 +1,11 @@
 # app/sessions/service.py
 
-import hashlib
-import secrets
 from datetime import datetime, timedelta, timezone
 
+from app.core.refresh_token import hash_refresh_token
 from app.sessions.interfaces import SessionRepositoryInterface
 from app.sessions.models import Session
+from app.users.models import User
 
 
 class SessionService:
@@ -30,7 +30,7 @@ class SessionService:
         session = Session(
             user_id=user_id,
             provider=provider,
-            refresh_token_hash=self._hash_token(refresh_token),
+            refresh_token_hash=hash_refresh_token(refresh_token),
             expires_at=now + expires_delta,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -54,9 +54,64 @@ class SessionService:
         self,
         refresh_token: str,
     ) -> Session | None:
-        token_hash = self._hash_token(refresh_token)
+        token_hash = hash_refresh_token(refresh_token)
 
         return await self._repository.get_by_refresh_token_hash(token_hash)
+
+    async def rotate_refresh_token(
+        self,
+        session: Session,
+        new_refresh_token: str,
+        expires_delta: timedelta,
+    ) -> Session:
+        now = datetime.now(timezone.utc)
+
+        session.refresh_token_hash = hash_refresh_token(new_refresh_token)
+        session.last_used_at = now
+        session.updated_at = now
+        session.expires_at = now + expires_delta
+
+        return await self._repository.update(session)
+
+    async def get_user_sessions(
+        self,
+        user_id: str,
+    ) -> list[Session]:
+
+        return await self._repository.get_active_user_sessions(
+            user_id,
+        )
+
+    async def revoke(
+        self,
+        session: Session,
+    ) -> None:
+        now = datetime.now(timezone.utc)
+
+        session.is_active = False
+        session.revoked_at = now
+        session.updated_at = now
+
+        await self._repository.update(session)
+
+    async def revoke_session(
+        self,
+        session_id: str,
+    ) -> None:
+
+        session = await self.get_by_id(
+            session_id,
+        )
+
+        if not session:
+            return
+
+        if not session.is_active:
+            return
+
+        await self.revoke(
+            session,
+        )
 
     async def validate_refresh_token(
         self,
@@ -75,51 +130,13 @@ class SessionService:
 
         return session
 
-    async def rotate_refresh_token(
+    async def revoke_all_sessions(
         self,
-        session: Session,
-        new_refresh_token: str,
-        expires_delta: timedelta,
-    ) -> Session:
-        now = datetime.now(timezone.utc)
-
-        session.refresh_token_hash = self._hash_token(new_refresh_token)
-        session.last_used_at = now
-        session.updated_at = now
-        session.expires_at = now + expires_delta
-
-        return await self._repository.update(session)
-
-    async def revoke(
-        self,
-        session: Session,
+        user: User,
     ) -> None:
-        now = datetime.now(timezone.utc)
+        sessions = await self._repository.get_active_user_sessions(
+            user.id,
+        )
 
-        session.is_active = False
-        session.revoked_at = now
-        session.updated_at = now
-
-        await self._repository.update(session)
-
-    @staticmethod
-    def generate_refresh_token() -> str:
-        return secrets.token_urlsafe(64)
-
-    @staticmethod
-    def _hash_token(
-        token: str,
-    ) -> str:
-        return hashlib.sha256(token.encode()).hexdigest()
-
-    async def deactivate_user_sessions(
-        self,
-        user_id: str,
-    ) -> None:
-        await self._repository.deactivate_user_sessions(user_id)
-
-    async def get_active_user_sessions(
-        self,
-        user_id: str,
-    ) -> list[Session]:
-        return await self._repository.get_active_user_sessions(user_id)
+        for session in sessions:
+            await self.revoke(session)

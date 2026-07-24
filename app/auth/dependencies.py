@@ -6,7 +6,7 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from app.auth.service import AuthService
-from app.sessions.dependencies import get_session_service
+from app.sessions.dependencies import get_sessions_service
 from app.sessions.service import SessionService
 from app.users.dependencies import get_user_repository
 from app.users.interfaces import UserRepositoryInterface
@@ -22,7 +22,7 @@ def get_auth_service(
     ],
     session_service: Annotated[
         SessionService,
-        Depends(get_session_service),
+        Depends(get_sessions_service),
     ],
 ) -> AuthService:
     return AuthService(
