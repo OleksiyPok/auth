@@ -104,3 +104,18 @@ async def get_sessions(
     return await service.get_sessions(
         current_user,
     )
+
+
+@router.post(
+    "/sessions/{session_id}/revoke",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def revoke_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service),
+):
+    await service.revoke_session(
+        current_user,
+        session_id,
+    )

@@ -96,18 +96,23 @@ class AuthService:
                 },
             )
 
-        access_token = create_access_token(
-            subject=user.id,
-        )
-
         refresh_token = self._session_service.generate_refresh_token()
 
-        await self._session_service.create_session(
+        session = await self._session_service.create_session(
             user_id=user.id,
             refresh_token=refresh_token,
-            expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            expires_delta=timedelta(
+                days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
+            ),
             ip_address=ip_address,
             user_agent=user_agent,
+        )
+
+        access_token = create_access_token(
+            subject=user.id,
+            additional_claims={
+                "sid": session.id,
+            },
         )
 
         return TokenResponseSchema(
@@ -257,3 +262,38 @@ class AuthService:
         )
 
         return [SessionResponseSchema.model_validate(session) for session in sessions]
+
+    async def revoke_session(
+        self,
+        current_user: User,
+        session_id: str,
+    ) -> None:
+
+        session = await self._session_service.get_by_id(
+            session_id,
+        )
+
+        if not session:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "code": "SESSION_NOT_FOUND",
+                    "message": "Session not found",
+                },
+            )
+
+        if session.user_id != current_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "ACCESS_DENIED",
+                    "message": "Access denied",
+                },
+            )
+
+        if not session.is_active:
+            return
+
+        await self._session_service.revoke(
+            session,
+        )

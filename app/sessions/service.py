@@ -41,6 +41,15 @@ class SessionService:
 
         return await self._repository.create(session)
 
+    async def get_by_id(
+        self,
+        session_id: str,
+    ) -> Session | None:
+
+        return await self._repository.get_by_id(
+            session_id,
+        )
+
     async def get_by_refresh_token(
         self,
         refresh_token: str,
