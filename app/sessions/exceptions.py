@@ -1,25 +1,37 @@
 # app/sessions/exceptions.py
 
+from app.core.exceptions import DomainError
 
-class SessionError(Exception):
+
+class SessionError(DomainError):
     pass
 
 
 class SessionNotFoundError(SessionError):
-    pass
+    code = "SESSION_NOT_FOUND"
+    message = "Session not found"
+    status_code = 404
 
 
 class SessionRevokedError(SessionError):
-    pass
+    code = "SESSION_REVOKED"
+    message = "Session revoked"
+    status_code = 401
 
 
 class SessionExpiredError(SessionError):
-    pass
+    code = "SESSION_EXPIRED"
+    message = "Session expired"
+    status_code = 401
 
 
 class InvalidRefreshTokenError(SessionError):
-    pass
+    code = "INVALID_REFRESH_TOKEN"
+    message = "Invalid refresh token"
+    status_code = 401
 
 
 class SessionAccessDeniedError(SessionError):
-    pass
+    code = "ACCESS_DENIED"
+    message = "Access denied"
+    status_code = 403

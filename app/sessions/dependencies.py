@@ -3,7 +3,7 @@
 from fastapi import Depends
 
 from app.db.session import get_session
-from app.sessions.interfaces import SessionRepositoryInterface
+from app.sessions.interfaces import SessionRepositoryInterface, SessionServiceInterface
 from app.sessions.repository import SessionRepository
 from app.sessions.service import SessionService
 
@@ -16,5 +16,5 @@ def get_session_repository(
 
 def get_sessions_service(
     repository: SessionRepositoryInterface = Depends(get_session_repository),
-) -> SessionService:
+) -> SessionServiceInterface:
     return SessionService(repository)

@@ -1,7 +1,6 @@
 # app/users/service.py
 
-from fastapi import HTTPException
-
+from app.users.exceptions import UserNotFoundError
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 from app.users.schemas import UserUpdateByAdminRequestSchema, UserUpdateRequestSchema
@@ -19,13 +18,7 @@ class UserService:
         user = await self._repository.get_by_id(user_id)
 
         if user is None:
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "code": "USER_NOT_FOUND",
-                    "message": "User not found",
-                },
-            )
+            raise UserNotFoundError()
 
         return user
 
@@ -33,13 +26,7 @@ class UserService:
         user = await self._repository.get_by_login(login)
 
         if user is None:
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "code": "USER_NOT_FOUND",
-                    "message": "User not found",
-                },
-            )
+            raise UserNotFoundError()
 
         return user
 

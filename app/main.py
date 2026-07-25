@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 
 from app.core.config import settings
+from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
 from app.router import router
 
@@ -37,6 +38,7 @@ app = FastAPI(
     },
 )
 
+register_exception_handlers(app)
 
 app.include_router(router)
 

@@ -5,16 +5,16 @@ from datetime import datetime, timedelta, timezone
 from app.core.refresh_token import hash_refresh_token
 from app.sessions.exceptions import (
     InvalidRefreshTokenError,
+    SessionAccessDeniedError,
     SessionExpiredError,
     SessionNotFoundError,
     SessionRevokedError,
 )
-from app.sessions.interfaces import SessionRepositoryInterface
+from app.sessions.interfaces import SessionRepositoryInterface, SessionServiceInterface
 from app.sessions.models import Session
-from app.users.models import User
 
 
-class SessionService:
+class SessionService(SessionServiceInterface):
 
     def __init__(
         self,
@@ -100,24 +100,23 @@ class SessionService:
 
         await self._repository.update(session)
 
-    async def revoke_session(
+    async def revoke_session_for_user(
         self,
         session_id: str,
+        user_id: str,
     ) -> None:
-
-        session = await self.get_by_id(
-            session_id,
-        )
+        session = await self.get_by_id(session_id)
 
         if not session:
-            return
+            raise SessionNotFoundError()
+
+        if session.user_id != user_id:
+            raise SessionAccessDeniedError()
 
         if not session.is_active:
             return
 
-        await self.revoke(
-            session,
-        )
+        await self.revoke(session)
 
     async def validate_refresh_token(
         self,
@@ -128,22 +127,22 @@ class SessionService:
         )
 
         if not session:
-            raise InvalidRefreshTokenError
+            raise InvalidRefreshTokenError()
 
         if not session.is_active:
-            raise SessionRevokedError
+            raise SessionRevokedError()
 
         if session.expires_at <= datetime.now(timezone.utc):
-            raise SessionExpiredError
+            raise SessionExpiredError()
 
         return session
 
     async def revoke_all_sessions(
         self,
-        user: User,
+        user_id: str,
     ) -> None:
         sessions = await self._repository.get_active_user_sessions(
-            user.id,
+            user_id,
         )
 
         for session in sessions:
@@ -158,12 +157,12 @@ class SessionService:
         )
 
         if not session:
-            raise SessionNotFoundError
+            raise SessionNotFoundError()
 
         if not session.is_active:
-            raise SessionRevokedError
+            raise SessionRevokedError()
 
         if session.expires_at <= datetime.now(timezone.utc):
-            raise SessionExpiredError
+            raise SessionExpiredError()
 
         return session
