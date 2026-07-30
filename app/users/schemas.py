@@ -11,18 +11,12 @@ class UserUpdateRequestSchema(BaseModel):
     last_name: str | None = None
 
 
-class UserUpdateByAdminRequestSchema(UserUpdateRequestSchema):
-    is_active: bool | None = None
-    role: str | None = None
-
-
 class UserResponseSchema(BaseModel):
     id: str
     login: str
     email: str
     first_name: str
     last_name: str
-    role: str
 
     model_config = ConfigDict(from_attributes=True)
 

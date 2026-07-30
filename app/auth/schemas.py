@@ -17,7 +17,6 @@ class RegisterResponseSchema(BaseModel):
     email: str
     first_name: str
     last_name: str
-    role: str
 
     model_config = ConfigDict(from_attributes=True)
 

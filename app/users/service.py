@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
-from app.users.schemas import UserUpdateByAdminRequestSchema, UserUpdateRequestSchema
+from app.users.schemas import UserUpdateRequestSchema
 
 
 class UserService:
@@ -50,13 +50,6 @@ class UserService:
 
         return await self._update(user, data)
 
-    async def update_by_admin(
-        self, user_id: str, data: UserUpdateByAdminRequestSchema
-    ) -> User:
-        user = await self.get_by_id(user_id)
-
-        return await self._update(user, data)
-
     async def delete(self, user_id: str) -> User:
         user = await self.get_by_id(user_id)
 
@@ -65,7 +58,7 @@ class UserService:
     async def _update(
         self,
         user: User,
-        data: UserUpdateRequestSchema | UserUpdateByAdminRequestSchema,
+        data: UserUpdateRequestSchema,
     ) -> User:
 
         update_data = data.model_dump(exclude_unset=True)

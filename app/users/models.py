@@ -10,7 +10,6 @@ from uuid_extensions import (
 )  # replace with stdlib uuid.uuid7 after upgrading to Python 3.14+
 
 from app.db.types import UTCDateTime
-from app.users.enums import UserRole
 
 
 class User(SQLModel, table=True):
@@ -21,7 +20,6 @@ class User(SQLModel, table=True):
     email: str
     first_name: str
     last_name: str
-    role: str = Field(default=UserRole.USER, nullable=False)
 
     is_active: bool = Field(default=True, nullable=False)
 

@@ -10,7 +10,6 @@ from app.users.models import User
 from app.users.schemas import (
     UserDetailedResponseSchema,
     UserResponseSchema,
-    UserUpdateByAdminRequestSchema,
     UserUpdateRequestSchema,
 )
 from app.users.service import UserService
@@ -76,34 +75,3 @@ async def update_self(
 ) -> User:
 
     return await service.update_self(current_user, data)
-
-
-@router.patch(
-    "/{user_id}",
-    summary="Update a user",
-    description="Update a registered user.",
-    response_model=UserDetailedResponseSchema,
-    status_code=status.HTTP_200_OK,
-)
-async def update_by_admin(
-    user_id: str,
-    data: UserUpdateByAdminRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
-    service: Annotated[UserService, Depends(get_user_service)],
-) -> User:
-    return await service.update_by_admin(user_id, data)
-
-
-@router.delete(
-    "/{user_id}",
-    summary="Delete user",
-    description="Delete a user.",
-    status_code=status.HTTP_200_OK,
-    response_model=UserResponseSchema,
-)
-async def delete(
-    user_id: str,
-    current_user: Annotated[User, Depends(get_current_user)],
-    service: Annotated[UserService, Depends(get_user_service)],
-):
-    return await service.delete(user_id)
