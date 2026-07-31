@@ -1,4 +1,5 @@
 # app/auth/authorization.py
+
 """
 Centralized authorization dependencies for RBAC.
 
@@ -6,7 +7,7 @@ This module provides FastAPI dependencies for permission-based access control.
 All authorization logic is centralized here - no ad-hoc role checks in routers.
 """
 
-from typing import Annotated, Callable, Awaitable
+from typing import Annotated, Awaitable, Callable
 
 from fastapi import Depends, HTTPException, status
 

@@ -1,14 +1,17 @@
 # app/users/router.py
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
 from app.auth.authorization import (
     require_permissions,
     require_role_management,
+    require_self_delete,
     require_self_read,
     require_self_write,
+    require_users_delete,
     require_users_read,
     require_users_write,
 )
@@ -18,8 +21,8 @@ from app.users.models import User
 from app.users.schemas import (
     UserDetailedResponseSchema,
     UserResponseSchema,
-    UserUpdateRequestSchema,
     UserRoleAssignRequestSchema,
+    UserUpdateRequestSchema,
 )
 from app.users.service import UserService
 
@@ -106,3 +109,31 @@ async def assign_role(
 ) -> User:
 
     return await service.change_role(user_id, role_data, current_user.id)
+
+
+@router.delete(
+    "/me",
+    dependencies=[Depends(require_self_delete())],
+)
+async def deactivate_me(
+    current_user: User = Depends(get_current_user),
+    service: UserService = Depends(get_user_service),
+):
+    return await service.deactivate_user(
+        target_user=current_user,
+    )
+
+
+@router.delete(
+    "/{user_id}",
+    dependencies=[Depends(require_users_delete())],
+)
+async def deactivate_user(
+    user_id: UUID,
+    service: UserService = Depends(get_user_service),
+):
+    target_user = await service.get_by_id(user_id)
+
+    return await service.deactivate_user(
+        target_user=target_user,
+    )

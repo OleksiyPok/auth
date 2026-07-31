@@ -2,10 +2,10 @@
 
 from fastapi import HTTPException
 
-from app.core.rbac import validate_role
+from app.core.rbac import Role, validate_role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
-from app.users.schemas import UserUpdateRequestSchema, UserRoleAssignRequestSchema
+from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
 
 
 class UserService:
@@ -76,6 +76,22 @@ class UserService:
 
         user.role = validated_role
         return await self._repository.update(user)
+
+    async def deactivate_user(
+        self,
+        current_user: User,
+        target_user: User,
+    ) -> User:
+        if target_user.role == Role.SUPERADMIN:
+            count = await self.repository.count_active_superadmins()
+
+        if count == 1:
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot deactivate the last superadmin",
+            )
+
+        return await self.repository.deactivate(target_user)
 
     async def _update(
         self,

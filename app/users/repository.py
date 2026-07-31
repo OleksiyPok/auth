@@ -1,8 +1,9 @@
 # app/users/repository.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import func, select
 
+from app.core.rbac import Role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 
@@ -48,6 +49,12 @@ class UserRepository(UserRepositoryInterface):
         await self._session.refresh(user)
         return user
 
+    async def deactivate(self, user: User) -> User:
+        user.is_active = False
+        await self._session.commit()
+        await self._session.refresh(user)
+        return user
+
     async def delete(
         self,
         user: User,
@@ -55,3 +62,13 @@ class UserRepository(UserRepositoryInterface):
         await self._session.delete(user)
         await self._session.commit()
         return user
+
+    async def _count_active_superadmins(self) -> int:
+        stmt = select(func.count()).where(
+            User.role == Role.SUPERADMIN,
+            User.is_active.is_(True),
+        )
+
+        result = await self.session.execute(stmt)
+
+        return result.scalar_one()

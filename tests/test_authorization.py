@@ -9,16 +9,17 @@ Tests cover:
 - Convenience dependencies
 """
 
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 from fastapi import HTTPException
 
 from app.auth.authorization import (
-    get_user_permissions,
-    require_permissions,
-    require_any_permission,
-    require_role,
     InsufficientPermissionsError,
+    get_user_permissions,
+    require_any_permission,
+    require_permissions,
+    require_role,
 )
 from app.core.rbac import Permission, Role
 from app.users.models import User

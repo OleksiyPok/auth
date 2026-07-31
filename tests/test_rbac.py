@@ -10,17 +10,18 @@ Tests cover:
 """
 
 import pytest
+
 from app.core.rbac import (
+    DEFAULT_ROLE,
+    ROLE_PERMISSIONS,
     Permission,
     Role,
-    ROLE_PERMISSIONS,
-    DEFAULT_ROLE,
+    get_all_permissions,
+    get_all_roles,
     get_permissions_for_role,
+    get_roles_with_permission,
     is_valid_role,
     validate_role,
-    get_all_roles,
-    get_all_permissions,
-    get_roles_with_permission,
 )
 from app.users.models import User
 
