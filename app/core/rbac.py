@@ -16,6 +16,7 @@ Design principles:
 """
 
 from enum import StrEnum
+from fastapi import HTTPException, status
 from typing import Final
 
 
@@ -180,9 +181,17 @@ def validate_role(role: str) -> str:
     Raises:
         ValueError: If role is not defined
     """
+    # if not is_valid_role(role):
+    #     valid_roles = sorted(ROLE_PERMISSIONS.keys())
+    #     raise ValueError(f"Invalid role: '{role}'. Valid roles: {valid_roles}")
+
     if not is_valid_role(role):
-        valid_roles = sorted(ROLE_PERMISSIONS.keys())
-        raise ValueError(f"Invalid role: '{role}'. Valid roles: {valid_roles}")
+        valid_roles = ", ".join(get_all_roles())
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(f"Invalid role '{role}'. " f"Valid roles: {valid_roles}"),
+        )
+
     return role
 
 
