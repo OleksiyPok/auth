@@ -31,7 +31,7 @@ app = FastAPI(
     swagger_ui_parameters={
         "docExpansion": "none",
         # "tagsSorter": "alpha",
-        "operationsSorter": "none",
+        # "operationsSorter": "none",
         # "operationsSorter": "method",
         # "operationsSorter": "alpha",
     },
