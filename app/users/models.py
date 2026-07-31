@@ -9,6 +9,7 @@ from uuid_extensions import (
     uuid7,
 )  # replace with stdlib uuid.uuid7 after upgrading to Python 3.14+
 
+from app.core.rbac import DEFAULT_ROLE, validate_role
 from app.db.types import UTCDateTime
 
 
@@ -20,6 +21,7 @@ class User(SQLModel, table=True):
     email: str
     first_name: str
     last_name: str
+    role: str = Field(default=DEFAULT_ROLE, nullable=False)
 
     is_active: bool = Field(default=True, nullable=False)
 
@@ -39,3 +41,9 @@ class User(SQLModel, table=True):
         ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
+
+    def __init__(self, **data):
+        # Validate role on creation
+        if "role" in data:
+            data["role"] = validate_role(data["role"])
+        super().__init__(**data)

@@ -11,12 +11,17 @@ class UserUpdateRequestSchema(BaseModel):
     last_name: str | None = None
 
 
+class UserRoleAssignRequestSchema(BaseModel):
+    role: str
+
+
 class UserResponseSchema(BaseModel):
     id: str
     login: str
     email: str
     first_name: str
     last_name: str
+    role: str
 
     model_config = ConfigDict(from_attributes=True)
 

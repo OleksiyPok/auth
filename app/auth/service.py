@@ -217,10 +217,6 @@ class AuthService:
         refresh_token: str,
     ) -> TokenResponseSchema:
 
-        session = await self._session_service.validate_refresh_token(
-            refresh_token,
-        )
-
         try:
             session = await self._session_service.validate_refresh_token(
                 refresh_token,

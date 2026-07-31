@@ -2,6 +2,14 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.auth.authorization import (
+    require_permissions,
+    require_self_sessions_read,
+    require_self_sessions_revoke,
+    require_sessions_read,
+    require_sessions_revoke,
+    require_sessions_revoke_all,
+)
 from app.auth.dependencies import get_current_user
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.schemas import SessionResponseSchema
@@ -17,6 +25,7 @@ router = APIRouter(
 @router.get(
     "",
     response_model=list[SessionResponseSchema],
+    dependencies=[Depends(require_self_sessions_read())],
 )
 async def get_sessions(
     current_user: User = Depends(get_current_user),
@@ -32,6 +41,7 @@ async def get_sessions(
 @router.post(
     "/revoke_all_session",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_self_sessions_revoke())],
 )
 async def revoke_all_sessions(
     current_user: User = Depends(get_current_user),
@@ -45,6 +55,7 @@ async def revoke_all_sessions(
 @router.post(
     "/{session_id}/revoke",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_self_sessions_revoke())],
 )
 async def revoke_session(
     session_id: str,

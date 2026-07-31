@@ -2,9 +2,10 @@
 
 from fastapi import HTTPException
 
+from app.core.rbac import validate_role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
-from app.users.schemas import UserUpdateRequestSchema
+from app.users.schemas import UserUpdateRequestSchema, UserRoleAssignRequestSchema
 
 
 class UserService:
@@ -54,6 +55,27 @@ class UserService:
         user = await self.get_by_id(user_id)
 
         return await self._repository.delete(user)
+
+    async def change_role(
+        self, user_id: str, role_data: UserRoleAssignRequestSchema, current_user_id: str
+    ) -> User:
+        user = await self.get_by_id(user_id)
+
+        # Validate the requested role using existing RBAC validation
+        validated_role = validate_role(role_data.role)
+
+        # Prevent users from changing their own role
+        if current_user_id == user.id:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "CANNOT_CHANGE_OWN_ROLE",
+                    "message": "Users cannot change their own role",
+                },
+            )
+
+        user.role = validated_role
+        return await self._repository.update(user)
 
     async def _update(
         self,
