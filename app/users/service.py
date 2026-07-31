@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from app.core.rbac import validate_role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
-from app.users.schemas import UserUpdateRequestSchema, UserRoleAssignRequestSchema
+from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
 
 
 class UserService:

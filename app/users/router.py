@@ -18,8 +18,8 @@ from app.users.models import User
 from app.users.schemas import (
     UserDetailedResponseSchema,
     UserResponseSchema,
-    UserUpdateRequestSchema,
     UserRoleAssignRequestSchema,
+    UserUpdateRequestSchema,
 )
 from app.users.service import UserService
 

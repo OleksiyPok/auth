@@ -1,4 +1,5 @@
 # app/core/rbac.py
+
 """
 Role-Based Access Control (RBAC) core module.
 
@@ -16,8 +17,9 @@ Design principles:
 """
 
 from enum import StrEnum
-from fastapi import HTTPException, status
 from typing import Final
+
+from fastapi import HTTPException, status
 
 
 class Permission(StrEnum):
