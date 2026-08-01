@@ -63,7 +63,7 @@ class UserService:
 
     async def deactivate_user(
         self,
-        # current_user: User,
+        current_user: User,
         target_user: User,
     ) -> User:
         # if current_user.id == target_user.id:
