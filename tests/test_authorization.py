@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi import HTTPException
 
-from app.auth.authorization import (
+from app.auth.permissions import (
     InsufficientPermissionsError,
     get_user_permissions,
     require_any_permission,
@@ -222,7 +222,7 @@ class TestConvenienceDependencies:
     @pytest.mark.asyncio
     async def test_require_admin_access(self):
         """require_admin_access should work for admin and superadmin."""
-        from app.auth.authorization import require_admin_access
+        from app.auth.permissions import require_admin_access
 
         admin_user = MockUser(role="admin")
         superadmin_user = MockUser(role="superadmin")
@@ -249,7 +249,7 @@ class TestConvenienceDependencies:
     @pytest.mark.asyncio
     async def test_require_self_read(self):
         """require_self_read should work for all roles."""
-        from app.auth.authorization import require_self_read
+        from app.auth.permissions import require_self_read
 
         for role in ["user", "admin", "superadmin"]:
             user = MockUser(role=role)
@@ -261,7 +261,7 @@ class TestConvenienceDependencies:
     @pytest.mark.asyncio
     async def test_require_users_read(self):
         """require_users_read should work for admin and superadmin."""
-        from app.auth.authorization import require_users_read
+        from app.auth.permissions import require_users_read
 
         admin_user = MockUser(role="admin")
         superadmin_user = MockUser(role="superadmin")

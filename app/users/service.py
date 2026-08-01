@@ -1,16 +1,14 @@
 # app/users/service.py
 
 from app.auth.rbac import Role, validate_role
-from app.users.interfaces import UserRepositoryInterface
-from app.users.models import User
-from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
-
-from app.users.exceptions import (
+from app.users.exceptions import (  # CannotDeactivateSelfError,
     CannotChangeOwnRoleError,
     LastSuperadminDeactivationError,
     UserNotFoundError,
-    # CannotDeactivateSelfError,
 )
+from app.users.interfaces import UserRepositoryInterface
+from app.users.models import User
+from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
 
 
 class UserService:

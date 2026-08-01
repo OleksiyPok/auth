@@ -1,4 +1,4 @@
-# app/core/rbac.py
+# app/auth/rbac.py
 
 """
 Role-Based Access Control (RBAC) core module.

@@ -20,6 +20,7 @@ class InvalidAccessTokenError(AuthError):
     code = "INVALID_TOKEN"
     message = "Invalid access token"
 
+
 class InsufficientPermissionsError(AuthError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "INSUFFICIENT_PERMISSIONS"

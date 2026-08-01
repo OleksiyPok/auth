@@ -1,6 +1,6 @@
 # app/auth/service.py
 
-from datetime import  timedelta
+from datetime import timedelta
 
 from app.auth.exceptions import InvalidAccessTokenError, InvalidCredentialsError
 from app.auth.schemas import (

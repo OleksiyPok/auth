@@ -66,7 +66,7 @@ class UserRepository(UserRepositoryInterface):
     async def count_active_superadmins(self) -> int:
         stmt = select(func.count()).where(
             User.role == Role.SUPERADMIN,
-            User.is_active==True,
+            User.is_active == True,
         )
 
         result = await self._session.execute(stmt)

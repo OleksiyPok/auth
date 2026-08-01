@@ -38,8 +38,8 @@ class InactiveUserError(UserError):
     code = "USER_INACTIVE"
     message = "User is inactive"
 
+
 class CannotDeactivateSelfError(UserError):
     status_code = status.HTTP_400_BAD_REQUEST
     code = "CANNOT_DEACTIVATE_SELF_ROLE"
     message = "Cannot deactivate the self role"
-

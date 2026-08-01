@@ -4,7 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.authorization import (
+from app.auth.dependencies import get_current_user
+from app.auth.permissions import (
     require_role_management,
     require_self_delete,
     require_self_read,
@@ -12,7 +13,6 @@ from app.auth.authorization import (
     require_users_delete,
     require_users_read,
 )
-from app.auth.dependencies import get_current_user
 from app.users.dependencies import get_user_service
 from app.users.models import User
 from app.users.schemas import (
@@ -68,7 +68,6 @@ async def get_me(
 async def get_by_id(
     user_id: str,
     service: Annotated[UserService, Depends(get_user_service)],
-
 ) -> User:
     return await service.get_by_id(user_id)
 

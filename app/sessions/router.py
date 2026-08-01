@@ -2,11 +2,11 @@
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.authorization import (
+from app.auth.dependencies import get_current_user
+from app.auth.permissions import (
     require_self_sessions_read,
     require_self_sessions_revoke,
 )
-from app.auth.dependencies import get_current_user
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.exceptions import SessionAccessDeniedError, SessionNotFoundError
 from app.sessions.schemas import SessionResponseSchema

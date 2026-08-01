@@ -1,4 +1,4 @@
-# app/auth/authorization.py
+# app/auth/permissions.py
 
 """
 Centralized authorization dependencies for RBAC.
@@ -34,6 +34,7 @@ def _resolve_user_getter(user_getter: UserGetter | None) -> UserGetter:
     from app.auth.dependencies import get_current_user
 
     return get_current_user
+
 
 def _create_permission_dependency(
     required_permissions: set[str],
@@ -147,6 +148,7 @@ def require_role(*allowed_roles: str, user_getter: UserGetter | None = None):
 
 
 # Convenience dependencies for common permission sets
+
 
 def require_admin_access(user_getter: UserGetter | None = None):
     """Require ADMIN_ACCESS permission."""
