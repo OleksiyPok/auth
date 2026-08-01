@@ -21,8 +21,7 @@ from app.auth.authorization import (
     require_permissions,
     require_role,
 )
-from app.core.rbac import Permission, Role
-from app.users.models import User
+from app.auth.rbac import Permission
 
 
 class MockUser:

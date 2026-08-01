@@ -27,3 +27,6 @@ class UserRepositoryInterface(ABC):
 
     @abstractmethod
     async def delete(self, user: User) -> User | None: ...
+
+    @abstractmethod
+    async def count_active_superadmins(self) -> int | None: ...

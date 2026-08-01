@@ -1,19 +1,16 @@
 # app/users/router.py
 
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
 from app.auth.authorization import (
-    require_permissions,
     require_role_management,
     require_self_delete,
     require_self_read,
     require_self_write,
     require_users_delete,
     require_users_read,
-    require_users_write,
 )
 from app.auth.dependencies import get_current_user
 from app.users.dependencies import get_user_service
@@ -70,8 +67,8 @@ async def get_me(
 )
 async def get_by_id(
     user_id: str,
-    current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[UserService, Depends(get_user_service)],
+
 ) -> User:
     return await service.get_by_id(user_id)
 
@@ -86,8 +83,8 @@ async def get_by_id(
 )
 async def update_self(
     data: UserUpdateRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[UserService, Depends(get_user_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
 
     return await service.update_self(current_user, data)
@@ -104,8 +101,8 @@ async def update_self(
 async def assign_role(
     user_id: str,
     role_data: UserRoleAssignRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[UserService, Depends(get_user_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
 
     return await service.change_role(user_id, role_data, current_user.id)
@@ -116,10 +113,11 @@ async def assign_role(
     dependencies=[Depends(require_self_delete())],
 )
 async def deactivate_me(
-    current_user: User = Depends(get_current_user),
-    service: UserService = Depends(get_user_service),
+    service: Annotated[UserService, Depends(get_user_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
     return await service.deactivate_user(
+        current_user=current_user,
         target_user=current_user,
     )
 
@@ -129,11 +127,13 @@ async def deactivate_me(
     dependencies=[Depends(require_users_delete())],
 )
 async def deactivate_user(
-    user_id: UUID,
-    service: UserService = Depends(get_user_service),
+    user_id: str,
+    service: Annotated[UserService, Depends(get_user_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
     target_user = await service.get_by_id(user_id)
 
     return await service.deactivate_user(
+        current_user=current_user,
         target_user=target_user,
     )

@@ -1,17 +1,14 @@
 # app/sessions/router.py
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.auth.authorization import (
-    require_permissions,
     require_self_sessions_read,
     require_self_sessions_revoke,
-    require_sessions_read,
-    require_sessions_revoke,
-    require_sessions_revoke_all,
 )
 from app.auth.dependencies import get_current_user
 from app.sessions.dependencies import get_sessions_service
+from app.sessions.exceptions import SessionAccessDeniedError, SessionNotFoundError
 from app.sessions.schemas import SessionResponseSchema
 from app.sessions.service import SessionService
 from app.users.models import User
@@ -67,22 +64,10 @@ async def revoke_session(
     )
 
     if not session:
-        raise HTTPException(
-            status_code=404,
-            detail={
-                "code": "SESSION_NOT_FOUND",
-                "message": "Session not found",
-            },
-        )
+        raise SessionNotFoundError()
 
     if session.user_id != current_user.id:
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "code": "ACCESS_DENIED",
-                "message": "Access denied",
-            },
-        )
+        raise SessionAccessDeniedError()
 
     await service.revoke_session(
         session_id,

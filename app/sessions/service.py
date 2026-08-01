@@ -128,13 +128,13 @@ class SessionService:
         )
 
         if not session:
-            raise InvalidRefreshTokenError
+            raise InvalidRefreshTokenError()
 
         if not session.is_active:
-            raise SessionRevokedError
+            raise SessionRevokedError()
 
         if session.expires_at <= datetime.now(timezone.utc):
-            raise SessionExpiredError
+            raise SessionExpiredError()
 
         return session
 
@@ -158,12 +158,12 @@ class SessionService:
         )
 
         if not session:
-            raise SessionNotFoundError
+            raise SessionNotFoundError()
 
         if not session.is_active:
-            raise SessionRevokedError
+            raise SessionRevokedError()
 
         if session.expires_at <= datetime.now(timezone.utc):
-            raise SessionExpiredError
+            raise SessionExpiredError()
 
         return session

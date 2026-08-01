@@ -1,11 +1,16 @@
 # app/users/service.py
 
-from fastapi import HTTPException
-
-from app.core.rbac import Role, validate_role
+from app.auth.rbac import Role, validate_role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
+
+from app.users.exceptions import (
+    CannotChangeOwnRoleError,
+    LastSuperadminDeactivationError,
+    UserNotFoundError,
+    # CannotDeactivateSelfError,
+)
 
 
 class UserService:
@@ -20,27 +25,14 @@ class UserService:
         user = await self._repository.get_by_id(user_id)
 
         if user is None:
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "code": "USER_NOT_FOUND",
-                    "message": "User not found",
-                },
-            )
-
+            raise UserNotFoundError()
         return user
 
     async def get_by_login(self, login: str) -> User:
         user = await self._repository.get_by_login(login)
 
         if user is None:
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "code": "USER_NOT_FOUND",
-                    "message": "User not found",
-                },
-            )
+            raise UserNotFoundError()
 
         return user
 
@@ -66,32 +58,25 @@ class UserService:
 
         # Prevent users from changing their own role
         if current_user_id == user.id:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "CANNOT_CHANGE_OWN_ROLE",
-                    "message": "Users cannot change their own role",
-                },
-            )
+            raise CannotChangeOwnRoleError()
 
         user.role = validated_role
         return await self._repository.update(user)
 
     async def deactivate_user(
         self,
-        current_user: User,
+        # current_user: User,
         target_user: User,
     ) -> User:
+        # if current_user.id == target_user.id:
+        #     raise CannotDeactivateSelfError()
+
         if target_user.role == Role.SUPERADMIN:
-            count = await self.repository.count_active_superadmins()
+            count = await self._repository.count_active_superadmins()
+            if count == 1:
+                raise LastSuperadminDeactivationError()
 
-        if count == 1:
-            raise HTTPException(
-                status_code=409,
-                detail="Cannot deactivate the last superadmin",
-            )
-
-        return await self.repository.deactivate(target_user)
+        return await self._repository.deactivate(target_user)
 
     async def _update(
         self,

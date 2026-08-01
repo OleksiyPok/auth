@@ -1,9 +1,8 @@
 # app/auth/service.py
 
-from datetime import datetime, timedelta, timezone
+from datetime import  timedelta
 
-from fastapi import HTTPException
-
+from app.auth.exceptions import InvalidAccessTokenError, InvalidCredentialsError
 from app.auth.schemas import (
     LoginRequestSchema,
     RegisterRequestSchema,
@@ -11,20 +10,19 @@ from app.auth.schemas import (
 )
 from app.core.config import settings
 from app.core.refresh_token import generate_refresh_token
+from app.core.security import InvalidAccessTokenError as SecurityInvalidAccessTokenError
 from app.core.security import (
-    InvalidAccessTokenError,
     create_access_token,
     decode_access_token,
     hash_password,
     verify_password,
 )
-from app.sessions.exceptions import (
-    InvalidRefreshTokenError,
-    SessionExpiredError,
-    SessionNotFoundError,
-    SessionRevokedError,
-)
 from app.sessions.service import SessionService
+from app.users.exceptions import (
+    InactiveUserError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+)
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 
@@ -45,13 +43,7 @@ class AuthService:
     ) -> User:
 
         if await self._repository.get_by_login(data.login):
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "code": "USER_ALREADY_EXISTS",
-                    "message": "User already exists",
-                },
-            )
+            raise UserAlreadyExistsError()
 
         user = User(
             login=data.login,
@@ -73,34 +65,16 @@ class AuthService:
         user = await self._repository.get_by_login(data.login)
 
         if not user:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "INVALID_CREDENTIALS",
-                    "message": "Invalid login or password",
-                },
-            )
+            raise InvalidCredentialsError()
 
         if not verify_password(
             data.password,
             user.password_hash,
         ):
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "INVALID_CREDENTIALS",
-                    "message": "Invalid login or password",
-                },
-            )
+            raise InvalidCredentialsError()
 
         if not user.is_active:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "USER_INACTIVE",
-                    "message": "User is inactive",
-                },
-            )
+            raise InactiveUserError()
 
         refresh_token = generate_refresh_token()
 
@@ -135,80 +109,28 @@ class AuthService:
         try:
             payload = decode_access_token(token)
 
-        except InvalidAccessTokenError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "INVALID_TOKEN",
-                    "message": "Invalid access token",
-                },
-            )
+        except SecurityInvalidAccessTokenError as exc:
+            raise InvalidAccessTokenError(str(exc)) from exc
 
         user_id = payload.get("sub")
         session_id = payload.get("sid")
 
         if not user_id or not session_id:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "INVALID_TOKEN",
-                    "message": "Invalid token payload",
-                },
-            )
+            raise InvalidAccessTokenError()
 
-        try:
-            session = await self._session_service.validate_session(
-                session_id,
-            )
-
-        except SessionNotFoundError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "SESSION_NOT_FOUND",
-                    "message": "Session not found",
-                },
-            )
-
-        except SessionRevokedError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "SESSION_REVOKED",
-                    "message": "Session revoked",
-                },
-            )
-
-        except SessionExpiredError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "SESSION_EXPIRED",
-                    "message": "Session expired",
-                },
-            )
+        await self._session_service.validate_session(
+            session_id,
+        )
 
         user = await self._repository.get_by_id(
             user_id,
         )
 
         if not user:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "USER_NOT_FOUND",
-                    "message": "User not found",
-                },
-            )
+            raise UserNotFoundError()
 
         if not user.is_active:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "USER_INACTIVE",
-                    "message": "User inactive",
-                },
-            )
+            raise InactiveUserError()
 
         return user
 
@@ -217,59 +139,19 @@ class AuthService:
         refresh_token: str,
     ) -> TokenResponseSchema:
 
-        try:
-            session = await self._session_service.validate_refresh_token(
-                refresh_token,
-            )
-
-        except InvalidRefreshTokenError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "INVALID_REFRESH_TOKEN",
-                    "message": "Invalid refresh token",
-                },
-            )
-
-        except SessionRevokedError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "SESSION_REVOKED",
-                    "message": "Session revoked",
-                },
-            )
-
-        except SessionExpiredError:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "SESSION_EXPIRED",
-                    "message": "Session expired",
-                },
-            )
+        session = await self._session_service.validate_refresh_token(
+            refresh_token,
+        )
 
         user = await self._repository.get_by_id(
             session.user_id,
         )
 
         if not user:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "code": "USER_NOT_FOUND",
-                    "message": "User not found",
-                },
-            )
+            raise UserNotFoundError()
 
         if not user.is_active:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "USER_INACTIVE",
-                    "message": "User is inactive",
-                },
-            )
+            raise InactiveUserError()
 
         new_access_token = create_access_token(
             subject=user.id,

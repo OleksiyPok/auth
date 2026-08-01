@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func, select
 
-from app.core.rbac import Role
+from app.auth.rbac import Role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 
@@ -63,12 +63,12 @@ class UserRepository(UserRepositoryInterface):
         await self._session.commit()
         return user
 
-    async def _count_active_superadmins(self) -> int:
+    async def count_active_superadmins(self) -> int:
         stmt = select(func.count()).where(
             User.role == Role.SUPERADMIN,
-            User.is_active.is_(True),
+            User.is_active==True,
         )
 
-        result = await self.session.execute(stmt)
+        result = await self._session.execute(stmt)
 
         return result.scalar_one()
