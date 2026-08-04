@@ -3,7 +3,11 @@
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.auth.dependencies import get_auth_service
+from app.auth.dependencies import (
+    get_authentication_service,
+    get_login_service,
+    get_register_service,
+)
 from app.auth.schemas import (
     LoginRequestSchema,
     RefreshTokenRequestSchema,
@@ -11,7 +15,9 @@ from app.auth.schemas import (
     RegisterResponseSchema,
     TokenResponseSchema,
 )
-from app.auth.services.service import AuthService
+from app.auth.services.token_service import TokenService
+from app.auth.services.login_service import LoginService
+from app.auth.services.register_service import RegisterService
 
 router = APIRouter(
     prefix="/auth",
@@ -28,7 +34,8 @@ router = APIRouter(
 )
 async def register(
     data: RegisterRequestSchema,
-    service: AuthService = Depends(get_auth_service),
+    # service: AuthService = Depends(get_auth_service),
+    service: RegisterService = Depends(get_register_service),
 ):
     return await service.register(data)
 
@@ -40,7 +47,8 @@ async def register(
 async def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    service: AuthService = Depends(get_auth_service),
+    # service: AuthService = Depends(get_auth_service),
+    service: LoginService = Depends(get_login_service),
 ):
     data = LoginRequestSchema(
         login=form_data.username,
@@ -60,8 +68,10 @@ async def login(
 )
 async def refresh(
     data: RefreshTokenRequestSchema,
-    service: AuthService = Depends(get_auth_service),
+    # service: AuthService = Depends(get_auth_service),
+    service: TokenService = Depends(get_authentication_service),
 ):
+
     return await service.refresh(data.refresh_token)
 
 
@@ -71,6 +81,8 @@ async def refresh(
 )
 async def logout(
     data: RefreshTokenRequestSchema,
-    service: AuthService = Depends(get_auth_service),
+    # service: AuthService = Depends(get_auth_service),
+    service: LoginService = Depends(get_login_service),
 ):
+
     await service.logout(data.refresh_token)

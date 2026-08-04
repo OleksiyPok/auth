@@ -1,4 +1,4 @@
-# app/auth/services/token_service.py
+# app/auth/services/authentication_service.py
 
 from datetime import timedelta
 
