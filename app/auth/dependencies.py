@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.auth.service import AuthService
+from app.auth.services.service import AuthService
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.service import SessionService
 from app.users.dependencies import get_user_repository
