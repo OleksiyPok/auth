@@ -1,4 +1,4 @@
-# app/auth/password.py
+# app/infrastructure/password.py
 
 from pwdlib import PasswordHash
 

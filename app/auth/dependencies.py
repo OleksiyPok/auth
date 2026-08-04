@@ -1,12 +1,13 @@
+# app/auth/dependencies.py
+
 from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.auth.services.token_service import TokenService
 from app.auth.services.login_service import LoginService
 from app.auth.services.register_service import RegisterService
-
+from app.auth.services.token_service import TokenService
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.service import SessionService
 from app.users.dependencies import get_user_repository
@@ -55,7 +56,6 @@ def get_authentication_service(
         repository,
         session_service,
     )
-
 
 
 async def get_current_user(

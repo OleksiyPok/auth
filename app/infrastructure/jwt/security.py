@@ -1,4 +1,4 @@
-# app/auth/jwt/security.py
+# app/infrastructure/jwt/security.py
 
 from datetime import UTC, datetime, timedelta
 from typing import Any

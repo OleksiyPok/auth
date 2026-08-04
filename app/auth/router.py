@@ -15,9 +15,9 @@ from app.auth.schemas import (
     RegisterResponseSchema,
     TokenResponseSchema,
 )
-from app.auth.services.token_service import TokenService
 from app.auth.services.login_service import LoginService
 from app.auth.services.register_service import RegisterService
+from app.auth.services.token_service import TokenService
 
 router = APIRouter(
     prefix="/auth",

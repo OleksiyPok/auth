@@ -1,4 +1,4 @@
-# app/auth/permissions.py
+# app/auth/rbac/permissions.py
 
 """
 Centralized authorization dependencies for RBAC.

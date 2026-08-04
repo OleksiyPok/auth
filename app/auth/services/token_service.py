@@ -1,15 +1,15 @@
-# app/auth/services/authentication_service.py
+# app/auth/services/token_service.py
 
 from datetime import timedelta
 
 from app.auth.exceptions import InvalidAccessTokenError
+from app.auth.schemas import TokenResponseSchema
+from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import (
     InvalidAccessTokenError as SecurityInvalidAccessTokenError,
 )
 from app.infrastructure.jwt.security import create_access_token, decode_access_token
-from app.auth.schemas import TokenResponseSchema
-from app.core.config import settings
 from app.sessions.service import SessionService
 from app.users.exceptions import InactiveUserError, UserNotFoundError
 from app.users.interfaces import UserRepositoryInterface

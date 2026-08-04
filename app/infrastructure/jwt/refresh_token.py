@@ -1,4 +1,4 @@
-# app/auth/jwt/refresh_token.py
+# app/infrastructure/jwt/refresh_token.py
 
 import hashlib
 import secrets
