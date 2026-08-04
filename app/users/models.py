@@ -8,7 +8,7 @@ from uuid_extensions import (
     uuid7,
 )  # replace with stdlib uuid.uuid7 after upgrading to Python 3.14+
 
-from app.auth.rbac import DEFAULT_ROLE, validate_role
+from app.auth.rbac.rbac import DEFAULT_ROLE, validate_role
 from app.db.types import UTCDateTime
 
 

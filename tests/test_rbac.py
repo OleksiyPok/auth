@@ -11,7 +11,7 @@ Tests cover:
 
 import pytest
 
-from app.auth.rbac import (
+from app.auth.rbac.rbac import (
     DEFAULT_ROLE,
     ROLE_PERMISSIONS,
     Permission,

@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
-from app.auth.permissions import (
+from app.auth.rbac.permissions import (
     require_self_sessions_read,
     require_self_sessions_revoke,
 )

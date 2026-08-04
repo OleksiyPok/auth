@@ -12,7 +12,7 @@ from typing import Awaitable, Callable
 from fastapi import Depends, HTTPException, status
 
 from app.auth.exceptions import InsufficientPermissionsError
-from app.auth.rbac import Permission, get_permissions_for_role, is_valid_role
+from app.auth.rbac.rbac import Permission, get_permissions_for_role, is_valid_role
 from app.users.models import User
 
 # Type alias for user getter function

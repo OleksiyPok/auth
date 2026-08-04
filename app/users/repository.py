@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func, select
 
-from app.auth.rbac import Role
+from app.auth.rbac.rbac import Role
 from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
 

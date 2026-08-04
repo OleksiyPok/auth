@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 
-from app.auth.jwt.refresh_token import hash_refresh_token
+from app.infrastructure.jwt.refresh_token import hash_refresh_token
 from app.sessions.exceptions import (
     InvalidRefreshTokenError,
     SessionExpiredError,

@@ -3,9 +3,9 @@
 from datetime import timedelta
 
 from app.auth.exceptions import InvalidCredentialsError
-from app.auth.jwt.refresh_token import generate_refresh_token
-from app.auth.jwt.security import create_access_token
-from app.auth.password import verify_password
+from app.infrastructure.jwt.refresh_token import generate_refresh_token
+from app.infrastructure.jwt.security import create_access_token
+from app.infrastructure.password import verify_password
 from app.auth.schemas import LoginRequestSchema, TokenResponseSchema
 from app.core.config import settings
 from app.sessions.service import SessionService

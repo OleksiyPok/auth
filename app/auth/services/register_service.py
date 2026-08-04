@@ -1,6 +1,6 @@
 # app/auth/services/register_service.py
 
-from app.auth.password import hash_password
+from app.infrastructure.password import hash_password
 from app.auth.schemas import RegisterRequestSchema
 from app.users.exceptions import UserAlreadyExistsError
 from app.users.interfaces import UserRepositoryInterface
