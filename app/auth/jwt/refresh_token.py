@@ -1,4 +1,4 @@
-# app/core/refresh_token.py
+# app/auth/jwt/refresh_token.py
 
 import hashlib
 import secrets

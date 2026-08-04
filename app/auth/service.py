@@ -3,20 +3,18 @@
 from datetime import timedelta
 
 from app.auth.exceptions import InvalidAccessTokenError, InvalidCredentialsError
+from app.auth.jwt.refresh_token import generate_refresh_token
+from app.auth.jwt.security import (
+    InvalidAccessTokenError as SecurityInvalidAccessTokenError,
+)
+from app.auth.jwt.security import create_access_token, decode_access_token
+from app.auth.password import hash_password, verify_password
 from app.auth.schemas import (
     LoginRequestSchema,
     RegisterRequestSchema,
     TokenResponseSchema,
 )
 from app.core.config import settings
-from app.core.refresh_token import generate_refresh_token
-from app.core.security import InvalidAccessTokenError as SecurityInvalidAccessTokenError
-from app.core.security import (
-    create_access_token,
-    decode_access_token,
-    hash_password,
-    verify_password,
-)
 from app.sessions.service import SessionService
 from app.users.exceptions import (
     InactiveUserError,
