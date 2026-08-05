@@ -42,7 +42,7 @@ def get_login_service(
     )
 
 
-def get_authentication_service(
+def get_token_service(
     repository: Annotated[
         UserRepositoryInterface,
         Depends(get_user_repository),
@@ -65,7 +65,7 @@ async def get_current_user(
     ],
     authentication_service: Annotated[
         TokenService,
-        Depends(get_authentication_service),
+        Depends(get_token_service),
     ],
 ) -> User:
     return await authentication_service.authenticate_token(token)

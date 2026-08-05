@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.auth.dependencies import (
-    get_authentication_service,
+    get_token_service,
     get_login_service,
     get_register_service,
 )
@@ -69,7 +69,7 @@ async def login(
 async def refresh(
     data: RefreshTokenRequestSchema,
     # service: AuthService = Depends(get_auth_service),
-    service: TokenService = Depends(get_authentication_service),
+    service: TokenService = Depends(get_token_service),
 ):
 
     return await service.refresh(data.refresh_token)
