@@ -68,4 +68,4 @@ async def get_current_user(
         Depends(get_token_service),
     ],
 ) -> User:
-    return await authentication_service.authenticate_token(token)
+    return await authentication_service.authenticate(token)

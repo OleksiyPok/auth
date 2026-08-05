@@ -26,7 +26,7 @@ class TokenService:
         self._repository = repository
         self._session_service = session_service
 
-    async def authenticate_token(
+    async def authenticate(
         self,
         token: str,
     ) -> User:
