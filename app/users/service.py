@@ -2,8 +2,7 @@
 
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import Role
-from app.users.exceptions import (
-    # CannotDeactivateSelfError,
+from app.users.exceptions import (  # CannotDeactivateSelfError,
     CannotChangeOwnRoleError,
     LastSuperadminDeactivationError,
     UserNotFoundError,
