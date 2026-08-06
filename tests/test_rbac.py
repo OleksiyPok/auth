@@ -11,11 +11,9 @@ Tests cover:
 
 import pytest
 
-from app.auth.rbac.rbac import (
-    DEFAULT_ROLE,
+from app.auth.rbac.permissions import Permission
+from app.auth.rbac.role_permissions import (
     ROLE_PERMISSIONS,
-    Permission,
-    Role,
     get_all_permissions,
     get_all_roles,
     get_permissions_for_role,
@@ -23,6 +21,7 @@ from app.auth.rbac.rbac import (
     is_valid_role,
     validate_role,
 )
+from app.auth.rbac.roles import DEFAULT_ROLE, Role
 from app.users.models import User
 
 

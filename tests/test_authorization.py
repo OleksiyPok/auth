@@ -14,14 +14,14 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi import HTTPException
 
-from app.auth.rbac.permissions import (
-    InsufficientPermissionsError,
-    get_user_permissions,
+from app.auth.exceptions import InsufficientPermissionsError
+from app.auth.rbac.dependencies import (
     require_any_permission,
     require_permissions,
     require_role,
 )
-from app.auth.rbac.rbac import Permission
+from app.auth.rbac.permissions import Permission
+from app.auth.rbac.user_permissions import get_user_permissions
 
 
 class MockUser:

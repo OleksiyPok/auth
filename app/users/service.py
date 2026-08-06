@@ -1,7 +1,9 @@
 # app/users/service.py
 
-from app.auth.rbac.rbac import Role, validate_role
-from app.users.exceptions import (  # CannotDeactivateSelfError,
+from app.auth.rbac.role_permissions import validate_role
+from app.auth.rbac.roles import Role
+from app.users.exceptions import (
+    # CannotDeactivateSelfError,
     CannotChangeOwnRoleError,
     LastSuperadminDeactivationError,
     UserNotFoundError,
