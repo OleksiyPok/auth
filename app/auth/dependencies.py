@@ -11,8 +11,8 @@ from app.auth.services.token_service import TokenService
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.service import SessionService
 from app.users.dependencies import get_user_repository
-from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
+from app.users.repository_interface import UserRepositoryInterface
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 

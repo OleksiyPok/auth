@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func, select
 
 from app.auth.rbac.roles import Role
-from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
+from app.users.repository_interface import UserRepositoryInterface
 
 
 class UserRepository(UserRepositoryInterface):

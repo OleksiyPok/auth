@@ -4,8 +4,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
-from app.users.interfaces import UserRepositoryInterface
 from app.users.repository import UserRepository
+from app.users.repository_interface import UserRepositoryInterface
 from app.users.service import UserService
 
 

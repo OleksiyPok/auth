@@ -12,8 +12,8 @@ from app.infrastructure.jwt.security import (
 from app.infrastructure.jwt.security import create_access_token, decode_access_token
 from app.sessions.service import SessionService
 from app.users.exceptions import InactiveUserError, UserNotFoundError
-from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
+from app.users.repository_interface import UserRepositoryInterface
 
 
 class TokenService:

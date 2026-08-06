@@ -7,8 +7,8 @@ from app.users.exceptions import (  # CannotDeactivateSelfError,
     LastSuperadminDeactivationError,
     UserNotFoundError,
 )
-from app.users.interfaces import UserRepositoryInterface
 from app.users.models import User
+from app.users.repository_interface import UserRepositoryInterface
 from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
 
 

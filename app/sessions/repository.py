@@ -7,8 +7,8 @@ from sqlalchemy import desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
-from app.sessions.interfaces import SessionRepositoryInterface
 from app.sessions.models import Session
+from app.sessions.repository_interface import SessionRepositoryInterface
 
 
 class SessionRepository(SessionRepositoryInterface):

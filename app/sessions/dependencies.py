@@ -3,8 +3,8 @@
 from fastapi import Depends
 
 from app.db.session import get_session
-from app.sessions.interfaces import SessionRepositoryInterface
 from app.sessions.repository import SessionRepository
+from app.sessions.repository_interface import SessionRepositoryInterface
 from app.sessions.service import SessionService
 
 

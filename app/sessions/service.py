@@ -9,8 +9,8 @@ from app.sessions.exceptions import (
     SessionNotFoundError,
     SessionRevokedError,
 )
-from app.sessions.interfaces import SessionRepositoryInterface
 from app.sessions.models import Session
+from app.sessions.repository_interface import SessionRepositoryInterface
 from app.users.models import User
 
 

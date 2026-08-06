@@ -10,7 +10,7 @@ from app.infrastructure.jwt.security import create_access_token
 from app.infrastructure.password import verify_password
 from app.sessions.service import SessionService
 from app.users.exceptions import InactiveUserError
-from app.users.interfaces import UserRepositoryInterface
+from app.users.repository_interface import UserRepositoryInterface
 
 
 class LoginService:
