@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.auth.dependencies import (
-    get_token_service,
     get_login_service,
     get_register_service,
+    get_token_service,
 )
 from app.auth.schemas import (
     LoginRequestSchema,
