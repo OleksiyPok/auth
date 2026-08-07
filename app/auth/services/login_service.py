@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import create_access_token
 from app.infrastructure.password import verify_password
-from app.sessions.service import SessionService
+from app.sessions.service_interface import SessionServiceInterface
 from app.users.exceptions import InactiveUserError
 from app.users.repository_interface import UserRepositoryInterface
 
@@ -17,7 +17,7 @@ class LoginService:
     def __init__(
         self,
         repository: UserRepositoryInterface,
-        session_service: SessionService,
+        session_service: SessionServiceInterface,
     ):
         self._repository = repository
         self._session_service = session_service

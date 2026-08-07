@@ -10,7 +10,7 @@ from app.infrastructure.jwt.security import (
     InvalidAccessTokenError as SecurityInvalidAccessTokenError,
 )
 from app.infrastructure.jwt.security import create_access_token, decode_access_token
-from app.sessions.service import SessionService
+from app.sessions.service_interface import SessionServiceInterface
 from app.users.exceptions import InactiveUserError, UserNotFoundError
 from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
@@ -21,7 +21,7 @@ class TokenService:
     def __init__(
         self,
         repository: UserRepositoryInterface,
-        session_service: SessionService,
+        session_service: SessionServiceInterface,
     ):
         self._repository = repository
         self._session_service = session_service

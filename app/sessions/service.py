@@ -11,10 +11,11 @@ from app.sessions.exceptions import (
 )
 from app.sessions.models import Session
 from app.sessions.repository_interface import SessionRepositoryInterface
+from app.sessions.service_interface import SessionServiceInterface
 from app.users.models import User
 
 
-class SessionService:
+class SessionService(SessionServiceInterface):
 
     def __init__(
         self,

@@ -6,6 +6,7 @@ from app.db.session import get_session
 from app.sessions.repository import SessionRepository
 from app.sessions.repository_interface import SessionRepositoryInterface
 from app.sessions.service import SessionService
+from app.sessions.service_interface import SessionServiceInterface
 
 
 def get_session_repository(
@@ -16,5 +17,5 @@ def get_session_repository(
 
 def get_sessions_service(
     repository: SessionRepositoryInterface = Depends(get_session_repository),
-) -> SessionService:
+) -> SessionServiceInterface:
     return SessionService(repository)

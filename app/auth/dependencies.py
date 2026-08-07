@@ -9,7 +9,7 @@ from app.auth.services.login_service import LoginService
 from app.auth.services.register_service import RegisterService
 from app.auth.services.token_service import TokenService
 from app.sessions.dependencies import get_sessions_service
-from app.sessions.service import SessionService
+from app.sessions.service_interface import SessionServiceInterface
 from app.users.dependencies import get_user_repository
 from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
@@ -32,7 +32,7 @@ def get_login_service(
         Depends(get_user_repository),
     ],
     session_service: Annotated[
-        SessionService,
+        SessionServiceInterface,
         Depends(get_sessions_service),
     ],
 ) -> LoginService:
@@ -48,7 +48,7 @@ def get_token_service(
         Depends(get_user_repository),
     ],
     session_service: Annotated[
-        SessionService,
+        SessionServiceInterface,
         Depends(get_sessions_service),
     ],
 ) -> TokenService:
