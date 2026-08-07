@@ -9,6 +9,7 @@ This is the single source of truth for what permissions each role has.
 
 from typing import Final
 
+from app.auth.exceptions import InvalidRoleError
 from app.auth.rbac.permissions import Permission
 from app.auth.rbac.roles import Role
 
@@ -134,7 +135,7 @@ def validate_role(role: str) -> str:
     """
     if not is_valid_role(role):
         valid_roles = ", ".join(get_all_roles())
-        raise ValueError(f"Invalid role '{role}'. Valid roles: {valid_roles}")
+        raise InvalidRoleError(f"Invalid role '{role}'. Valid roles: {valid_roles}")
 
     return role
 

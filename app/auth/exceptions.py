@@ -25,3 +25,9 @@ class InsufficientPermissionsError(AuthError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "INSUFFICIENT_PERMISSIONS"
     message = "Insufficient permissions to perform this action."
+
+
+class InvalidRoleError(AuthError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "INVALID_ROLE"
+    message = "Invalid role"
