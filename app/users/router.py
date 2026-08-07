@@ -21,7 +21,8 @@ from app.users.schemas import (
     UserRoleAssignRequestSchema,
     UserUpdateRequestSchema,
 )
-from app.users.service import UserService
+# from app.users.service import UserService
+from app.users.service_interface import UserServiceInterface
 
 router = APIRouter(
     prefix="/users",
@@ -38,7 +39,7 @@ router = APIRouter(
     dependencies=[Depends(require_users_read())],
 )
 async def get_all(
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
 ) -> list[User]:
     return await service.get_all()
 
@@ -67,7 +68,7 @@ async def get_me(
 )
 async def get_by_id(
     user_id: str,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
 ) -> User:
     return await service.get_by_id(user_id)
 
@@ -82,7 +83,7 @@ async def get_by_id(
 )
 async def update_self(
     data: UserUpdateRequestSchema,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
 
@@ -100,7 +101,7 @@ async def update_self(
 async def assign_role(
     user_id: str,
     role_data: UserRoleAssignRequestSchema,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
 
@@ -112,7 +113,7 @@ async def assign_role(
     dependencies=[Depends(require_self_delete())],
 )
 async def deactivate_me(
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     return await service.deactivate_user(
@@ -127,7 +128,7 @@ async def deactivate_me(
 )
 async def deactivate_user(
     user_id: str,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     target_user = await service.get_by_id(user_id)

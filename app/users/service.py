@@ -10,9 +10,10 @@ from app.users.exceptions import (  # CannotDeactivateSelfError,
 from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
 from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
+from app.users.service_interface import UserServiceInterface
 
 
-class UserService:
+class UserService(UserServiceInterface):
 
     def __init__(
         self,
