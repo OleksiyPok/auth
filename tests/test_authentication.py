@@ -182,6 +182,45 @@ class TestTokenRefresh:
 
         assert response.status_code == status.HTTP_200_OK
 
+    def test_refresh_token_rotation(self, client: TestClient):
+        """Old refresh token should become invalid after rotation."""
+        register_data = RegisterRequestSchema(
+            login="rotationuser",
+            password="password123",
+            email="rotation@example.com",
+            first_name="Rotation",
+            last_name="User",
+        )
+
+        client.post(
+            "/api/v1/auth/register",
+            json=register_data.model_dump(),
+        )
+
+        login_response = client.post(
+            "/api/v1/auth/login",
+            data={
+                "username": "rotationuser",
+                "password": "password123",
+            },
+        )
+
+        old_refresh_token = login_response.json()["refresh_token"]
+
+        response = client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": old_refresh_token},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response = client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": old_refresh_token},
+        )
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
     def test_refresh_token_invalid(self, client: TestClient):
         """Invalid refresh token should return 401."""
         refresh_data = RefreshTokenRequestSchema(
@@ -236,6 +275,45 @@ class TestUserLogout:
         )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    def test_logout_invalidates_refresh_token(self, client: TestClient):
+        """Refresh token should become invalid after logout."""
+        register_data = RegisterRequestSchema(
+            login="logoutinvalidate",
+            password="password123",
+            email="logoutinvalidate@example.com",
+            first_name="Logout",
+            last_name="Invalidate",
+        )
+
+        client.post(
+            "/api/v1/auth/register",
+            json=register_data.model_dump(),
+        )
+
+        login_response = client.post(
+            "/api/v1/auth/login",
+            data={
+                "username": "logoutinvalidate",
+                "password": "password123",
+            },
+        )
+
+        refresh_token = login_response.json()["refresh_token"]
+
+        response = client.post(
+            "/api/v1/auth/logout",
+            json={"refresh_token": refresh_token},
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        response = client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": refresh_token},
+        )
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_logout_invalid_token(self, client: TestClient):
         """Invalid logout token should return 204."""
