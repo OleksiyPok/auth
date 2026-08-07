@@ -1,7 +1,8 @@
 # app/sessions/router.py
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.sql.annotation import Annotated
 
 from app.auth.dependencies import get_current_user
 from app.auth.rbac.dependencies import (
