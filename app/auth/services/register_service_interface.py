@@ -9,4 +9,7 @@ from app.users.models import User
 class RegisterServiceInterface(ABC):
 
     @abstractmethod
-    async def register(self, data: RegisterRequestSchema,) -> User: ...
+    async def register(
+        self,
+        data: RegisterRequestSchema,
+    ) -> User: ...

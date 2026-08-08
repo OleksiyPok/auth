@@ -1,3 +1,5 @@
+# app/auth/services/token_service_interface.py
+
 from abc import ABC, abstractmethod
 
 from app.auth.schemas import TokenResponseSchema
