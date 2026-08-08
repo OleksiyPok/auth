@@ -1,4 +1,4 @@
-# scripts/project_formatter.py
+# scripts/tools/project_formatter.py
 
 # Project Formatter
 #

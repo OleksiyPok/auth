@@ -1,50 +1,27 @@
-# scripts/path_header.py
+# scripts/tools/h_f_prj.py
 
-# Path Header Script
+#!/usr/bin/env python
+# h_f_prj.py
+
+# Project Preparation Script
 #
-# Description:
-# This script adds a header with the relative path to each Python file
-# inside the specified target directory.
-# It removes any existing path-like header before adding the new one.
-#
-# By default, the script processes Python files inside the "app" directory.
-# The following directories are excluded:
-# .venv, __pycache__, .pytest_cache, and .git.
-#
-# A lock file is used to prevent multiple instances of the script
-# from running at the same time.
+# This standalone script:
+# 1. Adds relative repository path headers to Python files.
+# 2. Formats the entire project using isort and Black.
 #
 # Usage:
-# python scripts/path_header.py
-#
-# Or specify a target directory:
-# python scripts/path_header.py <directory>
-#
-# Examples:
-# python scripts/path_header.py
-# python scripts/path_header.py app
-# python scripts/path_header.py tests
-#
-# The script:
-# 1. Checks that the target directory exists.
-# 2. Prevents multiple instances from running simultaneously.
-# 3. Finds Python files inside the target directory.
-# 4. Removes existing path headers.
-# 5. Adds the file's relative repository path as a header.
-# 6. Removes the lock file after processing.
-#
-# Example result:
-# Before:
-# from app.services.user import User
-#
-# After:
-# # app/services/user.py
-#
-# from app.services.user import User
+#   python h_f_prj.py
+#   python h_f_prj.py app
+#   python h_f_prj.py tests
 
 import re
+import subprocess
 import sys
 from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Path header
+# ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS = {
     ".venv",
@@ -100,12 +77,8 @@ def process_file(file_path: Path, repo_root: Path) -> None:
     )
 
 
-def main():
-    repo_root = Path.cwd().resolve()
+def add_path_headers(repo_root: Path, target_arg: str) -> None:
     lock_path = repo_root / LOCK_FILE
-
-    target_arg = sys.argv[1] if len(sys.argv) > 1 else "app"
-
     target_path = (repo_root / target_arg).resolve()
 
     if not target_path.exists():
@@ -131,6 +104,58 @@ def main():
             lock_path.unlink()
 
     print(f"Processed {processed_files} file(s) under '{target_arg}'.")
+
+
+# ---------------------------------------------------------------------------
+# Project formatter
+# ---------------------------------------------------------------------------
+
+
+def run_formatter(project_dir: Path) -> None:
+    python = sys.executable
+
+    print("Running isort...")
+
+    subprocess.run(
+        [
+            python,
+            "-m",
+            "isort",
+            str(project_dir),
+        ],
+        check=True,
+    )
+
+    print("Running black...")
+
+    subprocess.run(
+        [
+            python,
+            "-m",
+            "black",
+            str(project_dir),
+        ],
+        check=True,
+    )
+
+    print("Formatting complete.")
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+
+def main() -> None:
+    repo_root = Path.cwd().resolve()
+    target = sys.argv[1] if len(sys.argv) > 1 else "app"
+
+    print(f"Preparing project. Target: {target}")
+
+    add_path_headers(repo_root, target)
+    run_formatter(repo_root)
+
+    print("Project preparation complete.")
 
 
 if __name__ == "__main__":

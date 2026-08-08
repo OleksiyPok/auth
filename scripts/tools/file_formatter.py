@@ -1,4 +1,4 @@
-# scripts/file_formatter.py
+# scripts/tools/file_formatter.py
 
 # File Formatter
 #
