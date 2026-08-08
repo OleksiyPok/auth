@@ -15,6 +15,7 @@ class Role(StrEnum):
     """Built-in role identifiers."""
 
     USER = "user"
+    MANAGER = "manager"
     ADMIN = "admin"
     SUPERADMIN = "superadmin"
 

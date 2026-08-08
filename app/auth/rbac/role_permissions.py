@@ -36,6 +36,21 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         Permission.SELF_SESSIONS_READ,
         Permission.SELF_SESSIONS_REVOKE,
     },
+    Role.MANAGER: {
+        # All user permissions
+        Permission.SELF_READ,
+        Permission.SELF_WRITE,
+        Permission.SELF_DELETE,
+        Permission.SELF_SESSIONS_READ,
+        Permission.SELF_SESSIONS_REVOKE,
+        # User management
+        Permission.USERS_READ,
+        Permission.USERS_WRITE,
+        Permission.USERS_LIST,
+        # Session management
+        Permission.SESSIONS_READ,
+        Permission.SESSIONS_REVOKE,
+    },
     Role.ADMIN: {
         # All user permissions
         Permission.SELF_READ,
@@ -56,19 +71,22 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         Permission.ADMIN_VIEW_METRICS,
     },
     Role.SUPERADMIN: {
-        # All admin permissions
+        # All user permissions
         Permission.SELF_READ,
         Permission.SELF_WRITE,
         Permission.SELF_DELETE,
         Permission.SELF_SESSIONS_READ,
         Permission.SELF_SESSIONS_REVOKE,
+        # User management
         Permission.USERS_READ,
         Permission.USERS_WRITE,
         Permission.USERS_DELETE,
         Permission.USERS_LIST,
+        # Session management
         Permission.SESSIONS_READ,
         Permission.SESSIONS_REVOKE,
         Permission.SESSIONS_REVOKE_ALL,
+        # Admin access
         Permission.ADMIN_ACCESS,
         Permission.ADMIN_MANAGE_USERS,
         Permission.ADMIN_MANAGE_ROLES,
