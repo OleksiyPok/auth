@@ -1,9 +1,12 @@
 # app/auth/router.py
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.auth.dependencies import (
+    get_current_user,
     get_login_service,
     get_register_service,
     get_token_service,
@@ -18,6 +21,9 @@ from app.auth.schemas import (
 from app.auth.services.login_service_interface import LoginServiceInterface
 from app.auth.services.register_service_interface import RegisterServiceInterface
 from app.auth.services.token_service_interface import TokenServiceInterface
+from app.google.dependencies import get_google_service
+from app.google.service_interface import GoogleServiceInterface
+from app.users.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -82,3 +88,46 @@ async def logout(
 ):
 
     await service.logout(data.refresh_token)
+
+
+@router.post(
+    "/google",
+)
+async def google_authorize(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    authorization_url = await service.create_authorization_url(
+        current_user,
+    )
+
+    return {
+        "authorization_url": authorization_url,
+    }
+
+
+@router.get(
+    "/google/callback",
+)
+async def google_callback(
+    code: str,
+    state: str,
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    await service.handle_callback(
+        code=code,
+        state=state,
+    )
+
+    return {
+        "status": "connected",
+    }
