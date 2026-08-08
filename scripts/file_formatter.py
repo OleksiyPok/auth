@@ -1,5 +1,27 @@
 # scripts/file_formatter.py
 
+# File Formatter
+#
+# Description:
+# This script formats a Python file automatically.
+# It first sorts and organizes imports using isort,
+# then formats the code using Black.
+#
+# Usage:
+# python scripts/file_formatter.py <file_path>
+#
+# Example:
+# python scripts/file_formatter.py app/main.py
+#
+# The specified file must exist and be a valid file.
+# Both isort and Black must be installed in the environment.
+#
+# Formatting steps:
+# 1. Validate the provided file path.
+# 2. Run isort to organize imports.
+# 3. Run Black to format the code.
+# 4. Display a completion message.
+
 #!/usr/bin/env python
 import subprocess
 import sys

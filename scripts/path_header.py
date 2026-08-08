@@ -1,5 +1,47 @@
 # scripts/path_header.py
 
+# Path Header Script
+#
+# Description:
+# This script adds a header with the relative path to each Python file
+# inside the specified target directory.
+# It removes any existing path-like header before adding the new one.
+#
+# By default, the script processes Python files inside the "app" directory.
+# The following directories are excluded:
+# .venv, __pycache__, .pytest_cache, and .git.
+#
+# A lock file is used to prevent multiple instances of the script
+# from running at the same time.
+#
+# Usage:
+# python scripts/path_header.py
+#
+# Or specify a target directory:
+# python scripts/path_header.py <directory>
+#
+# Examples:
+# python scripts/path_header.py
+# python scripts/path_header.py app
+# python scripts/path_header.py tests
+#
+# The script:
+# 1. Checks that the target directory exists.
+# 2. Prevents multiple instances from running simultaneously.
+# 3. Finds Python files inside the target directory.
+# 4. Removes existing path headers.
+# 5. Adds the file's relative repository path as a header.
+# 6. Removes the lock file after processing.
+#
+# Example result:
+# Before:
+# from app.services.user import User
+#
+# After:
+# # app/services/user.py
+#
+# from app.services.user import User
+
 import re
 import sys
 from pathlib import Path
