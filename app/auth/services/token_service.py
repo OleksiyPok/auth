@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from app.auth.exceptions import InvalidAccessTokenError
 from app.auth.schemas import TokenResponseSchema
+from app.auth.services.token_service_interface import TokenServiceInterface
 from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import (
@@ -16,7 +17,7 @@ from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
 
 
-class TokenService:
+class TokenService(TokenServiceInterface):
 
     def __init__(
         self,

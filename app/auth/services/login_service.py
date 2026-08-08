@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from app.auth.exceptions import InvalidCredentialsError
 from app.auth.schemas import LoginRequestSchema, TokenResponseSchema
+from app.auth.services.login_service_interface import LoginServiceInterface
 from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import create_access_token
@@ -13,7 +14,7 @@ from app.users.exceptions import InactiveUserError
 from app.users.repository_interface import UserRepositoryInterface
 
 
-class LoginService:
+class LoginService(LoginServiceInterface):
     def __init__(
         self,
         repository: UserRepositoryInterface,

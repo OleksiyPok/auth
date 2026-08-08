@@ -1,13 +1,14 @@
 # app/auth/services/register_service.py
 
 from app.auth.schemas import RegisterRequestSchema
+from app.auth.services.register_service_interface import RegisterServiceInterface
 from app.infrastructure.password import hash_password
 from app.users.exceptions import UserAlreadyExistsError
 from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
 
 
-class RegisterService:
+class RegisterService(RegisterServiceInterface):
 
     def __init__(
         self,

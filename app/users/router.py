@@ -22,7 +22,6 @@ from app.users.schemas import (
     UserUpdateRequestSchema,
 )
 
-# from app.users.service import UserService
 from app.users.service_interface import UserServiceInterface
 
 router = APIRouter(
