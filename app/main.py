@@ -6,10 +6,15 @@ import uvicorn
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 
+from sqlalchemy import inspect
+
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
 from app.router import router
+from app.db.session import session_factory
+
+from app.bootstrap.superadmin import create_initial_superadmin
 
 
 @asynccontextmanager
@@ -17,7 +22,14 @@ async def lifespan(app: FastAPI):
     print("App starting...")
 
     async with engine.begin() as conn:
+        database_is_new = await conn.run_sync(
+            lambda sync_conn: len(inspect(sync_conn).get_table_names()) == 0
+        )
         await conn.run_sync(SQLModel.metadata.create_all)
+
+    if database_is_new:
+        async with session_factory() as session:
+            await create_initial_superadmin(session)
 
     yield
 

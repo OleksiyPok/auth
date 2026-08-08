@@ -25,5 +25,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    SUPERADMIN_LOGIN: str
+    SUPERADMIN_PASSWORD: str
+    SUPERADMIN_EMAIL: str
+    SUPERADMIN_FIRST_NAME: str = "System"
+    SUPERADMIN_LAST_NAME: str = "Superadministrator"
 
 settings = Settings()
