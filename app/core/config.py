@@ -31,4 +31,5 @@ class Settings(BaseSettings):
     SUPERADMIN_FIRST_NAME: str = "System"
     SUPERADMIN_LAST_NAME: str = "Superadministrator"
 
+
 settings = Settings()

@@ -4,17 +4,15 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from sqlalchemy import inspect
 from sqlmodel import SQLModel
 
-from sqlalchemy import inspect
-
+from app.bootstrap.superadmin import create_initial_superadmin
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
-from app.router import router
 from app.db.session import session_factory
-
-from app.bootstrap.superadmin import create_initial_superadmin
+from app.router import router
 
 
 @asynccontextmanager
