@@ -67,7 +67,7 @@ async def get_current_user(
         Depends(oauth2_scheme),
     ],
     authentication_service: Annotated[
-        TokenService,
+        TokenServiceInterface,
         Depends(get_token_service),
     ],
 ) -> User:

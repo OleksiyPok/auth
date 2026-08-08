@@ -15,9 +15,9 @@ from app.auth.schemas import (
     RegisterResponseSchema,
     TokenResponseSchema,
 )
-from app.auth.services.login_service import LoginService
-from app.auth.services.register_service import RegisterService
-from app.auth.services.token_service import TokenService
+from app.auth.services.login_service_interface import LoginServiceInterface
+from app.auth.services.register_service_interface import RegisterServiceInterface
+from app.auth.services.token_service_interface import TokenServiceInterface
 
 router = APIRouter(
     prefix="/auth",
@@ -34,8 +34,7 @@ router = APIRouter(
 )
 async def register(
     data: RegisterRequestSchema,
-    # service: AuthService = Depends(get_auth_service),
-    service: RegisterService = Depends(get_register_service),
+    service: RegisterServiceInterface = Depends(get_register_service),
 ):
     return await service.register(data)
 
@@ -47,8 +46,7 @@ async def register(
 async def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    # service: AuthService = Depends(get_auth_service),
-    service: LoginService = Depends(get_login_service),
+    service: LoginServiceInterface = Depends(get_login_service),
 ):
     data = LoginRequestSchema(
         login=form_data.username,
@@ -68,8 +66,7 @@ async def login(
 )
 async def refresh(
     data: RefreshTokenRequestSchema,
-    # service: AuthService = Depends(get_auth_service),
-    service: TokenService = Depends(get_token_service),
+    service: TokenServiceInterface = Depends(get_token_service),
 ):
 
     return await service.refresh(data.refresh_token)
@@ -81,8 +78,7 @@ async def refresh(
 )
 async def logout(
     data: RefreshTokenRequestSchema,
-    # service: AuthService = Depends(get_auth_service),
-    service: LoginService = Depends(get_login_service),
+    service: LoginServiceInterface = Depends(get_login_service),
 ):
 
     await service.logout(data.refresh_token)

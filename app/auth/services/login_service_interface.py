@@ -15,6 +15,7 @@ class LoginServiceInterface(ABC):
         user_agent: str | None = None,
     ) -> TokenResponseSchema: ...
 
+    @abstractmethod
     async def logout(
         self,
         refresh_token: str,
