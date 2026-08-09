@@ -7,6 +7,6 @@ GOOGLE_CONTACTS_SCOPE = "https://www.googleapis.com/auth/contacts"
 
 GOOGLE_OAUTH_SCOPES = [
     "openid",
-    "profile",
+    "https://www.googleapis.com/auth/userinfo.profile",
     GOOGLE_CONTACTS_SCOPE,
 ]

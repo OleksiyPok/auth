@@ -1,5 +1,7 @@
 # app/infrastructure/google/credentials.py
 
+from datetime import timezone
+
 from cryptography.fernet import Fernet
 from google.oauth2.credentials import Credentials
 
@@ -45,6 +47,11 @@ def credentials_to_dict(credentials: Credentials) -> dict:
     if not credentials.refresh_token:
         raise GoogleCredentialsError()
 
+    expiry = credentials.expiry
+
+    if expiry is not None and expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=timezone.utc)
+
     return {
         "access_token": encrypt_token(credentials.token),
         "refresh_token": encrypt_token(credentials.refresh_token),
@@ -52,7 +59,7 @@ def credentials_to_dict(credentials: Credentials) -> dict:
         "client_id": credentials.client_id,
         "client_secret": credentials.client_secret,
         "scopes": list(credentials.scopes or GOOGLE_OAUTH_SCOPES),
-        "expiry": credentials.expiry,
+        "expiry": expiry,
     }
 
 
