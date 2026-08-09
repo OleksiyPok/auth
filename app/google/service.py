@@ -6,7 +6,11 @@ from googleapiclient.errors import HttpError
 
 from app.google.models import GoogleAccount, GoogleOAuthState
 from app.google.repository_interface import GoogleRepositoryInterface
-from app.google.schemas import GoogleContactCreateSchema, GoogleContactResponseSchema
+from app.google.schemas import (
+    GoogleConnectionStatusSchema,
+    GoogleContactCreateSchema,
+    GoogleContactResponseSchema,
+)
 from app.google.service_interface import GoogleServiceInterface
 from app.infrastructure.google.client import create_google_people_client
 from app.infrastructure.google.credentials import (
@@ -116,6 +120,25 @@ class GoogleService(GoogleServiceInterface):
         existing_user_account.updated_at = datetime.now(timezone.utc)
 
         await self._repository.update_account(existing_user_account)
+
+    async def get_connection_status(
+        self,
+        user: User,
+    ) -> GoogleConnectionStatusSchema:
+        account = await self._repository.get_account_by_user_id(
+            user.id,
+        )
+
+        if account is None:
+            return GoogleConnectionStatusSchema(
+                connected=False,
+                google_user_id=None,
+            )
+
+        return GoogleConnectionStatusSchema(
+            connected=True,
+            google_user_id=account.google_user_id,
+        )
 
     async def get_contacts(
         self,

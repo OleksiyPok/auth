@@ -15,3 +15,8 @@ class GoogleContactResponseSchema(BaseModel):
     display_name: str | None = None
     email: str | None = None
     phone: str | None = None
+
+
+class GoogleConnectionStatusSchema(BaseModel):
+    connected: bool
+    google_user_id: str | None = None

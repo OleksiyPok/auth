@@ -2,7 +2,11 @@
 
 from abc import ABC, abstractmethod
 
-from app.google.schemas import GoogleContactCreateSchema, GoogleContactResponseSchema
+from app.google.schemas import (
+    GoogleConnectionStatusSchema,
+    GoogleContactCreateSchema,
+    GoogleContactResponseSchema,
+)
 from app.users.models import User
 
 
@@ -20,6 +24,12 @@ class GoogleServiceInterface(ABC):
         code: str,
         state: str,
     ) -> None: ...
+
+    @abstractmethod
+    async def get_connection_status(
+        self,
+        user: User,
+    ) -> GoogleConnectionStatusSchema: ...
 
     @abstractmethod
     async def get_contacts(

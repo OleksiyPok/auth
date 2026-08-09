@@ -6,7 +6,11 @@ from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
 from app.google.dependencies import get_google_service
-from app.google.schemas import GoogleContactCreateSchema, GoogleContactResponseSchema
+from app.google.schemas import (
+    GoogleConnectionStatusSchema,
+    GoogleContactCreateSchema,
+    GoogleContactResponseSchema,
+)
 from app.google.service_interface import GoogleServiceInterface
 from app.users.models import User
 
@@ -57,6 +61,25 @@ async def google_callback(
     return {
         "status": "connected",
     }
+
+
+@router.get(
+    "/status",
+    response_model=GoogleConnectionStatusSchema,
+)
+async def google_connection_status(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    return await service.get_connection_status(
+        current_user,
+    )
 
 
 @router.get(
