@@ -2,8 +2,12 @@
 
 from datetime import datetime, timedelta, timezone
 
-from googleapiclient.errors import HttpError
-
+from app.google.exceptions import (
+    GoogleAccountAlreadyConnectedError,
+    GoogleAccountNotFoundError,
+    GoogleAPIError,
+    GoogleOAuthStateError,
+)
 from app.google.models import GoogleAccount, GoogleOAuthState
 from app.google.repository_interface import GoogleRepositoryInterface
 from app.google.schemas import (
@@ -12,16 +16,18 @@ from app.google.schemas import (
     GoogleContactResponseSchema,
 )
 from app.google.service_interface import GoogleServiceInterface
-from app.infrastructure.google.client import create_google_people_client
+from app.infrastructure.google.client import (
+    create_google_people_client,
+    execute_google_request,
+)
 from app.infrastructure.google.credentials import (
     credentials_from_account,
     credentials_to_dict,
 )
 from app.infrastructure.google.exceptions import (
-    GoogleAccountAlreadyConnectedError,
-    GoogleAccountNotFoundError,
-    GoogleAPIError,
-    GoogleOAuthStateError,
+    GoogleAPIRequestError,
+    GoogleCredentialsError,
+    GoogleOAuthError,
 )
 from app.infrastructure.google.oauth import (
     exchange_google_code,
@@ -75,15 +81,21 @@ class GoogleService(GoogleServiceInterface):
         if oauth_state.expires_at <= datetime.now(timezone.utc):
             raise GoogleOAuthStateError()
 
-        credentials = exchange_google_code(
-            code=code,
-            state=state,
-            code_verifier=oauth_state.code_verifier,
-        )
+        try:
+            credentials = exchange_google_code(
+                code=code,
+                state=state,
+                code_verifier=oauth_state.code_verifier,
+            )
+        except GoogleOAuthError as exc:
+            raise GoogleAPIError() from exc
 
         await self._repository.mark_oauth_state_used(oauth_state)
 
-        google_user_id = get_google_user_id(credentials)
+        try:
+            google_user_id = get_google_user_id(credentials)
+        except GoogleOAuthError as exc:
+            raise GoogleAPIError() from exc
 
         existing_account = await self._repository.get_account_by_google_user_id(
             google_user_id,
@@ -95,7 +107,10 @@ class GoogleService(GoogleServiceInterface):
         ):
             raise GoogleAccountAlreadyConnectedError()
 
-        data = credentials_to_dict(credentials)
+        try:
+            data = credentials_to_dict(credentials)
+        except GoogleCredentialsError as exc:
+            raise GoogleAPIError() from exc
 
         existing_user_account = await self._repository.get_account_by_user_id(
             oauth_state.user_id,
@@ -151,11 +166,11 @@ class GoogleService(GoogleServiceInterface):
         if account is None:
             raise GoogleAccountNotFoundError()
 
-        credentials = credentials_from_account(account)
-        client = create_google_people_client(credentials)
-
         try:
-            response = (
+            credentials = credentials_from_account(account)
+            client = create_google_people_client(credentials)
+
+            response = execute_google_request(
                 client.people()
                 .connections()
                 .list(
@@ -163,13 +178,9 @@ class GoogleService(GoogleServiceInterface):
                     personFields="names,emailAddresses,phoneNumbers",
                     pageSize=100,
                 )
-                .execute()
             )
-
-        except HttpError as exc:
-            raise GoogleAPIError(
-                f"Google People API returned HTTP {exc.resp.status}"
-            ) from exc
+        except (GoogleCredentialsError, GoogleAPIRequestError) as exc:
+            raise GoogleAPIError() from exc
 
         contacts = []
 
@@ -214,8 +225,11 @@ class GoogleService(GoogleServiceInterface):
         if account is None:
             raise GoogleAccountNotFoundError()
 
-        credentials = credentials_from_account(account)
-        client = create_google_people_client(credentials)
+        try:
+            credentials = credentials_from_account(account)
+            client = create_google_people_client(credentials)
+        except (GoogleCredentialsError, GoogleAPIRequestError) as exc:
+            raise GoogleAPIError() from exc
 
         person = {
             "names": [
@@ -243,18 +257,13 @@ class GoogleService(GoogleServiceInterface):
             ]
 
         try:
-            response = (
-                client.people()
-                .createContact(
+            response = execute_google_request(
+                client.people().createContact(
                     body=person,
                 )
-                .execute()
             )
-
-        except HttpError as exc:
-            raise GoogleAPIError(
-                f"Google People API returned HTTP {exc.resp.status}"
-            ) from exc
+        except GoogleAPIRequestError as exc:
+            raise GoogleAPIError() from exc
 
         names = response.get("names", [])
         emails = response.get("emailAddresses", [])
