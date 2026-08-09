@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 
+from app.google.schemas import GoogleContactCreateSchema, GoogleContactResponseSchema
 from app.users.models import User
 
 
@@ -19,3 +20,16 @@ class GoogleServiceInterface(ABC):
         code: str,
         state: str,
     ) -> None: ...
+
+    @abstractmethod
+    async def get_contacts(
+        self,
+        user: User,
+    ) -> list[GoogleContactResponseSchema]: ...
+
+    @abstractmethod
+    async def create_contact(
+        self,
+        user: User,
+        data: GoogleContactCreateSchema,
+    ) -> GoogleContactResponseSchema: ...
