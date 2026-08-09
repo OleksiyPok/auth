@@ -14,6 +14,7 @@ from app.google.schemas import (
     GoogleConnectionStatusSchema,
     GoogleContactCreateSchema,
     GoogleContactResponseSchema,
+    GoogleContactUpdateSchema,
 )
 from app.google.service_interface import GoogleServiceInterface
 from app.infrastructure.google.client import (
@@ -213,6 +214,45 @@ class GoogleService(GoogleServiceInterface):
 
         return contacts
 
+    async def get_contact(
+        self,
+        user: User,
+        resource_name: str,
+    ) -> GoogleContactResponseSchema:
+        account = await self._repository.get_account_by_user_id(
+            user.id,
+        )
+
+        if account is None:
+            raise GoogleAccountNotFoundError()
+
+        try:
+            credentials = credentials_from_account(account)
+            client = create_google_people_client(credentials)
+
+            response = execute_google_request(
+                client.people().get(
+                    resourceName=resource_name,
+                    personFields="names,emailAddresses,phoneNumbers",
+                )
+            )
+        except (
+            GoogleCredentialsError,
+            GoogleAPIRequestError,
+        ) as exc:
+            raise GoogleAPIError() from exc
+
+        names = response.get("names", [])
+        emails = response.get("emailAddresses", [])
+        phones = response.get("phoneNumbers", [])
+
+        return GoogleContactResponseSchema(
+            resource_name=response["resourceName"],
+            display_name=(names[0].get("displayName") if names else None),
+            email=(emails[0].get("value") if emails else None),
+            phone=(phones[0].get("value") if phones else None),
+        )
+
     async def create_contact(
         self,
         user: User,
@@ -275,3 +315,121 @@ class GoogleService(GoogleServiceInterface):
             email=(emails[0].get("value") if emails else None),
             phone=(phones[0].get("value") if phones else None),
         )
+
+    async def update_contact(
+        self,
+        user: User,
+        resource_name: str,
+        data: GoogleContactUpdateSchema,
+    ) -> GoogleContactResponseSchema:
+        account = await self._repository.get_account_by_user_id(
+            user.id,
+        )
+
+        if account is None:
+            raise GoogleAccountNotFoundError()
+
+        try:
+            credentials = credentials_from_account(account)
+            client = create_google_people_client(credentials)
+        except GoogleCredentialsError as exc:
+            raise GoogleAPIError() from exc
+
+        person = {}
+
+        update_person_fields = []
+
+        if "given_name" in data.model_fields_set:
+            person["names"] = [
+                {
+                    "givenName": data.given_name,
+                }
+            ]
+
+            update_person_fields.append("names")
+
+        if "family_name" in data.model_fields_set:
+            person.setdefault("names", [{}])
+            person["names"][0]["familyName"] = data.family_name
+
+            if "names" not in update_person_fields:
+                update_person_fields.append("names")
+
+        if "email" in data.model_fields_set:
+            person["emailAddresses"] = []
+
+            if data.email is not None:
+                person["emailAddresses"].append(
+                    {
+                        "value": data.email,
+                    }
+                )
+
+            update_person_fields.append("emailAddresses")
+
+        if "phone" in data.model_fields_set:
+            person["phoneNumbers"] = []
+
+            if data.phone is not None:
+                person["phoneNumbers"].append(
+                    {
+                        "value": data.phone,
+                    }
+                )
+
+            update_person_fields.append("phoneNumbers")
+
+        if not update_person_fields:
+            return await self.get_contact(
+                user,
+                resource_name,
+            )
+
+        try:
+            response = execute_google_request(
+                client.people().updateContact(
+                    resourceName=resource_name,
+                    updatePersonFields=",".join(update_person_fields),
+                    body=person,
+                )
+            )
+        except GoogleAPIRequestError as exc:
+            raise GoogleAPIError() from exc
+
+        names = response.get("names", [])
+        emails = response.get("emailAddresses", [])
+        phones = response.get("phoneNumbers", [])
+
+        return GoogleContactResponseSchema(
+            resource_name=response["resourceName"],
+            display_name=(names[0].get("displayName") if names else None),
+            email=(emails[0].get("value") if emails else None),
+            phone=(phones[0].get("value") if phones else None),
+        )
+
+    async def delete_contact(
+        self,
+        user: User,
+        resource_name: str,
+    ) -> None:
+        account = await self._repository.get_account_by_user_id(
+            user.id,
+        )
+
+        if account is None:
+            raise GoogleAccountNotFoundError()
+
+        try:
+            credentials = credentials_from_account(account)
+            client = create_google_people_client(credentials)
+
+            execute_google_request(
+                client.people().deleteContact(
+                    resourceName=resource_name,
+                )
+            )
+        except (
+            GoogleCredentialsError,
+            GoogleAPIRequestError,
+        ) as exc:
+            raise GoogleAPIError() from exc

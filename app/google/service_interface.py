@@ -6,6 +6,7 @@ from app.google.schemas import (
     GoogleConnectionStatusSchema,
     GoogleContactCreateSchema,
     GoogleContactResponseSchema,
+    GoogleContactUpdateSchema,
 )
 from app.users.models import User
 
@@ -38,8 +39,30 @@ class GoogleServiceInterface(ABC):
     ) -> list[GoogleContactResponseSchema]: ...
 
     @abstractmethod
+    async def get_contact(
+        self,
+        user: User,
+        resource_name: str,
+    ) -> GoogleContactResponseSchema: ...
+
+    @abstractmethod
     async def create_contact(
         self,
         user: User,
         data: GoogleContactCreateSchema,
     ) -> GoogleContactResponseSchema: ...
+
+    @abstractmethod
+    async def update_contact(
+        self,
+        user: User,
+        resource_name: str,
+        data: GoogleContactUpdateSchema,
+    ) -> GoogleContactResponseSchema: ...
+
+    @abstractmethod
+    async def delete_contact(
+        self,
+        user: User,
+        resource_name: str,
+    ) -> None: ...

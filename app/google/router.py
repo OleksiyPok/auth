@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 
 from app.auth.dependencies import get_current_user
 from app.google.dependencies import get_google_service
@@ -10,6 +10,7 @@ from app.google.schemas import (
     GoogleConnectionStatusSchema,
     GoogleContactCreateSchema,
     GoogleContactResponseSchema,
+    GoogleContactUpdateSchema,
 )
 from app.google.service_interface import GoogleServiceInterface
 from app.users.models import User
@@ -101,6 +102,30 @@ async def get_google_contacts(
     )
 
 
+@router.get(
+    "/contacts/{resource_name:path}",
+    response_model=GoogleContactResponseSchema,
+)
+async def get_google_contact(
+    resource_name: Annotated[
+        str,
+        Path(pattern=r"^people/[^/]+$"),
+    ],
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    return await service.get_contact(
+        current_user,
+        resource_name,
+    )
+
+
 @router.post(
     "/contacts",
     response_model=GoogleContactResponseSchema,
@@ -120,4 +145,54 @@ async def create_google_contact(
     return await service.create_contact(
         current_user,
         data,
+    )
+
+
+@router.patch(
+    "/contacts/{resource_name:path}",
+    response_model=GoogleContactResponseSchema,
+)
+async def update_google_contact(
+    resource_name: Annotated[
+        str,
+        Path(pattern=r"^people/[^/]+$"),
+    ],
+    data: GoogleContactUpdateSchema,
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    return await service.update_contact(
+        current_user,
+        resource_name,
+        data,
+    )
+
+
+@router.delete(
+    "/contacts/{resource_name:path}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_google_contact(
+    resource_name: Annotated[
+        str,
+        Path(pattern=r"^people/[^/]+$"),
+    ],
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    await service.delete_contact(
+        current_user,
+        resource_name,
     )
