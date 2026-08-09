@@ -5,16 +5,15 @@ from datetime import datetime, timedelta, timezone
 from app.google.models import GoogleAccount, GoogleOAuthState
 from app.google.repository_interface import GoogleRepositoryInterface
 from app.google.service_interface import GoogleServiceInterface
-from app.infrastructure.google.oauth import get_google_user_id
 from app.infrastructure.google.credentials import credentials_to_dict
 from app.infrastructure.google.exceptions import (
     GoogleAccountAlreadyConnectedError,
     GoogleOAuthStateError,
 )
-
 from app.infrastructure.google.oauth import (
     exchange_google_code,
     get_google_authorization_url,
+    get_google_user_id,
 )
 from app.users.models import User
 
@@ -33,16 +32,14 @@ class GoogleService(GoogleServiceInterface):
         self,
         user: User,
     ) -> str:
-        authorization_url, state, code_verifier = (
-            get_google_authorization_url()
-        )
+        authorization_url, state, code_verifier = get_google_authorization_url()
 
         oauth_state = GoogleOAuthState(
             user_id=user.id,
             state=state,
             code_verifier=code_verifier,
             expires_at=datetime.now(timezone.utc)
-                       + timedelta(minutes=OAUTH_STATE_EXPIRE_MINUTES),
+            + timedelta(minutes=OAUTH_STATE_EXPIRE_MINUTES),
         )
 
         await self._repository.create_oauth_state(oauth_state)
@@ -72,7 +69,6 @@ class GoogleService(GoogleServiceInterface):
         )
 
         await self._repository.mark_oauth_state_used(oauth_state)
-
 
         google_user_id = get_google_user_id(credentials)
 

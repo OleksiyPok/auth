@@ -1,6 +1,7 @@
 # app/infrastructure/google/client.py
-from googleapiclient.discovery import build
+
 from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 from app.infrastructure.google.exceptions import GoogleAPIError
 

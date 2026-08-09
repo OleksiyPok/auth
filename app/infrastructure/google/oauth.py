@@ -1,12 +1,13 @@
 # app/infrastructure/google/oauth.py
 
+from google.auth.transport import requests
+from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 
 from app.core.config import settings
 from app.infrastructure.google.config import GOOGLE_OAUTH_SCOPES
 from app.infrastructure.google.exceptions import GoogleOAuthError
-from google.oauth2 import id_token
-from google.auth.transport import requests
+
 
 def create_google_oauth_flow(
     code_verifier: str | None = None,
@@ -77,12 +78,11 @@ def exchange_google_code(
             f"Failed to exchange Google authorization code: {exc}"
         ) from exc
 
+
 def get_google_user_id(credentials) -> str:
     try:
         if not credentials.id_token:
-            raise GoogleOAuthError(
-                "Google OAuth response does not contain id_token"
-            )
+            raise GoogleOAuthError("Google OAuth response does not contain id_token")
 
         token_info = id_token.verify_oauth2_token(
             credentials.id_token,
@@ -93,15 +93,11 @@ def get_google_user_id(credentials) -> str:
         google_user_id = token_info.get("sub")
 
         if not google_user_id:
-            raise GoogleOAuthError(
-                "Google ID token does not contain subject"
-            )
+            raise GoogleOAuthError("Google ID token does not contain subject")
 
         return google_user_id
 
     except GoogleOAuthError:
         raise
     except Exception as exc:
-        raise GoogleOAuthError(
-            f"Failed to verify Google ID token: {exc}"
-        ) from exc
+        raise GoogleOAuthError(f"Failed to verify Google ID token: {exc}") from exc
