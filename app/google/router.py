@@ -16,6 +16,49 @@ router = APIRouter(
 )
 
 
+@router.post(
+    "/connect",
+)
+async def google_authorize(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    authorization_url = await service.create_authorization_url(
+        current_user,
+    )
+
+    return {
+        "authorization_url": authorization_url,
+    }
+
+
+@router.get(
+    "/callback",
+)
+async def google_callback(
+    code: str,
+    state: str,
+    service: Annotated[
+        GoogleServiceInterface,
+        Depends(get_google_service),
+    ],
+):
+    await service.handle_callback(
+        code=code,
+        state=state,
+    )
+
+    return {
+        "status": "connected",
+    }
+
+
 @router.get(
     "/contacts",
     response_model=list[GoogleContactResponseSchema],
