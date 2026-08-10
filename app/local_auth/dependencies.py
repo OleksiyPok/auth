@@ -16,8 +16,6 @@ from app.local_auth.services.repository import LocalIdentityRepository
 from app.local_auth.services.repository_interface import (
     LocalIdentityRepositoryInterface,
 )
-from app.local_auth.services.service import LocalAuthService
-from app.local_auth.services.service_interface import LocalAuthServiceInterface
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.dependencies import get_user_repository
@@ -31,15 +29,6 @@ async def get_local_identity_repository(
     ],
 ) -> LocalIdentityRepositoryInterface:
     return LocalIdentityRepository(session)
-
-
-async def get_local_auth_service(
-    repository: Annotated[
-        LocalIdentityRepositoryInterface,
-        Depends(get_local_identity_repository),
-    ],
-) -> LocalAuthServiceInterface:
-    return LocalAuthService(repository)
 
 
 async def get_local_register_service(
@@ -59,9 +48,9 @@ async def get_local_register_service(
 
 
 async def get_local_login_service(
-    local_auth_service: Annotated[
-        LocalAuthServiceInterface,
-        Depends(get_local_auth_service),
+    local_identity_repository: Annotated[
+        LocalIdentityRepositoryInterface,
+        Depends(get_local_identity_repository),
     ],
     user_repository: Annotated[
         UserRepositoryInterface,
@@ -73,7 +62,7 @@ async def get_local_login_service(
     ],
 ) -> LocalLoginServiceInterface:
     return LocalLoginService(
-        local_auth_service,
+        local_identity_repository,
         user_repository,
         session_service,
     )

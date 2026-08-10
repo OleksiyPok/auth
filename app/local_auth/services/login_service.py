@@ -9,7 +9,9 @@ from app.infrastructure.password import verify_password
 from app.local_auth.exceptions import InvalidCredentialsError
 from app.local_auth.schemas import LoginRequestSchema
 from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
-from app.local_auth.services.service_interface import LocalAuthServiceInterface
+from app.local_auth.services.repository_interface import (
+    LocalIdentityRepositoryInterface,
+)
 from app.sessions.schemas import TokenResponseSchema
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.exceptions import UserNotFoundError
@@ -20,11 +22,11 @@ class LocalLoginService(LocalLoginServiceInterface):
 
     def __init__(
         self,
-        local_auth_service: LocalAuthServiceInterface,
+        local_identity_repository: LocalIdentityRepositoryInterface,
         user_repository: UserRepositoryInterface,
         session_service: SessionServiceInterface,
     ):
-        self._local_auth_service = local_auth_service
+        self._local_identity_repository = local_identity_repository
         self._user_repository = user_repository
         self._session_service = session_service
 
@@ -35,7 +37,7 @@ class LocalLoginService(LocalLoginServiceInterface):
         user_agent: str | None = None,
     ) -> TokenResponseSchema:
 
-        identity = await self._local_auth_service.get_by_login(
+        identity = await self._local_identity_repository.get_by_login(
             data.login,
         )
 
