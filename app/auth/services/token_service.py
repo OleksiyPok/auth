@@ -3,7 +3,6 @@
 from datetime import timedelta
 
 from app.auth.exceptions import InvalidAccessTokenError
-from app.auth.schemas import TokenResponseSchema
 from app.auth.services.token_service_interface import TokenServiceInterface
 from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
@@ -11,6 +10,7 @@ from app.infrastructure.jwt.security import (
     InvalidAccessTokenError as SecurityInvalidAccessTokenError,
 )
 from app.infrastructure.jwt.security import create_access_token, decode_access_token
+from app.sessions.schemas import TokenResponseSchema
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.exceptions import InactiveUserError, UserNotFoundError
 from app.users.models import User

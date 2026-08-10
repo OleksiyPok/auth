@@ -2,8 +2,8 @@
 
 from abc import ABC, abstractmethod
 
-from app.auth.schemas import TokenResponseSchema
 from app.local_auth.schemas import LoginRequestSchema
+from app.sessions.schemas import TokenResponseSchema
 
 
 class LocalLoginServiceInterface(ABC):

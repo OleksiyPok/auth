@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from app.auth.schemas import TokenResponseSchema
+from app.sessions.schemas import TokenResponseSchema
 from app.users.models import User
 
 

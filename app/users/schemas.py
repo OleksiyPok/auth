@@ -17,7 +17,6 @@ class UserRoleAssignRequestSchema(BaseModel):
 
 class UserResponseSchema(BaseModel):
     id: str
-    login: str
     email: str
     first_name: str
     last_name: str

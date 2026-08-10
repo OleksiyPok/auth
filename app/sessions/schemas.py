@@ -15,3 +15,13 @@ class SessionResponseSchema(BaseModel):
     expires_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class RefreshTokenRequestSchema(BaseModel):
+    refresh_token: str
+
+
+class TokenResponseSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"

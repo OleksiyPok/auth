@@ -9,12 +9,6 @@ class AuthError(AppError):
     """Base exception for auth feature."""
 
 
-class InvalidCredentialsError(AuthError):
-    status_code = status.HTTP_401_UNAUTHORIZED
-    code = "INVALID_CREDENTIALS"
-    message = "Invalid credentials"
-
-
 class InvalidAccessTokenError(AuthError):
     status_code = status.HTTP_401_UNAUTHORIZED
     code = "INVALID_TOKEN"
