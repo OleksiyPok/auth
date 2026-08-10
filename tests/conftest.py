@@ -11,6 +11,7 @@ from sqlmodel import SQLModel
 
 from app.db.session import get_session
 from app.infrastructure.password import hash_password
+from app.local_auth.models import LocalIdentity
 from app.main import app
 from app.users.models import User
 
@@ -70,8 +71,6 @@ async def create_user(
 ) -> User:
     async with test_session_factory() as session:
         user = User(
-            login=login,
-            password_hash=hash_password("password123"),
             email=email,
             first_name=role.capitalize(),
             last_name="User",
@@ -82,12 +81,21 @@ async def create_user(
         await session.commit()
         await session.refresh(user)
 
+        local_identity = LocalIdentity(
+            user_id=user.id,
+            login=login,
+            password_hash=hash_password("password123"),
+        )
+
+        session.add(local_identity)
+        await session.commit()
+
         return user
 
 
 @pytest.fixture
 def regular_user_token(client: TestClient) -> str:
-    user = asyncio.run(
+    asyncio.run(
         create_user(
             login="regular_fixture_user",
             email="regular_fixture@example.com",
@@ -98,18 +106,19 @@ def regular_user_token(client: TestClient) -> str:
     response = client.post(
         "/api/v1/auth/login",
         data={
-            "username": user.login,
+            "username": "regular_fixture_user",
             "password": "password123",
         },
     )
 
     assert response.status_code == 200
+
     return response.json()["access_token"]
 
 
 @pytest.fixture
 def admin_user_token(client: TestClient) -> str:
-    user = asyncio.run(
+    asyncio.run(
         create_user(
             login="admin_fixture_user",
             email="admin_fixture@example.com",
@@ -120,18 +129,19 @@ def admin_user_token(client: TestClient) -> str:
     response = client.post(
         "/api/v1/auth/login",
         data={
-            "username": user.login,
+            "username": "admin_fixture_user",
             "password": "password123",
         },
     )
 
     assert response.status_code == 200
+
     return response.json()["access_token"]
 
 
 @pytest.fixture
 def superadmin_user_token(client: TestClient) -> str:
-    user = asyncio.run(
+    asyncio.run(
         create_user(
             login="superadmin_fixture_user",
             email="superadmin_fixture@example.com",
@@ -142,10 +152,11 @@ def superadmin_user_token(client: TestClient) -> str:
     response = client.post(
         "/api/v1/auth/login",
         data={
-            "username": user.login,
+            "username": "superadmin_fixture_user",
             "password": "password123",
         },
     )
 
     assert response.status_code == 200
+
     return response.json()["access_token"]
