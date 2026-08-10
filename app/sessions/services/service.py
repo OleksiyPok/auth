@@ -1,4 +1,4 @@
-# app/sessions/service.py
+# app/sessions/services/service.py
 
 from datetime import datetime, timedelta, timezone
 
@@ -10,8 +10,8 @@ from app.sessions.exceptions import (
     SessionRevokedError,
 )
 from app.sessions.models import Session
-from app.sessions.repository_interface import SessionRepositoryInterface
-from app.sessions.service_interface import SessionServiceInterface
+from app.sessions.repository.repository_interface import SessionRepositoryInterface
+from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.models import User
 
 

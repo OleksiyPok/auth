@@ -1,4 +1,4 @@
-# app/local_auth/login_service_interface.py
+# app/local_auth/services/login_service_interface.py
 
 from abc import ABC, abstractmethod
 

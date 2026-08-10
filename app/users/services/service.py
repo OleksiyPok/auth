@@ -1,4 +1,4 @@
-# app/users/service.py
+# app/users/services/service.py
 
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import Role
@@ -8,9 +8,9 @@ from app.users.exceptions import (
     UserNotFoundError,
 )
 from app.users.models import User
-from app.users.repository_interface import UserRepositoryInterface
+from app.users.repository.repository_interface import UserRepositoryInterface
 from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
-from app.users.service_interface import UserServiceInterface
+from app.users.services.service_interface import UserServiceInterface
 
 
 class UserService(UserServiceInterface):

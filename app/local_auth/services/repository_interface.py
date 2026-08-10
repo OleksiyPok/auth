@@ -1,4 +1,4 @@
-# app/local_auth/repository_interface.py
+# app/local_auth/services/repository_interface.py
 
 from abc import ABC, abstractmethod
 

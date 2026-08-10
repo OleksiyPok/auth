@@ -1,4 +1,4 @@
-# app/local_auth/register_service_interface.py
+# app/local_auth/services/register_service_interface.py
 
 from abc import ABC, abstractmethod
 

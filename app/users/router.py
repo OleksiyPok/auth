@@ -14,7 +14,7 @@ from app.auth.rbac.dependencies import (
     require_users_read,
 )
 from app.local_auth.dependencies import get_local_auth_service
-from app.local_auth.service_interface import LocalAuthServiceInterface
+from app.local_auth.services.service_interface import LocalAuthServiceInterface
 from app.users.dependencies import get_user_service
 from app.users.models import User
 from app.users.schemas import (
@@ -23,7 +23,7 @@ from app.users.schemas import (
     UserRoleAssignRequestSchema,
     UserUpdateRequestSchema,
 )
-from app.users.service_interface import UserServiceInterface
+from app.users.services.service_interface import UserServiceInterface
 
 router = APIRouter(
     prefix="/users",

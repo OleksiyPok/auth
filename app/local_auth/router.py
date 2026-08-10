@@ -10,12 +10,14 @@ from app.local_auth.dependencies import (
     get_local_login_service,
     get_local_register_service,
 )
-from app.local_auth.login_service_interface import LocalLoginServiceInterface
-from app.local_auth.register_service_interface import LocalRegisterServiceInterface
 from app.local_auth.schemas import (
     LoginRequestSchema,
     RegisterRequestSchema,
     RegisterResponseSchema,
+)
+from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
+from app.local_auth.services.register_service_interface import (
+    LocalRegisterServiceInterface,
 )
 
 router = APIRouter(

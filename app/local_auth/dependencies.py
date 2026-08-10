@@ -6,18 +6,22 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
-from app.local_auth.login_service import LocalLoginService
-from app.local_auth.login_service_interface import LocalLoginServiceInterface
-from app.local_auth.register_service import LocalRegisterService
-from app.local_auth.register_service_interface import LocalRegisterServiceInterface
-from app.local_auth.repository import LocalIdentityRepository
-from app.local_auth.repository_interface import LocalIdentityRepositoryInterface
-from app.local_auth.service import LocalAuthService
-from app.local_auth.service_interface import LocalAuthServiceInterface
+from app.local_auth.services.login_service import LocalLoginService
+from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
+from app.local_auth.services.register_service import LocalRegisterService
+from app.local_auth.services.register_service_interface import (
+    LocalRegisterServiceInterface,
+)
+from app.local_auth.services.repository import LocalIdentityRepository
+from app.local_auth.services.repository_interface import (
+    LocalIdentityRepositoryInterface,
+)
+from app.local_auth.services.service import LocalAuthService
+from app.local_auth.services.service_interface import LocalAuthServiceInterface
 from app.sessions.dependencies import get_sessions_service
-from app.sessions.service_interface import SessionServiceInterface
+from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.dependencies import get_user_repository
-from app.users.repository_interface import UserRepositoryInterface
+from app.users.repository.repository_interface import UserRepositoryInterface
 
 
 async def get_local_identity_repository(

@@ -1,8 +1,10 @@
-# app/local_auth/service.py
+# app/local_auth/services/service.py
 
 from app.local_auth.models import LocalIdentity
-from app.local_auth.repository_interface import LocalIdentityRepositoryInterface
-from app.local_auth.service_interface import LocalAuthServiceInterface
+from app.local_auth.services.repository_interface import (
+    LocalIdentityRepositoryInterface,
+)
+from app.local_auth.services.service_interface import LocalAuthServiceInterface
 
 
 class LocalAuthService(LocalAuthServiceInterface):

@@ -1,4 +1,4 @@
-# app/users/service_interface.py
+# app/users/services/service_interface.py
 
 from abc import ABC, abstractmethod
 

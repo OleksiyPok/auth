@@ -1,4 +1,4 @@
-# app/sessions/service_interface.py
+# app/sessions/services/service_interface.py
 
 from abc import ABC, abstractmethod
 from datetime import timedelta

@@ -1,10 +1,12 @@
-# app/local_auth/repository.py
+# app/local_auth/services/repository.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.local_auth.models import LocalIdentity
-from app.local_auth.repository_interface import LocalIdentityRepositoryInterface
+from app.local_auth.services.repository_interface import (
+    LocalIdentityRepositoryInterface,
+)
 
 
 class LocalIdentityRepository(LocalIdentityRepositoryInterface):

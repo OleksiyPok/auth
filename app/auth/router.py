@@ -8,7 +8,7 @@ from app.auth.dependencies import get_token_service
 from app.auth.schemas import RefreshTokenRequestSchema, TokenResponseSchema
 from app.auth.services.token_service_interface import TokenServiceInterface
 from app.sessions.dependencies import get_sessions_service
-from app.sessions.service_interface import SessionServiceInterface
+from app.sessions.services.service_interface import SessionServiceInterface
 
 router = APIRouter(
     prefix="/auth",

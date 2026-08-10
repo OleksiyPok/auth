@@ -12,7 +12,7 @@ from app.auth.rbac.dependencies import (
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.exceptions import SessionAccessDeniedError, SessionNotFoundError
 from app.sessions.schemas import SessionResponseSchema
-from app.sessions.service_interface import SessionServiceInterface
+from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.models import User
 
 router = APIRouter(

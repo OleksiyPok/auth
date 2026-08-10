@@ -1,4 +1,4 @@
-# app/users/repository_interface.py
+# app/users/repository/repository_interface.py
 
 from abc import ABC, abstractmethod
 

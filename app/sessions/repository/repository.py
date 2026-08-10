@@ -1,4 +1,4 @@
-# app/sessions/repository.py
+# app/sessions/repository/repository.py
 
 from datetime import datetime, timezone
 from typing import cast
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
 from app.sessions.models import Session
-from app.sessions.repository_interface import SessionRepositoryInterface
+from app.sessions.repository.repository_interface import SessionRepositoryInterface
 
 
 class SessionRepository(SessionRepositoryInterface):
