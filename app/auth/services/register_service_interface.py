@@ -2,8 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from app.auth.schemas import RegisterRequestSchema
-from app.users.models import User
+from app.auth.schemas import RegisterRequestSchema, RegisterResponseSchema
 
 
 class RegisterServiceInterface(ABC):
@@ -12,4 +11,4 @@ class RegisterServiceInterface(ABC):
     async def register(
         self,
         data: RegisterRequestSchema,
-    ) -> User: ...
+    ) -> RegisterResponseSchema: ...

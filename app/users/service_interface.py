@@ -9,23 +9,36 @@ from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSche
 class UserServiceInterface(ABC):
 
     @abstractmethod
-    async def get_by_id(self, user_id: str) -> User: ...
-
-    @abstractmethod
-    async def get_by_login(self, login: str) -> User: ...
+    async def get_user(
+        self,
+        user_id: str,
+    ) -> User: ...
 
     @abstractmethod
     async def get_all(self) -> list[User]: ...
 
     @abstractmethod
-    async def update_self(self, user: User, data: UserUpdateRequestSchema) -> User: ...
+    async def get_by_id(
+        self,
+        user_id: str,
+    ) -> User: ...
+
+    @abstractmethod
+    async def update_self(
+        self,
+        user: User,
+        data: UserUpdateRequestSchema,
+    ) -> User: ...
 
     @abstractmethod
     async def delete(self, user_id: str) -> User: ...
 
     @abstractmethod
     async def change_role(
-        self, user_id: str, role_data: UserRoleAssignRequestSchema, current_user_id: str
+        self,
+        user_id: str,
+        role_data: UserRoleAssignRequestSchema,
+        current_user_id: str,
     ) -> User: ...
 
     @abstractmethod

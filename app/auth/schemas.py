@@ -1,6 +1,6 @@
 # app/auth/schemas.py
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class RegisterRequestSchema(BaseModel):
@@ -18,8 +18,6 @@ class RegisterResponseSchema(BaseModel):
     first_name: str
     last_name: str
     role: str
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class LoginRequestSchema(BaseModel):

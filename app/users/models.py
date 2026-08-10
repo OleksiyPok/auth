@@ -15,9 +15,9 @@ from app.db.types import UTCDateTime
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
+
     id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
-    login: str
-    password_hash: str
+
     email: str
     first_name: str
     last_name: str
@@ -43,7 +43,6 @@ class User(SQLModel, table=True):
     )
 
     def __init__(self, **data):
-        # Validate role on creation
         if "role" in data:
             data["role"] = validate_role(data["role"])
         super().__init__(**data)

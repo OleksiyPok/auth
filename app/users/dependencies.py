@@ -20,8 +20,3 @@ async def get_user_service(
     repository: UserRepositoryInterface = Depends(get_user_repository),
 ) -> UserServiceInterface:
     return UserService(repository)
-
-
-# async def get_current_user(
-#
-#     return user

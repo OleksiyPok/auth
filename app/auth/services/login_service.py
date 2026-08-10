@@ -9,18 +9,21 @@ from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import create_access_token
 from app.infrastructure.password import verify_password
+from app.local_auth.service_interface import LocalAuthServiceInterface
 from app.sessions.service_interface import SessionServiceInterface
-from app.users.exceptions import InactiveUserError
+from app.users.exceptions import UserNotFoundError
 from app.users.repository_interface import UserRepositoryInterface
 
 
 class LoginService(LoginServiceInterface):
     def __init__(
         self,
-        repository: UserRepositoryInterface,
+        local_auth_service: LocalAuthServiceInterface,
+        user_repository: UserRepositoryInterface,
         session_service: SessionServiceInterface,
     ):
-        self._repository = repository
+        self._local_auth_service = local_auth_service
+        self._user_repository = user_repository
         self._session_service = session_service
 
     async def login(
@@ -30,19 +33,23 @@ class LoginService(LoginServiceInterface):
         user_agent: str | None = None,
     ) -> TokenResponseSchema:
 
-        user = await self._repository.get_by_login(data.login)
+        identity = await self._local_auth_service.get_by_login(data.login)
 
-        if not user:
+        if not identity:
             raise InvalidCredentialsError()
 
         if not verify_password(
             data.password,
-            user.password_hash,
+            identity.password_hash,
         ):
             raise InvalidCredentialsError()
 
-        if not user.is_active:
-            raise InactiveUserError()
+        user = await self._user_repository.get_by_id(
+            identity.user_id,
+        )
+
+        if not user:
+            raise UserNotFoundError()
 
         refresh_token = generate_refresh_token()
 

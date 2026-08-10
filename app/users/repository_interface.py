@@ -11,9 +11,6 @@ class UserRepositoryInterface(ABC):
     async def get_by_id(self, user_id: str) -> User | None: ...
 
     @abstractmethod
-    async def get_by_login(self, login: str) -> User | None: ...
-
-    @abstractmethod
     async def get_all(self) -> list[User]: ...
 
     @abstractmethod
@@ -30,3 +27,6 @@ class UserRepositoryInterface(ABC):
 
     @abstractmethod
     async def count_active_superadmins(self) -> int | None: ...
+
+    @abstractmethod
+    async def commit(self) -> None: ...

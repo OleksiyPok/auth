@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class UserUpdateRequestSchema(BaseModel):
@@ -22,8 +22,6 @@ class UserResponseSchema(BaseModel):
     first_name: str
     last_name: str
     role: str
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class UserDetailedResponseSchema(UserResponseSchema):

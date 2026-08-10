@@ -12,7 +12,6 @@ from sqlmodel import SQLModel
 from app.db.session import get_session
 from app.infrastructure.password import hash_password
 from app.main import app
-from app.sessions.models import Session as SessionModel
 from app.users.models import User
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
