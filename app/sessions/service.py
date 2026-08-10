@@ -168,3 +168,14 @@ class SessionService(SessionServiceInterface):
             raise SessionExpiredError()
 
         return session
+
+    async def logout(
+        self,
+        refresh_token: str,
+    ) -> None:
+        session = await self.get_by_refresh_token(
+            refresh_token,
+        )
+
+        if session:
+            await self.revoke(session)

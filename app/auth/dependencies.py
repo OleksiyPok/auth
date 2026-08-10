@@ -5,18 +5,8 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.auth.services.login_service import LoginService
-from app.auth.services.login_service_interface import LoginServiceInterface
-from app.auth.services.register_service import RegisterService
-from app.auth.services.register_service_interface import RegisterServiceInterface
 from app.auth.services.token_service import TokenService
 from app.auth.services.token_service_interface import TokenServiceInterface
-from app.local_auth.dependencies import (
-    get_local_auth_service,
-    get_local_identity_repository,
-)
-from app.local_auth.repository_interface import LocalIdentityRepositoryInterface
-from app.local_auth.service_interface import LocalAuthServiceInterface
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.service_interface import SessionServiceInterface
 from app.users.dependencies import get_user_repository
@@ -24,43 +14,6 @@ from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
-
-
-def get_register_service(
-    user_repository: Annotated[
-        UserRepositoryInterface,
-        Depends(get_user_repository),
-    ],
-    local_identity_repository: Annotated[
-        LocalIdentityRepositoryInterface,
-        Depends(get_local_identity_repository),
-    ],
-) -> RegisterServiceInterface:
-    return RegisterService(
-        user_repository,
-        local_identity_repository,
-    )
-
-
-def get_login_service(
-    local_auth_service: Annotated[
-        LocalAuthServiceInterface,
-        Depends(get_local_auth_service),
-    ],
-    user_repository: Annotated[
-        UserRepositoryInterface,
-        Depends(get_user_repository),
-    ],
-    session_service: Annotated[
-        SessionServiceInterface,
-        Depends(get_sessions_service),
-    ],
-) -> LoginServiceInterface:
-    return LoginService(
-        local_auth_service,
-        user_repository,
-        session_service,
-    )
 
 
 def get_token_service(

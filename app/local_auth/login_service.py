@@ -1,21 +1,23 @@
-# app/auth/services/login_service.py
+# app/local_auth/login_service.py
 
 from datetime import timedelta
 
 from app.auth.exceptions import InvalidCredentialsError
-from app.auth.schemas import LoginRequestSchema, TokenResponseSchema
-from app.auth.services.login_service_interface import LoginServiceInterface
+from app.auth.schemas import TokenResponseSchema
 from app.core.config import settings
 from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import create_access_token
 from app.infrastructure.password import verify_password
+from app.local_auth.login_service_interface import LocalLoginServiceInterface
+from app.local_auth.schemas import LoginRequestSchema
 from app.local_auth.service_interface import LocalAuthServiceInterface
 from app.sessions.service_interface import SessionServiceInterface
 from app.users.exceptions import UserNotFoundError
 from app.users.repository_interface import UserRepositoryInterface
 
 
-class LoginService(LoginServiceInterface):
+class LocalLoginService(LocalLoginServiceInterface):
+
     def __init__(
         self,
         local_auth_service: LocalAuthServiceInterface,
@@ -33,7 +35,9 @@ class LoginService(LoginServiceInterface):
         user_agent: str | None = None,
     ) -> TokenResponseSchema:
 
-        identity = await self._local_auth_service.get_by_login(data.login)
+        identity = await self._local_auth_service.get_by_login(
+            data.login,
+        )
 
         if not identity:
             raise InvalidCredentialsError()
@@ -56,6 +60,7 @@ class LoginService(LoginServiceInterface):
         session = await self._session_service.create_session(
             user_id=user.id,
             refresh_token=refresh_token,
+            provider="local",
             expires_delta=timedelta(
                 days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
             ),
@@ -75,15 +80,3 @@ class LoginService(LoginServiceInterface):
             refresh_token=refresh_token,
             token_type="bearer",
         )
-
-    async def logout(
-        self,
-        refresh_token: str,
-    ) -> None:
-
-        session = await self._session_service.get_by_refresh_token(
-            refresh_token,
-        )
-
-        if session:
-            await self._session_service.revoke(session)

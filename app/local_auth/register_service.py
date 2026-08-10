@@ -1,16 +1,16 @@
-# app/auth/services/register_service.py
+# app/local_auth/register_service.py
 
-from app.auth.schemas import RegisterRequestSchema, RegisterResponseSchema
-from app.auth.services.register_service_interface import RegisterServiceInterface
 from app.infrastructure.password import hash_password
 from app.local_auth.models import LocalIdentity
+from app.local_auth.register_service_interface import LocalRegisterServiceInterface
 from app.local_auth.repository_interface import LocalIdentityRepositoryInterface
+from app.local_auth.schemas import RegisterRequestSchema, RegisterResponseSchema
 from app.users.exceptions import UserAlreadyExistsError
 from app.users.models import User
 from app.users.repository_interface import UserRepositoryInterface
 
 
-class RegisterService(RegisterServiceInterface):
+class LocalRegisterService(LocalRegisterServiceInterface):
 
     def __init__(
         self,
@@ -24,6 +24,7 @@ class RegisterService(RegisterServiceInterface):
         self,
         data: RegisterRequestSchema,
     ) -> RegisterResponseSchema:
+
         if await self._local_identity_repository.get_by_login(data.login):
             raise UserAlreadyExistsError()
 

@@ -76,3 +76,9 @@ class SessionServiceInterface(ABC):
         self,
         session_id: str,
     ) -> Session: ...
+
+    @abstractmethod
+    async def logout(
+        self,
+        refresh_token: str,
+    ) -> None: ...
