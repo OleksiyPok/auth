@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
 from app.db.session import session_factory
-from app.google.models import GoogleAccount, GoogleOAuthState
+from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.router import router
 
 

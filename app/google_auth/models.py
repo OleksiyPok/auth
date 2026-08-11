@@ -1,4 +1,4 @@
-# app/google/models.py
+# app/google_auth/models.py
 
 from datetime import datetime, timezone
 
@@ -8,8 +8,8 @@ from uuid_extensions import uuid7
 from app.db.types import UTCDateTime
 
 
-class GoogleAccount(SQLModel, table=True):
-    __tablename__ = "google_accounts"
+class GoogleIdentity(SQLModel, table=True):
+    __tablename__ = "google_identities"
 
     id: str = Field(
         default_factory=lambda: str(uuid7()),
@@ -25,19 +25,6 @@ class GoogleAccount(SQLModel, table=True):
     google_user_id: str = Field(
         index=True,
         unique=True,
-    )
-
-    access_token: str = Field(
-        nullable=False,
-    )
-
-    refresh_token: str = Field(
-        nullable=False,
-    )
-
-    token_expires_at: datetime = Field(
-        nullable=False,
-        sa_type=UTCDateTime,
     )
 
     created_at: datetime = Field(
@@ -61,7 +48,8 @@ class GoogleOAuthState(SQLModel, table=True):
         primary_key=True,
     )
 
-    user_id: str = Field(
+    user_id: str | None = Field(
+        default=None,
         index=True,
         foreign_key="users.id",
     )

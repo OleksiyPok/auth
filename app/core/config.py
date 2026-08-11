@@ -8,8 +8,12 @@ from app.core import static_config
 class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
     )
+
     DEBUG: bool = False
 
     APP_NAME: str = static_config.APP_NAME
@@ -30,7 +34,6 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str
-    GOOGLE_TOKEN_ENCRYPTION_KEY: str
 
     SUPERADMIN_LOGIN: str
     SUPERADMIN_PASSWORD: str

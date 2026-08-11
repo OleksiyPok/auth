@@ -1,11 +1,11 @@
-# app/google/repository_interface.py
+# app/google_auth/repository_interface.py
 
 from abc import ABC, abstractmethod
 
-from app.google.models import GoogleAccount, GoogleOAuthState
+from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 
 
-class GoogleRepositoryInterface(ABC):
+class GoogleAuthRepositoryInterface(ABC):
 
     @abstractmethod
     async def create_oauth_state(
@@ -26,25 +26,25 @@ class GoogleRepositoryInterface(ABC):
     ) -> GoogleOAuthState: ...
 
     @abstractmethod
-    async def get_account_by_user_id(
+    async def get_identity_by_user_id(
         self,
         user_id: str,
-    ) -> GoogleAccount | None: ...
+    ) -> GoogleIdentity | None: ...
 
     @abstractmethod
-    async def get_account_by_google_user_id(
+    async def get_identity_by_google_user_id(
         self,
         google_user_id: str,
-    ) -> GoogleAccount | None: ...
+    ) -> GoogleIdentity | None: ...
 
     @abstractmethod
-    async def create_account(
+    async def create_identity(
         self,
-        account: GoogleAccount,
-    ) -> GoogleAccount: ...
+        identity: GoogleIdentity,
+    ) -> GoogleIdentity: ...
 
     @abstractmethod
-    async def update_account(
+    async def update_identity(
         self,
-        account: GoogleAccount,
-    ) -> GoogleAccount: ...
+        identity: GoogleIdentity,
+    ) -> GoogleIdentity: ...

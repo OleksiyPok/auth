@@ -63,10 +63,10 @@ def credentials_to_dict(credentials: Credentials) -> dict:
     }
 
 
-def credentials_from_account(account) -> Credentials:
+def credentials_from_identity(identity) -> Credentials:
     return Credentials(
-        token=decrypt_token(account.access_token),
-        refresh_token=decrypt_token(account.refresh_token),
+        token=decrypt_token(identity.access_token),
+        refresh_token=decrypt_token(identity.refresh_token),
         token_uri="https://oauth2.googleapis.com/token",
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,

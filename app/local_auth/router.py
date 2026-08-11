@@ -22,7 +22,7 @@ from app.sessions.schemas import TokenResponseSchema
 
 router = APIRouter(
     prefix="/auth",
-    tags=["Local Auth"],
+    tags=["Local Authentication"],
 )
 
 

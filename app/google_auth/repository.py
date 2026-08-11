@@ -1,13 +1,13 @@
-# app/google/repository.py
+# app/google_auth/repository.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.google.models import GoogleAccount, GoogleOAuthState
-from app.google.repository_interface import GoogleRepositoryInterface
+from app.google_auth.models import GoogleIdentity, GoogleOAuthState
+from app.google_auth.repository_interface import GoogleAuthRepositoryInterface
 
 
-class GoogleRepository(GoogleRepositoryInterface):
+class GoogleAuthRepository(GoogleAuthRepositoryInterface):
 
     def __init__(self, session: AsyncSession):
         self._session = session
@@ -19,6 +19,7 @@ class GoogleRepository(GoogleRepositoryInterface):
         self._session.add(oauth_state)
         await self._session.commit()
         await self._session.refresh(oauth_state)
+
         return oauth_state
 
     async def get_oauth_state(
@@ -30,6 +31,7 @@ class GoogleRepository(GoogleRepositoryInterface):
                 GoogleOAuthState.state == state,
             )
         )
+
         return result.scalar_one_or_none()
 
     async def mark_oauth_state_used(
@@ -43,46 +45,48 @@ class GoogleRepository(GoogleRepositoryInterface):
 
         return oauth_state
 
-    async def get_account_by_user_id(
+    async def get_identity_by_user_id(
         self,
         user_id: str,
-    ) -> GoogleAccount | None:
+    ) -> GoogleIdentity | None:
         result = await self._session.execute(
-            select(GoogleAccount).where(
-                GoogleAccount.user_id == user_id,
+            select(GoogleIdentity).where(
+                GoogleIdentity.user_id == user_id,
             )
         )
+
         return result.scalar_one_or_none()
 
-    async def get_account_by_google_user_id(
+    async def get_identity_by_google_user_id(
         self,
         google_user_id: str,
-    ) -> GoogleAccount | None:
+    ) -> GoogleIdentity | None:
         result = await self._session.execute(
-            select(GoogleAccount).where(
-                GoogleAccount.google_user_id == google_user_id,
+            select(GoogleIdentity).where(
+                GoogleIdentity.google_user_id == google_user_id,
             )
         )
+
         return result.scalar_one_or_none()
 
-    async def create_account(
+    async def create_identity(
         self,
-        account: GoogleAccount,
-    ) -> GoogleAccount:
-        self._session.add(account)
+        identity: GoogleIdentity,
+    ) -> GoogleIdentity:
+        self._session.add(identity)
 
         await self._session.commit()
-        await self._session.refresh(account)
+        await self._session.refresh(identity)
 
-        return account
+        return identity
 
-    async def update_account(
+    async def update_identity(
         self,
-        account: GoogleAccount,
-    ) -> GoogleAccount:
-        self._session.add(account)
+        identity: GoogleIdentity,
+    ) -> GoogleIdentity:
+        self._session.add(identity)
 
         await self._session.commit()
-        await self._session.refresh(account)
+        await self._session.refresh(identity)
 
-        return account
+        return identity
