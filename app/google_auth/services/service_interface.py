@@ -1,4 +1,4 @@
-# app/google_auth/service_interface.py
+# app/google_auth/services/service_interface.py
 
 from abc import ABC, abstractmethod
 

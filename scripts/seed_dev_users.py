@@ -14,7 +14,6 @@ from app.infrastructure.password import hash_password
 from app.local_auth.models import LocalIdentity
 from app.users.models import User
 
-
 DEV_USERS = [
     {
         "login": "Superadmin",
@@ -66,9 +65,7 @@ async def seed_dev_users() -> None:
         for data in DEV_USERS:
             # Login belongs to LocalIdentity, not User.
             identity_result = await session.execute(
-                select(LocalIdentity).where(
-                    LocalIdentity.login == data["login"]
-                )
+                select(LocalIdentity).where(LocalIdentity.login == data["login"])
             )
             identity = identity_result.scalar_one_or_none()
 

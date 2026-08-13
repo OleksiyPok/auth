@@ -1,4 +1,4 @@
-# app/sessions/services/services.py
+# app/sessions/services/service.py
 
 from datetime import datetime, timedelta, timezone
 

@@ -1,10 +1,12 @@
-# app/google_auth/repository.py
+# app/google_auth/repository/repository.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
-from app.google_auth.repository.repository_interface import GoogleAuthRepositoryInterface
+from app.google_auth.repository.repository_interface import (
+    GoogleAuthRepositoryInterface,
+)
 
 
 class GoogleAuthRepository(GoogleAuthRepositoryInterface):
