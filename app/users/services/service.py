@@ -1,4 +1,4 @@
-# app/users/services/service.py
+# app/users/services/services.py
 
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import Role

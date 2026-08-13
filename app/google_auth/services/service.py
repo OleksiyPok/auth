@@ -1,4 +1,4 @@
-# app/google_auth/service.py
+# app/google_auth/services.py
 
 from datetime import datetime, timedelta, timezone
 
@@ -6,7 +6,7 @@ from app.auth.services.auth_session_service_interface import AuthSessionServiceI
 from app.google_auth.exceptions import GoogleOAuthStateError
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository.repository_interface import GoogleAuthRepositoryInterface
-from app.google_auth.service.service_interface import GoogleAuthServiceInterface
+from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.infrastructure.google.oauth import (
     exchange_google_code,
     get_google_authorization_url,

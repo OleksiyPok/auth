@@ -10,8 +10,8 @@ from app.auth.services.auth_session_service_interface import AuthSessionServiceI
 from app.db.session import get_session
 from app.google_auth.repository.repository import GoogleAuthRepository
 from app.google_auth.repository.repository_interface import GoogleAuthRepositoryInterface
-from app.google_auth.service.service import GoogleAuthService
-from app.google_auth.service.service_interface import GoogleAuthServiceInterface
+from app.google_auth.services.service import GoogleAuthService
+from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.users.dependencies import get_user_repository
 from app.users.repository.repository_interface import UserRepositoryInterface
 
