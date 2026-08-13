@@ -1,56 +1,48 @@
-# Project project description has been added Contract
+# Project Architecture Contract
 
 ## 1. General Principles
 
 ### User
 
-`User` represents a person using the system.
+`User` is a stable internal entity in the backend identified by a unique system ID.
 
-`User` is independent of any particular authentication method and does not contain provider-specific authentication data.
+`User` is independent of any particular authentication method.
+
+`User` does not contain provider-specific authentication data.
+
+`User` itself does not represent an authentication method. Authentication data belongs to `Identity`.
+
+A `User` may exist with only one `Identity` or with multiple identities.
+
+The `User` ID is the stable internal reference used by the rest of the application.
+
+The architecture does not require `User` to represent a unique real-world person independently of the application's identity-management rules.
 
 ### Identity
 
-`Identity` represents a specific authentication method belonging to a `User`.
+`Identity` represents a specific authentication identity belonging to a `User`.
 
-Authentication methods are extensible and are not limited to any fixed list. Examples may include local credentials, Google, phone, GitHub, Microsoft, or other providers added in the future.
+Authentication methods are extensible and are not limited to any fixed list. Examples may include:
+
+- local username/password;
+- Google;
+- phone;
+- GitHub;
+- Microsoft;
+- Apple;
+- other authentication providers added in the future.
 
 One `User` may have multiple identities.
 
-A `User` may have **at most one `Identity` of each authentication provider/type**.
-
-Therefore, a `User` may have multiple identities of different types:
-
-```text
-User
-├── LocalIdentity
-├── GoogleIdentity
-├── GitHubIdentity
-└── ...
-```
-
-but cannot have multiple identities of the same type:
-
-```text
-User
-├── LocalIdentity
-└── LocalIdentity
-```
-
-The second structure is invalid.
+A `User` may have at most one `Identity` of each authentication provider/type.
 
 Each `Identity` belongs to exactly one `User`.
 
-The number and types of identities belonging to a `User` are not fixed. A `User` may have only one identity, or may have multiple identities of different authentication types.
-
-An identity does not have to exist for every supported authentication provider.
-
-An `Authentication` provider works only with its own identity type.
-
-Authentication providers must preserve the invariant that a `User` has at most one identity of the corresponding provider/type.
+Provider-specific authentication data belongs to the corresponding `Identity`, not to `User`.
 
 ### Authentication
 
-`Authentication` is the mechanism that verifies an `Identity` and provides access to the corresponding `User`.
+`Authentication` verifies an `Identity` and provides access to the corresponding `User`.
 
 The general flow is:
 
@@ -64,24 +56,101 @@ User
 Session
 ```
 
-Different authentication providers are independent:
+Different authentication providers are independent.
 
-```text
-Local Authentication ──→ LocalIdentity ──→ User
-Google Authentication ─→ GoogleIdentity ─→ User
-```
+Authentication must not automatically merge identities based on email, username, name, phone number, provider data, or other matching attributes.
 
-Authentication must not automatically merge identities based on email address, name, phone number, or any other matching attributes.
+Authentication verifies an identity. It does not decide whether two existing identities belong to the same User.
 
-### Identity Merge and Identity Separation
+---
+
+## 2. Identity Management
 
 Identity management is a separate account-management mechanism responsible for explicit operations on `Identity` and `User`.
 
-#### Identity Merge
+Its initial scope includes:
 
-`Identity Merge` combines identities that currently belong to different users under a single `User`.
+- `Identity Merge`;
+- `Identity Separation`.
 
-Before merge:
+Both operations must be explicitly initiated and verified.
+
+Authentication remains responsible for verifying identities and creating authenticated sessions.
+
+Identity management is responsible for changing the relationship between identities and users.
+
+### Identity Merge
+
+`Identity Merge` moves an explicitly selected identity from one `User` to another existing `User`.
+
+The merge operation is performed in the context of an authenticated `User`.
+
+**The currently authenticated User is always the resulting User.**
+
+The other User, which owns the identity being merged, is the source User and is not preserved as an active User after a successful merge.
+
+Example:
+
+```text
+Authenticated User A
+└── LocalIdentity
+
+User B
+└── GoogleIdentity
+
+        ↓ merge
+
+User A
+├── LocalIdentity
+└── GoogleIdentity
+```
+
+User B is no longer an active User.
+
+The Google identity previously belonging to User B now belongs to User A.
+
+The `User A` ID remains unchanged.
+
+The `User B` record may be deactivated or retained according to the application's data-retention policy, but it is no longer an active User.
+
+#### Merge Invariant
+
+The resulting User must have at most one Identity of each authentication provider/type.
+
+If both Users have identities of the same authentication provider/type, this is an identity conflict and must be handled explicitly.
+
+Authentication must not resolve such conflicts automatically.
+
+#### Related Application Data
+
+`User` itself does not contain provider-specific authentication data.
+
+Other application entities may reference `User.id`.
+
+Identity Merge may therefore require additional handling of application data associated with the source User.
+
+The merge mechanism must explicitly define whether related application data is:
+
+- transferred to the resulting User;
+- merged;
+- retained separately;
+- or handled according to another domain-specific rule.
+
+Identity Merge must not silently discard application data.
+
+### Identity Separation
+
+`Identity Separation` removes an explicitly selected identity from its current `User` and creates a new `User` for that identity.
+
+Before:
+
+```text
+User A
+├── LocalIdentity
+└── GoogleIdentity
+```
+
+After:
 
 ```text
 User A
@@ -91,62 +160,34 @@ User B
 └── GoogleIdentity
 ```
 
-After merge:
+The new User receives a new internal User ID.
 
-```text
-User A
-├── LocalIdentity
-└── GoogleIdentity
-```
+The separated identity becomes the identity of the new User.
 
-The resulting `User` must preserve the invariant that it has at most one `Identity` of each authentication provider/type.
+Identity Separation operates only on explicitly selected identities.
 
-If the users being merged contain identities of the same authentication provider/type, the merge operation results in an identity-type conflict.
+It does not automatically select or separate identities based on email, username, name, phone number, provider data, or other matching attributes.
 
-Such conflicts must be handled explicitly by the identity-management mechanism according to its defined merge rules.
+#### Related Application Data
 
-Authentication must not resolve identity-type conflicts automatically.
+If application data references the original User, the separation mechanism must explicitly define how that data is handled.
 
-The exact rules for selecting the resulting `User`, transferring identities, handling identity-type conflicts, and handling related data are defined by the identity-merge mechanism.
+Possible rules may include:
 
-#### Identity Separation
+- retaining the data with the original User;
+- transferring selected data to the new User;
+- splitting data according to domain-specific rules;
+- preventing separation while certain data exists.
 
-`Identity Separation` separates an identity from its current `User` and creates a new `User` for that identity.
+Identity Separation must not silently create inconsistent ownership of application data.
 
-Before separation:
+---
 
-```text
-User A
-├── LocalIdentity
-└── GoogleIdentity
-```
+## 3. Session
 
-After separation:
+`Session` represents an authenticated User session.
 
-```text
-User A
-└── LocalIdentity
-
-User B
-└── GoogleIdentity
-```
-
-The resulting users must preserve the invariant that each `User` has at most one `Identity` of each authentication provider/type.
-
-Identity Separation operates on explicitly selected identities. It does not automatically select or separate identities based on email address, name, phone number, provider data, or any other matching attributes.
-
-The exact rules for creating the new `User`, transferring related data, and establishing the resulting account state are defined by the identity-separation mechanism.
-
-Both `Identity Merge` and `Identity Separation` are explicit account-management operations. They are not part of ordinary authentication.
-
-Authentication must never automatically merge or separate identities based on email address, name, phone number, provider data, or any other matching attributes.
-
-
-### Session
-
-`Session` represents an authenticated user session.
-
-After successfully verifying an identity, authentication resolves the corresponding `User` and creates a `Session`.
+After successfully verifying an identity, authentication resolves the corresponding `User` and creates or updates a `Session`.
 
 ```text
 Identity
@@ -158,23 +199,27 @@ Session
 Access / Refresh Tokens
 ```
 
-`Session` is independent of the authentication provider.
+The session identifies the current authenticated `User`, not a specific authentication provider.
+
+Local and Google authentication may therefore produce sessions for the same User.
+
+After Identity Merge, the resulting User is the User of the authenticated merge initiator.
+
+After Identity Separation, the resulting identities may belong to different Users and require separate authentication sessions according to the application's session policy.
 
 ---
 
-## 2. SystemInstance
+## 4. SystemInstance
 
 `SystemInstance` represents one concrete installed or deployed instance of the application.
 
-It represents the application instance itself, not a user.
+It represents the application instance itself, not a User.
 
-A `SystemInstance` is created as part of project/system provisioning and exists independently of the user domain.
-
-A `SystemInstance` has its own configuration and its own integrations.
+A `SystemInstance` has its own configuration and integrations.
 
 ---
 
-## 3. Integration
+## 5. Integration
 
 `Integration` represents a connection between a particular `SystemInstance` and an external service.
 
@@ -186,21 +231,13 @@ Integration
 External Provider
 ```
 
-For example:
+An `Integration` exists for the application to interact with an external service.
 
-```text
-SystemInstance
-       ↓
-Integration(provider=google)
-       ↓
-Google
-```
-
-An `Integration` exists for the application to interact with an external service. It is not a mechanism for authenticating users.
+It is not a mechanism for authenticating Users.
 
 ---
 
-## 4. IntegrationCredential
+## 6. IntegrationCredential
 
 `IntegrationCredential` represents credentials belonging to a particular `Integration`.
 
@@ -210,19 +247,19 @@ SystemInstance
 Integration
        ↓
 IntegrationCredential
-       ├── Service Account
-       └── Credentials
+       ↓
+External Provider
 ```
 
-Integration credentials belong to the `Integration` and `SystemInstance`. They are not user identities.
+Integration credentials belong to the `Integration` and `SystemInstance`.
+
+They are not user identities.
 
 For example, a Google integration may use a service account or another supported credential mechanism to access Google APIs.
 
 ---
 
-## 5. Authentication and Integration Are Completely Separate
-
-This is a fundamental architectural rule.
+## 7. Authentication and Integration Are Completely Separate
 
 ### User Authentication
 
@@ -236,7 +273,7 @@ Google Authentication
 Session
 ```
 
-The user's Google account is used exclusively to authenticate the user.
+The user's Google account is used to authenticate the User.
 
 ### System Integration
 
@@ -244,16 +281,13 @@ The user's Google account is used exclusively to authenticate the user.
 SystemInstance
        ↓
 Integration
-provider = google
        ↓
 IntegrationCredential
-       ├── Service Account
-       └── Credentials
        ↓
 Google APIs
 ```
 
-The Google account or credentials used by an integration belong to the application and are used to access Google APIs.
+The credentials used by an integration belong to the application and are used to access external APIs.
 
 They are not a `GoogleIdentity`.
 
@@ -261,11 +295,9 @@ The same separation applies to all future providers.
 
 ---
 
-## 6. Target Application Structure
+## 8. Target Application Structure
 
 The application structure should follow the existing project conventions while organizing the architecture around clear bounded contexts.
-
-A generalized structure is:
 
 ```text
 app/
@@ -337,32 +369,54 @@ app/
 └── bootstrap/
 ```
 
-The names of directories may follow the project's established conventions. The important architectural rule is that each bounded context owns its provider-specific or domain-specific behavior.
+The exact filenames and directories may follow established project conventions.
 
-Individual files such as repositories, services, interfaces, schemas, and routers are implementation details. The architecture defines them as folders/modules by responsibility rather than prescribing individual filenames.
+The important architectural rule is that each bounded context owns its provider-specific or domain-specific behavior.
 
-### Authentication Contexts
+---
 
-Each authentication provider is autonomous:
+## 9. Authentication Contexts
+
+Each authentication provider is autonomous.
+
+### Local Authentication
+
+The initial local authentication mechanism uses:
 
 ```text
-authentication/
-├── local_auth/
-└── google_auth/
+username + password
 ```
 
-The existing project structure may use `local_auth/` and `google_auth/` as top-level application modules rather than introducing an additional `authentication/` directory.
+The local authentication identity contains the local authentication data, for example:
 
-The important rule is provider isolation, not the exact directory name.
+```text
+LocalIdentity
+├── username
+└── password_hash
+```
 
-### Identity Management Context
+`username` is a local authentication identifier. It does not have to represent the user's real-world name.
+
+### Google Authentication
+
+Google authentication uses Google as an external identity provider.
+
+The Google-specific identity contains the provider-specific identity data required to identify the Google account.
+
+Google authentication is used only for user authentication.
+
+Google APIs and other Google services are handled by the separate `integrations` context.
+
+---
+
+## 10. Identity Management Context
 
 Identity management is a separate bounded context responsible for account-level operations involving identities and users.
 
 Its scope includes:
 
-- `Identity Merge` — combining identities from different users under one `User`;
-- `Identity Separation` — separating an identity and creating a new `User`;
+- `Identity Merge` — moving an explicitly selected identity from another User to the authenticated User;
+- `Identity Separation` — removing an identity from a User and creating a new User for it;
 - other explicit identity-management operations defined independently of authentication.
 
 The context is represented as:
@@ -380,10 +434,11 @@ identity_management/
 
 It operates on existing `Identity` and `User` entities and does not belong to an individual authentication provider.
 
+---
 
-### Integration Context
+## 11. Integration Context
 
-Integrations form a separate system-level bounded context:
+Integrations form a separate system-level bounded context.
 
 ```text
 integrations/
@@ -404,9 +459,7 @@ Provider-specific integration code remains inside its corresponding provider.
 
 ---
 
-## 7. Implementation Sequence
-
-The project should be implemented in the following order.
+## 12. Implementation Sequence
 
 ### Step 1 — Define the Core Domain Model
 
@@ -421,7 +474,11 @@ Integration
 IntegrationCredential
 ```
 
-The ownership and boundaries between the user domain and system domain must be explicit from the beginning.
+The ownership and boundaries between the User domain and system domain must be explicit from the beginning.
+
+The core User model must remain independent of authentication providers.
+
+The Identity model must reference exactly one User.
 
 ### Step 2 — Implement Local Authentication
 
@@ -439,7 +496,11 @@ Session
 Tokens
 ```
 
-Support the required registration and login flows.
+The initial local credential model is:
+
+```text
+username + password
+```
 
 ### Step 3 — Implement Google Authentication
 
@@ -459,6 +520,8 @@ Tokens
 
 Google authentication should contain only functionality required for user authentication.
 
+Google API access must not be implemented inside Google authentication.
+
 ### Step 4 — Establish Shared Session Management
 
 Use one provider-independent session mechanism:
@@ -471,40 +534,57 @@ Google Authentication ─┘
 
 Authentication providers must not introduce separate provider-specific session types.
 
+The Session references the authenticated `User`.
+
 ### Step 5 — Implement Identity Management
 
 Introduce identity management as a separate account-management context.
 
-The initial scope includes two explicit operations:
+The initial scope includes two explicit operations.
+
+#### Identity Merge
 
 ```text
-Identity Merge
-       ↓
-Identities from different Users
-       ↓
-One User
+Authenticated User A
+└── LocalIdentity
+
+User B
+└── GoogleIdentity
+
+        ↓ merge
+
+User A
+├── LocalIdentity
+└── GoogleIdentity
 ```
 
-and:
+The authenticated User is always the resulting User.
+
+The source User whose identity was transferred is no longer an active User after successful merge.
+
+#### Identity Separation
 
 ```text
-Identity Separation
-       ↓
-Selected Identity
-       ↓
-New User
+User A
+├── LocalIdentity
+└── GoogleIdentity
+
+        ↓ separation
+
+User A
+└── LocalIdentity
+
+User B
+└── GoogleIdentity
 ```
 
 Both operations must be explicitly initiated and verified.
 
 Authentication must remain independent and must not perform automatic merge or separation.
 
-
 ### Step 6 — Introduce SystemInstance
 
 Define `SystemInstance` as the entity representing a concrete installed or deployed application instance.
-
-The model should support creation and configuration before deployment.
 
 ### Step 7 — Introduce Integrations
 
@@ -563,7 +643,7 @@ Provider-specific code must remain within the corresponding provider boundary.
 
 ---
 
-## 8. Final Architectural Model
+## 13. Final Architectural Model
 
 ```text
                               APPLICATION
@@ -589,27 +669,62 @@ Provider-specific code must remain within the corresponding provider boundary.
                 Session
 ```
 
-## 9. Architectural Contract
+The User domain is independent of the System domain.
+
+The User domain contains:
+
+```text
+User
+Identity
+Authentication
+Session
+Identity Management
+```
+
+The System domain contains:
+
+```text
+SystemInstance
+Integration
+IntegrationCredential
+External Services
+```
+
+---
+
+## 14. Architectural Contract
 
 The central architectural rule is:
 
-> **User Authentication provides a person with access to a `User`. Integration provides a `SystemInstance` with access to external services. These mechanisms must not share credentials or be mixed together.**
+> **User Authentication provides access to a `User`. Integration provides a `SystemInstance` with access to external services. These mechanisms must not share credentials or be mixed together.**
 
-The following boundaries are therefore mandatory:
+The following boundaries are mandatory:
 
+- `User` is a stable internal backend entity identified by a unique system ID.
 - `User` is independent of authentication providers.
+- `User` does not contain provider-specific authentication data.
 - `Identity` belongs to exactly one `User`.
 - A `User` may have multiple `Identity` records.
 - A `User` may have at most one `Identity` of each authentication provider/type.
 - A `User` does not have to have an identity for every supported authentication provider.
 - Each authentication provider manages only its own identity type.
+- Local authentication initially uses `username + password`.
+- Provider-specific authentication data belongs to `Identity`.
+- Authentication verifies an `Identity` and resolves its corresponding `User`.
 - Authentication never performs automatic identity merging or separation.
+- Authentication never merges identities based on matching attributes.
 - `Identity Merge` and `Identity Separation` are separate, explicit account-management operations.
-- `Identity Merge` combines identities from different users under one `User`.
-- `Identity Separation` removes selected identities from a `User` and creates a new `User` for them.
-- Identity Merge and Identity Separation must preserve the one-identity-per-provider/type invariant.
+- `Identity Merge` moves an explicitly selected identity from another User to the authenticated User.
+- In `Identity Merge`, the authenticated User is always the resulting User.
+- The source User is no longer an active User after a successful merge.
+- Identity Merge must preserve the one-identity-per-provider/type invariant.
+- Conflicts between identities of the same provider/type must be handled explicitly by identity management.
+- Identity Merge must not silently discard application data associated with the source User.
+- `Identity Separation` removes a selected identity from a User and creates a new User for it.
+- Identity Separation must preserve the one-identity-per-provider/type invariant.
+- Identity Separation must explicitly define how related application data is handled.
 - `Session` is provider-independent.
-- `SystemInstance` represents the application instance, not a user.
+- `SystemInstance` represents the application instance, not a User.
 - `Integration` belongs to a `SystemInstance`.
 - `IntegrationCredential` belongs to an `Integration` and is not a user identity.
 - User authentication credentials and integration credentials are separate concepts.
