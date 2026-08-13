@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Request
 
 from app.google_auth.dependencies import get_google_auth_service
 from app.google_auth.schemas import GoogleAuthorizationResponseSchema
-from app.google_auth.service_interface import GoogleAuthServiceInterface
+from app.google_auth.service.service_interface import GoogleAuthServiceInterface
 from app.sessions.schemas import TokenResponseSchema
 
 router = APIRouter(

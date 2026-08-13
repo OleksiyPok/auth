@@ -14,18 +14,39 @@
 
 Authentication methods are extensible and are not limited to any fixed list. Examples may include local credentials, Google, phone, GitHub, Microsoft, or other providers added in the future.
 
-One `User` may have multiple identities:
+One `User` may have multiple identities.
+
+A `User` may have **at most one `Identity` of each authentication provider/type**.
+
+Therefore, a `User` may have multiple identities of different types:
 
 ```text
 User
-├── Identity
-├── Identity
+├── LocalIdentity
+├── GoogleIdentity
+├── GitHubIdentity
 └── ...
 ```
 
+but cannot have multiple identities of the same type:
+
+```text
+User
+├── LocalIdentity
+└── LocalIdentity
+```
+
+The second structure is invalid.
+
 Each `Identity` belongs to exactly one `User`.
 
+The number and types of identities belonging to a `User` are not fixed. A `User` may have only one identity, or may have multiple identities of different authentication types.
+
+An identity does not have to exist for every supported authentication provider.
+
 An `Authentication` provider works only with its own identity type.
+
+Authentication providers must preserve the invariant that a `User` has at most one identity of the corresponding provider/type.
 
 ### Authentication
 
@@ -78,7 +99,15 @@ User A
 └── GoogleIdentity
 ```
 
-The exact rules for selecting the resulting `User`, transferring identities, and handling related data are defined by the identity-merge mechanism.
+The resulting `User` must preserve the invariant that it has at most one `Identity` of each authentication provider/type.
+
+If the users being merged contain identities of the same authentication provider/type, the merge operation results in an identity-type conflict.
+
+Such conflicts must be handled explicitly by the identity-management mechanism according to its defined merge rules.
+
+Authentication must not resolve identity-type conflicts automatically.
+
+The exact rules for selecting the resulting `User`, transferring identities, handling identity-type conflicts, and handling related data are defined by the identity-merge mechanism.
 
 #### Identity Separation
 
@@ -101,6 +130,10 @@ User A
 User B
 └── GoogleIdentity
 ```
+
+The resulting users must preserve the invariant that each `User` has at most one `Identity` of each authentication provider/type.
+
+Identity Separation operates on explicitly selected identities. It does not automatically select or separate identities based on email address, name, phone number, provider data, or any other matching attributes.
 
 The exact rules for creating the new `User`, transferring related data, and establishing the resulting account state are defined by the identity-separation mechanism.
 
@@ -566,13 +599,15 @@ The following boundaries are therefore mandatory:
 
 - `User` is independent of authentication providers.
 - `Identity` belongs to exactly one `User`.
+- A `User` may have multiple `Identity` records.
+- A `User` may have at most one `Identity` of each authentication provider/type.
+- A `User` does not have to have an identity for every supported authentication provider.
 - Each authentication provider manages only its own identity type.
 - Authentication never performs automatic identity merging or separation.
 - `Identity Merge` and `Identity Separation` are separate, explicit account-management operations.
 - `Identity Merge` combines identities from different users under one `User`.
 - `Identity Separation` removes selected identities from a `User` and creates a new `User` for them.
-- Identity merge combines identities from different users under one `User`.
-- Identity separation removes selected identities from a `User` and creates a new `User` for them.
+- Identity Merge and Identity Separation must preserve the one-identity-per-provider/type invariant.
 - `Session` is provider-independent.
 - `SystemInstance` represents the application instance, not a user.
 - `Integration` belongs to a `SystemInstance`.

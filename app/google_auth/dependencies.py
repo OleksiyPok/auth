@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_auth_session_service
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.db.session import get_session
-from app.google_auth.repository import GoogleAuthRepository
-from app.google_auth.repository_interface import GoogleAuthRepositoryInterface
-from app.google_auth.service import GoogleAuthService
-from app.google_auth.service_interface import GoogleAuthServiceInterface
+from app.google_auth.repository.repository import GoogleAuthRepository
+from app.google_auth.repository.repository_interface import GoogleAuthRepositoryInterface
+from app.google_auth.service.service import GoogleAuthService
+from app.google_auth.service.service_interface import GoogleAuthServiceInterface
 from app.users.dependencies import get_user_repository
 from app.users.repository.repository_interface import UserRepositoryInterface
 

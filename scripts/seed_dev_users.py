@@ -1,18 +1,19 @@
 # scripts/seed_dev_users.py
 
+import asyncio
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import asyncio
 
 from sqlmodel import select
 
 from app.auth.rbac.roles import Role
 from app.db.session import session_factory
 from app.infrastructure.password import hash_password
+from app.local_auth.models import LocalIdentity
 from app.users.models import User
+
 
 DEV_USERS = [
     {
@@ -63,18 +64,23 @@ async def seed_dev_users() -> None:
 
     async with session_factory() as session:
         for data in DEV_USERS:
-            result = await session.execute(
-                select(User).where(User.login == data["login"])
+            # Login belongs to LocalIdentity, not User.
+            identity_result = await session.execute(
+                select(LocalIdentity).where(
+                    LocalIdentity.login == data["login"]
+                )
             )
-            user = result.scalar_one_or_none()
+            identity = identity_result.scalar_one_or_none()
 
-            if user:
-                print(f"SKIP: {data['login']} already exists ({user.role})")
+            if identity:
+                print(
+                    f"SKIP: {data['login']} already exists "
+                    f"(user_id={identity.user_id})"
+                )
                 continue
 
+            # Create the domain user first.
             user = User(
-                login=data["login"],
-                password_hash=hash_password(data["password"]),
                 email=data["email"],
                 first_name=data["first_name"],
                 last_name=data["last_name"],
@@ -83,6 +89,18 @@ async def seed_dev_users() -> None:
             )
 
             session.add(user)
+
+            # User.id is needed by LocalIdentity.
+            await session.flush()
+
+            # Create the local authentication identity.
+            identity = LocalIdentity(
+                user_id=user.id,
+                login=data["login"],
+                password_hash=hash_password(data["password"]),
+            )
+
+            session.add(identity)
 
             added_users.append(data)
 
