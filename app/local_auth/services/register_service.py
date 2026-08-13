@@ -2,12 +2,12 @@
 
 from app.infrastructure.password import hash_password
 from app.local_auth.models import LocalIdentity
+from app.local_auth.repository.repository_interface import (
+    LocalIdentityRepositoryInterface,
+)
 from app.local_auth.schemas import RegisterRequestSchema, RegisterResponseSchema
 from app.local_auth.services.register_service_interface import (
     LocalRegisterServiceInterface,
-)
-from app.local_auth.services.repository_interface import (
-    LocalIdentityRepositoryInterface,
 )
 from app.users.exceptions import UserAlreadyExistsError
 from app.users.models import User

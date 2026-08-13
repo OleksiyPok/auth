@@ -26,12 +26,6 @@ class GoogleAuthRepositoryInterface(ABC):
     ) -> GoogleOAuthState: ...
 
     @abstractmethod
-    async def get_identity_by_user_id(
-        self,
-        user_id: str,
-    ) -> GoogleIdentity | None: ...
-
-    @abstractmethod
     async def get_identity_by_google_user_id(
         self,
         google_user_id: str,
@@ -39,12 +33,6 @@ class GoogleAuthRepositoryInterface(ABC):
 
     @abstractmethod
     async def create_identity(
-        self,
-        identity: GoogleIdentity,
-    ) -> GoogleIdentity: ...
-
-    @abstractmethod
-    async def update_identity(
         self,
         identity: GoogleIdentity,
     ) -> GoogleIdentity: ...

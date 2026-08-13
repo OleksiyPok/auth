@@ -48,12 +48,6 @@ class GoogleOAuthState(SQLModel, table=True):
         primary_key=True,
     )
 
-    user_id: str | None = Field(
-        default=None,
-        index=True,
-        foreign_key="users.id",
-    )
-
     state: str = Field(
         index=True,
         unique=True,

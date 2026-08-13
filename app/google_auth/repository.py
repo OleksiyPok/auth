@@ -45,18 +45,6 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
 
         return oauth_state
 
-    async def get_identity_by_user_id(
-        self,
-        user_id: str,
-    ) -> GoogleIdentity | None:
-        result = await self._session.execute(
-            select(GoogleIdentity).where(
-                GoogleIdentity.user_id == user_id,
-            )
-        )
-
-        return result.scalar_one_or_none()
-
     async def get_identity_by_google_user_id(
         self,
         google_user_id: str,
@@ -70,17 +58,6 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
         return result.scalar_one_or_none()
 
     async def create_identity(
-        self,
-        identity: GoogleIdentity,
-    ) -> GoogleIdentity:
-        self._session.add(identity)
-
-        await self._session.commit()
-        await self._session.refresh(identity)
-
-        return identity
-
-    async def update_identity(
         self,
         identity: GoogleIdentity,
     ) -> GoogleIdentity:

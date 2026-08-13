@@ -37,9 +37,7 @@ def get_google_authorization_url() -> tuple[str, str, str]:
         flow = create_google_oauth_flow()
 
         authorization_url, state = flow.authorization_url(
-            access_type="offline",
-            include_granted_scopes="false",
-            prompt="consent",
+            prompt="select_account",
         )
 
         return (
@@ -68,6 +66,7 @@ def exchange_google_code(
 
         flow.fetch_token(
             code=code,
+            scope=GOOGLE_OAUTH_SCOPES,
         )
 
         return flow.credentials

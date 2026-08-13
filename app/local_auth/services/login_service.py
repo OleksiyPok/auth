@@ -7,11 +7,11 @@ from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import create_access_token
 from app.infrastructure.password import verify_password
 from app.local_auth.exceptions import InvalidCredentialsError
-from app.local_auth.schemas import LoginRequestSchema
-from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
-from app.local_auth.services.repository_interface import (
+from app.local_auth.repository.repository_interface import (
     LocalIdentityRepositoryInterface,
 )
+from app.local_auth.schemas import LoginRequestSchema
+from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
 from app.sessions.schemas import TokenResponseSchema
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.exceptions import UserNotFoundError

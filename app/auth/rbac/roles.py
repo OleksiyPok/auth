@@ -8,7 +8,6 @@ Roles are named collections of permissions that users receive.
 """
 
 from enum import StrEnum
-from typing import ClassVar
 
 
 class Role(StrEnum):

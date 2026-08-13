@@ -1,5 +1,6 @@
 # app/core/config.py
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core import static_config
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "sqlite+aiosqlite:///./app.db"
 
-    CORS_ORIGINS: list[str] = []
+    CORS_ORIGINS: list[str] = Field(default_factory=list)
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"

@@ -3,13 +3,9 @@
 from datetime import datetime, timedelta, timezone
 
 from app.core.config import settings
-from app.google_auth.exceptions import (
-    GoogleIdentityAlreadyConnectedError,
-    GoogleOAuthStateError,
-)
+from app.google_auth.exceptions import GoogleOAuthStateError
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository_interface import GoogleAuthRepositoryInterface
-from app.google_auth.schemas import GoogleConnectionStatusSchema
 from app.google_auth.service_interface import GoogleAuthServiceInterface
 from app.infrastructure.google.oauth import (
     exchange_google_code,
@@ -38,14 +34,10 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         self._user_repository = user_repository
         self._session_service = session_service
 
-    async def create_authorization_url(
-        self,
-        user: User | None = None,
-    ) -> str:
+    async def create_authorization_url(self) -> str:
         authorization_url, state, code_verifier = get_google_authorization_url()
 
         oauth_state = GoogleOAuthState(
-            user_id=user.id if user else None,
             state=state,
             code_verifier=code_verifier,
             expires_at=(
@@ -54,9 +46,7 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             ),
         )
 
-        await self._repository.create_oauth_state(
-            oauth_state,
-        )
+        await self._repository.create_oauth_state(oauth_state)
 
         return authorization_url
 
@@ -66,10 +56,8 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         state: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> TokenResponseSchema | None:
-        oauth_state = await self._repository.get_oauth_state(
-            state,
-        )
+    ) -> TokenResponseSchema:
+        oauth_state = await self._repository.get_oauth_state(state)
 
         if oauth_state is None:
             raise GoogleOAuthStateError()
@@ -86,13 +74,9 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             code_verifier=oauth_state.code_verifier,
         )
 
-        google_user = get_google_user_info(
-            credentials,
-        )
+        google_user = get_google_user_info(credentials)
 
-        await self._repository.mark_oauth_state_used(
-            oauth_state,
-        )
+        await self._repository.mark_oauth_state_used(oauth_state)
 
         google_user_id = google_user["google_user_id"]
 
@@ -100,44 +84,24 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             google_user_id,
         )
 
-        if (
-            existing_identity is not None
-            and oauth_state.user_id is not None
-            and existing_identity.user_id != oauth_state.user_id
-        ):
-            raise GoogleIdentityAlreadyConnectedError()
-
         if existing_identity is not None:
             user_id = existing_identity.user_id
-
         else:
-            if oauth_state.user_id is not None:
-                user_id = oauth_state.user_id
+            user = User(
+                email=google_user["email"],
+                first_name=google_user["first_name"],
+                last_name=google_user["last_name"],
+            )
 
-            else:
-                user = User(
-                    email=google_user["email"],
-                    first_name=google_user["first_name"],
-                    last_name=google_user["last_name"],
-                )
-
-                user = await self._user_repository.create(
-                    user,
-                )
-
-                user_id = user.id
+            user = await self._user_repository.create(user)
+            user_id = user.id
 
             identity = GoogleIdentity(
                 user_id=user_id,
                 google_user_id=google_user_id,
             )
 
-            await self._repository.create_identity(
-                identity,
-            )
-
-        if oauth_state.user_id is not None:
-            return None
+            await self._repository.create_identity(identity)
 
         refresh_token = generate_refresh_token()
 
@@ -163,23 +127,4 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer",
-        )
-
-    async def get_connection_status(
-        self,
-        user: User,
-    ) -> GoogleConnectionStatusSchema:
-        identity = await self._repository.get_identity_by_user_id(
-            user.id,
-        )
-
-        if identity is None:
-            return GoogleConnectionStatusSchema(
-                connected=False,
-                google_user_id=None,
-            )
-
-        return GoogleConnectionStatusSchema(
-            connected=True,
-            google_user_id=identity.google_user_id,
         )
