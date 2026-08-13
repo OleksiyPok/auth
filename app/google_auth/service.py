@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 
-from app.core.config import settings
+from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.google_auth.exceptions import GoogleOAuthStateError
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository_interface import GoogleAuthRepositoryInterface
@@ -12,10 +12,7 @@ from app.infrastructure.google.oauth import (
     get_google_authorization_url,
     get_google_user_info,
 )
-from app.infrastructure.jwt.refresh_token import generate_refresh_token
-from app.infrastructure.jwt.security import create_access_token
 from app.sessions.schemas import TokenResponseSchema
-from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
@@ -28,11 +25,11 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         self,
         repository: GoogleAuthRepositoryInterface,
         user_repository: UserRepositoryInterface,
-        session_service: SessionServiceInterface,
+        auth_session_service: AuthSessionServiceInterface,
     ):
         self._repository = repository
         self._user_repository = user_repository
-        self._session_service = session_service
+        self._auth_session_service = auth_session_service
 
     async def create_authorization_url(self) -> str:
         authorization_url, state, code_verifier = get_google_authorization_url()
@@ -103,28 +100,9 @@ class GoogleAuthService(GoogleAuthServiceInterface):
 
             await self._repository.create_identity(identity)
 
-        refresh_token = generate_refresh_token()
-
-        session = await self._session_service.create_session(
+        return await self._auth_session_service.create_tokens(
             user_id=user_id,
-            refresh_token=refresh_token,
             provider="google",
-            expires_delta=timedelta(
-                days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
-            ),
             ip_address=ip_address,
             user_agent=user_agent,
-        )
-
-        access_token = create_access_token(
-            subject=user_id,
-            additional_claims={
-                "sid": session.id,
-            },
-        )
-
-        return TokenResponseSchema(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            token_type="bearer",
         )

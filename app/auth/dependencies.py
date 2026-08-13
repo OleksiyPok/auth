@@ -5,6 +5,8 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
+from app.auth.services.auth_session_service import AuthSessionService
+from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.auth.services.token_service import TokenService
 from app.auth.services.token_service_interface import TokenServiceInterface
 from app.sessions.dependencies import get_sessions_service
@@ -16,6 +18,17 @@ from app.users.repository.repository_interface import UserRepositoryInterface
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
+def get_auth_session_service(
+    session_service: Annotated[
+        SessionServiceInterface,
+        Depends(get_sessions_service),
+    ],
+) -> AuthSessionServiceInterface:
+    return AuthSessionService(
+        session_service,
+    )
+
+
 def get_token_service(
     repository: Annotated[
         UserRepositoryInterface,
@@ -25,10 +38,15 @@ def get_token_service(
         SessionServiceInterface,
         Depends(get_sessions_service),
     ],
+    auth_session_service: Annotated[
+        AuthSessionServiceInterface,
+        Depends(get_auth_session_service),
+    ],
 ) -> TokenServiceInterface:
     return TokenService(
         repository,
         session_service,
+        auth_session_service,
     )
 
 

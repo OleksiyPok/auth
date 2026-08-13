@@ -1,10 +1,6 @@
 # app/local_auth/services/login_service.py
 
-from datetime import timedelta
-
-from app.core.config import settings
-from app.infrastructure.jwt.refresh_token import generate_refresh_token
-from app.infrastructure.jwt.security import create_access_token
+from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.infrastructure.password import verify_password
 from app.local_auth.exceptions import InvalidCredentialsError
 from app.local_auth.repository.repository_interface import (
@@ -13,7 +9,6 @@ from app.local_auth.repository.repository_interface import (
 from app.local_auth.schemas import LoginRequestSchema
 from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
 from app.sessions.schemas import TokenResponseSchema
-from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.exceptions import UserNotFoundError
 from app.users.repository.repository_interface import UserRepositoryInterface
 
@@ -24,11 +19,11 @@ class LocalLoginService(LocalLoginServiceInterface):
         self,
         local_identity_repository: LocalIdentityRepositoryInterface,
         user_repository: UserRepositoryInterface,
-        session_service: SessionServiceInterface,
+        auth_session_service: AuthSessionServiceInterface,
     ):
         self._local_identity_repository = local_identity_repository
         self._user_repository = user_repository
-        self._session_service = session_service
+        self._auth_session_service = auth_session_service
 
     async def login(
         self,
@@ -57,28 +52,9 @@ class LocalLoginService(LocalLoginServiceInterface):
         if not user:
             raise UserNotFoundError()
 
-        refresh_token = generate_refresh_token()
-
-        session = await self._session_service.create_session(
+        return await self._auth_session_service.create_tokens(
             user_id=user.id,
-            refresh_token=refresh_token,
             provider="local",
-            expires_delta=timedelta(
-                days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
-            ),
             ip_address=ip_address,
             user_agent=user_agent,
-        )
-
-        access_token = create_access_token(
-            subject=user.id,
-            additional_claims={
-                "sid": session.id,
-            },
-        )
-
-        return TokenResponseSchema(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            token_type="bearer",
         )
