@@ -1,15 +1,12 @@
 # app/auth/services/token_service.py
 
-from datetime import timedelta
-
 from app.auth.exceptions import InvalidAccessTokenError
+from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.auth.services.token_service_interface import TokenServiceInterface
-from app.core.config import settings
-from app.infrastructure.jwt.refresh_token import generate_refresh_token
 from app.infrastructure.jwt.security import (
     InvalidAccessTokenError as SecurityInvalidAccessTokenError,
 )
-from app.infrastructure.jwt.security import create_access_token, decode_access_token
+from app.infrastructure.jwt.security import decode_access_token
 from app.sessions.schemas import TokenResponseSchema
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.exceptions import InactiveUserError, UserNotFoundError
@@ -23,9 +20,11 @@ class TokenService(TokenServiceInterface):
         self,
         repository: UserRepositoryInterface,
         session_service: SessionServiceInterface,
+        auth_session_service: AuthSessionServiceInterface,
     ):
         self._repository = repository
         self._session_service = session_service
+        self._auth_session_service = auth_session_service
 
     async def authenticate(
         self,
@@ -79,25 +78,6 @@ class TokenService(TokenServiceInterface):
         if not user.is_active:
             raise InactiveUserError()
 
-        new_access_token = create_access_token(
-            subject=user.id,
-            additional_claims={
-                "sid": session.id,
-            },
-        )
-
-        new_refresh_token = generate_refresh_token()
-
-        await self._session_service.rotate_refresh_token(
-            session=session,
-            new_refresh_token=new_refresh_token,
-            expires_delta=timedelta(
-                days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
-            ),
-        )
-
-        return TokenResponseSchema(
-            access_token=new_access_token,
-            refresh_token=new_refresh_token,
-            token_type="bearer",
+        return await self._auth_session_service.refresh_tokens(
+            session,
         )

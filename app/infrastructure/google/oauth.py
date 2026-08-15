@@ -37,9 +37,7 @@ def get_google_authorization_url() -> tuple[str, str, str]:
         flow = create_google_oauth_flow()
 
         authorization_url, state = flow.authorization_url(
-            access_type="offline",
-            include_granted_scopes="true",
-            prompt="consent",
+            prompt="select_account",
         )
 
         return (
@@ -68,7 +66,7 @@ def exchange_google_code(
 
         flow.fetch_token(
             code=code,
-            code_verifier=code_verifier,
+            scope=GOOGLE_OAUTH_SCOPES,
         )
 
         return flow.credentials
@@ -79,7 +77,7 @@ def exchange_google_code(
         ) from exc
 
 
-def get_google_user_id(credentials) -> str:
+def get_google_user_info(credentials) -> dict:
     try:
         if not credentials.id_token:
             raise GoogleOAuthError("Google OAuth response does not contain id_token")
@@ -88,16 +86,29 @@ def get_google_user_id(credentials) -> str:
             credentials.id_token,
             requests.Request(),
             settings.GOOGLE_CLIENT_ID,
+            clock_skew_in_seconds=5,
         )
 
         google_user_id = token_info.get("sub")
+        email = token_info.get("email")
+        first_name = token_info.get("given_name")
+        last_name = token_info.get("family_name")
 
         if not google_user_id:
             raise GoogleOAuthError("Google ID token does not contain subject")
 
-        return google_user_id
+        if not email:
+            raise GoogleOAuthError("Google ID token does not contain email")
+
+        return {
+            "google_user_id": google_user_id,
+            "email": email,
+            "first_name": first_name or "",
+            "last_name": last_name or "",
+        }
 
     except GoogleOAuthError:
         raise
+
     except Exception as exc:
         raise GoogleOAuthError(f"Failed to verify Google ID token: {exc}") from exc

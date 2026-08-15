@@ -1,5 +1,6 @@
 # app/core/config.py
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core import static_config
@@ -8,8 +9,12 @@ from app.core import static_config
 class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
     )
+
     DEBUG: bool = False
 
     APP_NAME: str = static_config.APP_NAME
@@ -20,7 +25,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "sqlite+aiosqlite:///./app.db"
 
-    CORS_ORIGINS: list[str] = []
+    CORS_ORIGINS: list[str] = Field(default_factory=list)
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
@@ -30,7 +35,14 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str
-    GOOGLE_TOKEN_ENCRYPTION_KEY: str
+
+    EMAIL_SMTP_HOST: str = "localhost"
+    EMAIL_SMTP_PORT: int = 587
+    EMAIL_SMTP_USERNAME: str = ""
+    EMAIL_SMTP_PASSWORD: str = ""
+    EMAIL_SMTP_STARTTLS: bool = True
+    EMAIL_SMTP_TIMEOUT: int = 10
+    EMAIL_FROM: str = "no-reply@localhost"
 
     SUPERADMIN_LOGIN: str
     SUPERADMIN_PASSWORD: str

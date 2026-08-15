@@ -7,11 +7,3 @@ class GoogleInfrastructureError(Exception):
 
 class GoogleOAuthError(GoogleInfrastructureError):
     """Google OAuth authorization failed."""
-
-
-class GoogleCredentialsError(GoogleInfrastructureError):
-    """Google credentials operation failed."""
-
-
-class GoogleAPIRequestError(GoogleInfrastructureError):
-    """Google API request failed."""

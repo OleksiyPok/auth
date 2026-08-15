@@ -1,9 +1,7 @@
-# app/local_auth/services/login_service_interface.py
-
 from abc import ABC, abstractmethod
 
 from app.local_auth.schemas import LoginRequestSchema
-from app.sessions.schemas import TokenResponseSchema
+from app.sessions.schemas import AuthenticationResponseSchema
 
 
 class LocalLoginServiceInterface(ABC):
@@ -14,4 +12,4 @@ class LocalLoginServiceInterface(ABC):
         data: LoginRequestSchema,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> TokenResponseSchema: ...
+    ) -> AuthenticationResponseSchema: ...

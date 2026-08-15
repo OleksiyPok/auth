@@ -18,11 +18,11 @@ from app.local_auth.services.login_service_interface import LocalLoginServiceInt
 from app.local_auth.services.register_service_interface import (
     LocalRegisterServiceInterface,
 )
-from app.sessions.schemas import TokenResponseSchema
+from app.sessions.schemas import AuthenticationResponseSchema
 
 router = APIRouter(
     prefix="/auth",
-    tags=["Local Auth"],
+    tags=["Local Authentication"],
 )
 
 
@@ -45,7 +45,7 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=TokenResponseSchema,
+    response_model=AuthenticationResponseSchema,
 )
 async def login(
     request: Request,
