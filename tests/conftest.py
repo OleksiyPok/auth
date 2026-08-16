@@ -11,7 +11,7 @@ from sqlmodel import SQLModel
 
 from app.db.session import get_session
 from app.infrastructure.password import hash_password
-from app.username_auth.models import LocalIdentity
+from app.username_auth.models import UsernameIdentity
 from app.main import app
 from app.users.models import User
 
@@ -81,7 +81,7 @@ async def create_user(
         await session.commit()
         await session.refresh(user)
 
-        local_identity = LocalIdentity(
+        local_identity = UsernameIdentity(
             user_id=user.id,
             login=login,
             password_hash=hash_password("password123"),

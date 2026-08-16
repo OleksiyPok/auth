@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from app.username_auth.models import LocalIdentity
+from app.username_auth.models import UsernameIdentity
 
 
 class LocalIdentityRepositoryInterface(ABC):
@@ -11,28 +11,28 @@ class LocalIdentityRepositoryInterface(ABC):
     async def get_by_id(
         self,
         identity_id: str,
-    ) -> LocalIdentity | None: ...
+    ) -> UsernameIdentity | None: ...
 
     @abstractmethod
     async def get_by_login(
         self,
         login: str,
-    ) -> LocalIdentity | None: ...
+    ) -> UsernameIdentity | None: ...
 
     @abstractmethod
     async def get_by_user_id(
         self,
         user_id: str,
-    ) -> LocalIdentity | None: ...
+    ) -> UsernameIdentity | None: ...
 
     @abstractmethod
     async def create(
         self,
-        identity: LocalIdentity,
-    ) -> LocalIdentity: ...
+        identity: UsernameIdentity,
+    ) -> UsernameIdentity: ...
 
     @abstractmethod
     async def update(
         self,
-        identity: LocalIdentity,
-    ) -> LocalIdentity: ...
+        identity: UsernameIdentity,
+    ) -> UsernameIdentity: ...

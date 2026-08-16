@@ -9,7 +9,7 @@ from uuid_extensions import uuid7
 from app.db.types import UTCDateTime
 
 
-class LocalIdentity(SQLModel, table=True):
+class UsernameIdentity(SQLModel, table=True):
     __tablename__ = "local_identities"
 
     id: str = Field(

@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.username_auth.models import LocalIdentity
+from app.username_auth.models import UsernameIdentity
 from app.username_auth.services.repository_interface import (
     LocalIdentityRepositoryInterface,
 )
@@ -17,10 +17,10 @@ class LocalIdentityRepository(LocalIdentityRepositoryInterface):
     async def get_by_id(
         self,
         identity_id: str,
-    ) -> LocalIdentity | None:
+    ) -> UsernameIdentity | None:
         result = await self._session.execute(
-            select(LocalIdentity).where(
-                LocalIdentity.id == identity_id,
+            select(UsernameIdentity).where(
+                UsernameIdentity.id == identity_id,
             )
         )
         return result.scalar_one_or_none()
@@ -28,10 +28,10 @@ class LocalIdentityRepository(LocalIdentityRepositoryInterface):
     async def get_by_login(
         self,
         login: str,
-    ) -> LocalIdentity | None:
+    ) -> UsernameIdentity | None:
         result = await self._session.execute(
-            select(LocalIdentity).where(
-                LocalIdentity.login == login,
+            select(UsernameIdentity).where(
+                UsernameIdentity.login == login,
             )
         )
         return result.scalar_one_or_none()
@@ -39,18 +39,18 @@ class LocalIdentityRepository(LocalIdentityRepositoryInterface):
     async def get_by_user_id(
         self,
         user_id: str,
-    ) -> LocalIdentity | None:
+    ) -> UsernameIdentity | None:
         result = await self._session.execute(
-            select(LocalIdentity).where(
-                LocalIdentity.user_id == user_id,
+            select(UsernameIdentity).where(
+                UsernameIdentity.user_id == user_id,
             )
         )
         return result.scalar_one_or_none()
 
     async def create(
         self,
-        identity: LocalIdentity,
-    ) -> LocalIdentity:
+        identity: UsernameIdentity,
+    ) -> UsernameIdentity:
         self._session.add(identity)
         await self._session.flush()
         await self._session.refresh(identity)

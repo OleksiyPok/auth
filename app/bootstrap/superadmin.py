@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.rbac.roles import Role
 from app.core.config import settings
 from app.infrastructure.password import hash_password
-from app.username_auth.models import LocalIdentity
+from app.username_auth.models import UsernameIdentity
 from app.users.models import User
 
 
@@ -23,7 +23,7 @@ async def create_initial_superadmin(session: AsyncSession) -> None:
 
     await session.flush()
 
-    identity = LocalIdentity(
+    identity = UsernameIdentity(
         user_id=superadmin.id,
         login=settings.SUPERADMIN_LOGIN,
         password_hash=hash_password(settings.SUPERADMIN_PASSWORD),

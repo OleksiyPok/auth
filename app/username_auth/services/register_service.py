@@ -1,7 +1,7 @@
 # app/username_auth/services/register_service.py
 
 from app.infrastructure.password import hash_password
-from app.username_auth.models import LocalIdentity
+from app.username_auth.models import UsernameIdentity
 from app.username_auth.repository.repository_interface import (
     LocalIdentityRepositoryInterface,
 )
@@ -40,7 +40,7 @@ class LocalRegisterService(LocalRegisterServiceInterface):
 
         user = await self._user_repository.create(user)
 
-        identity = LocalIdentity(
+        identity = UsernameIdentity(
             user_id=user.id,
             login=data.login,
             password_hash=hash_password(data.password),
