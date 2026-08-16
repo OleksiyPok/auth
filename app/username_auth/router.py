@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.username_auth.dependencies import (
-    get_local_login_service,
-    get_local_register_service,
+    get_username_login_service,
+    get_username_register_service,
 )
 from app.username_auth.schemas import (
     LoginRequestSchema,
@@ -37,7 +37,7 @@ async def register(
     data: RegisterRequestSchema,
     service: Annotated[
         UsernameRegisterServiceInterface,
-        Depends(get_local_register_service),
+        Depends(get_username_register_service),
     ],
 ):
     return await service.register(data)
@@ -55,7 +55,7 @@ async def login(
     ],
     service: Annotated[
         UsernameLoginServiceInterface,
-        Depends(get_local_login_service),
+        Depends(get_username_login_service),
     ],
 ):
     data = LoginRequestSchema(

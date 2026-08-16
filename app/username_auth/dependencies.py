@@ -22,7 +22,7 @@ from app.users.dependencies import get_user_repository
 from app.users.repository.repository_interface import UserRepositoryInterface
 
 
-async def get_local_identity_repository(
+async def get_username_identity_repository(
     session: Annotated[
         AsyncSession,
         Depends(get_session),
@@ -31,14 +31,14 @@ async def get_local_identity_repository(
     return UsernameIdentityRepository(session)
 
 
-async def get_local_register_service(
+async def get_username_register_service(
     user_repository: Annotated[
         UserRepositoryInterface,
         Depends(get_user_repository),
     ],
     local_identity_repository: Annotated[
         UsernameIdentityRepositoryInterface,
-        Depends(get_local_identity_repository),
+        Depends(get_username_identity_repository),
     ],
 ) -> UsernameRegisterServiceInterface:
     return UsernameRegisterService(
@@ -47,10 +47,10 @@ async def get_local_register_service(
     )
 
 
-async def get_local_login_service(
+async def get_username_login_service(
     local_identity_repository: Annotated[
         UsernameIdentityRepositoryInterface,
-        Depends(get_local_identity_repository),
+        Depends(get_username_identity_repository),
     ],
     user_repository: Annotated[
         UserRepositoryInterface,
