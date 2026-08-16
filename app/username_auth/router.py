@@ -16,7 +16,7 @@ from app.username_auth.schemas import (
 )
 from app.username_auth.services.login_service_interface import UsernameLoginServiceInterface
 from app.username_auth.services.register_service_interface import (
-    LocalRegisterServiceInterface,
+    UsernameRegisterServiceInterface,
 )
 from app.sessions.schemas import AuthenticationResponseSchema
 
@@ -36,7 +36,7 @@ router = APIRouter(
 async def register(
     data: RegisterRequestSchema,
     service: Annotated[
-        LocalRegisterServiceInterface,
+        UsernameRegisterServiceInterface,
         Depends(get_local_register_service),
     ],
 ):

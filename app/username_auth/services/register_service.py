@@ -7,14 +7,14 @@ from app.username_auth.repository.repository_interface import (
 )
 from app.username_auth.schemas import RegisterRequestSchema, RegisterResponseSchema
 from app.username_auth.services.register_service_interface import (
-    LocalRegisterServiceInterface,
+    UsernameRegisterServiceInterface,
 )
 from app.users.exceptions import UserAlreadyExistsError
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
 
-class LocalRegisterService(LocalRegisterServiceInterface):
+class UsernameRegisterService(UsernameRegisterServiceInterface):
 
     def __init__(
         self,

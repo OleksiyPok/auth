@@ -14,9 +14,9 @@ from app.username_auth.repository.repository_interface import (
 )
 from app.username_auth.services.login_service import UsernameLoginService
 from app.username_auth.services.login_service_interface import UsernameLoginServiceInterface
-from app.username_auth.services.register_service import LocalRegisterService
+from app.username_auth.services.register_service import UsernameRegisterService
 from app.username_auth.services.register_service_interface import (
-    LocalRegisterServiceInterface,
+    UsernameRegisterServiceInterface,
 )
 from app.users.dependencies import get_user_repository
 from app.users.repository.repository_interface import UserRepositoryInterface
@@ -40,8 +40,8 @@ async def get_local_register_service(
         UsernameIdentityRepositoryInterface,
         Depends(get_local_identity_repository),
     ],
-) -> LocalRegisterServiceInterface:
-    return LocalRegisterService(
+) -> UsernameRegisterServiceInterface:
+    return UsernameRegisterService(
         user_repository,
         local_identity_repository,
     )
