@@ -14,9 +14,7 @@ class EmailManager(EmailService):
         provider = EMAIL_PROVIDERS.get(name)
 
         if provider is None:
-            raise ProviderRegisterError(
-                f"Email provider '{name}' not registered"
-            )
+            raise ProviderRegisterError(f"Email provider '{name}' not registered")
 
         self._service = provider()
 

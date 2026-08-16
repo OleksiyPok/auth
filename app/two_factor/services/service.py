@@ -7,6 +7,7 @@ from app.auth.services.auth_session_service_interface import AuthSessionServiceI
 from app.infrastructure.email.base import EmailService
 from app.infrastructure.password import hash_password, verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
+from app.two_factor.config import settings as fa_settings
 from app.two_factor.exceptions import (
     InvalidTwoFactorCodeError,
     TwoFactorAlreadyDisabledError,
@@ -21,9 +22,9 @@ from app.two_factor.schemas import TwoFactorChallengeResponseSchema
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.models import User
 
-CHALLENGE_EXPIRE_MINUTES = 10
-MAX_ATTEMPTS = 5
-CODE_LENGTH = 6
+CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES = 15
+MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS = 5
+CODE_LENGTH = fa_settings.CODE_LENGTH = 6
 
 
 class TwoFactorService(TwoFactorServiceInterface):
