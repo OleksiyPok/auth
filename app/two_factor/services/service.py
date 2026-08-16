@@ -22,9 +22,9 @@ from app.two_factor.schemas import TwoFactorChallengeResponseSchema
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.models import User
 
-CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES = 15
-MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS = 5
-CODE_LENGTH = fa_settings.CODE_LENGTH = 6
+CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES
+MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
+CODE_LENGTH = fa_settings.CODE_LENGTH
 
 
 class TwoFactorService(TwoFactorServiceInterface):
