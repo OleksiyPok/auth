@@ -3,7 +3,7 @@
 from typing import Annotated
 
 from fastapi import Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
 
 from app.auth.exceptions import InvalidAccessTokenError
 from app.auth.services.auth_session_service import AuthSessionService
@@ -16,13 +16,20 @@ from app.users.dependencies import get_user_repository
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
-local_auth_scheme = HTTPBearer(
+local_auth_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login",
     scheme_name="Local Authentication",
     auto_error=False,
 )
 
-email_auth_scheme = HTTPBearer(
+email_auth_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/email/login",
     scheme_name="Email Authentication",
+    auto_error=False,
+)
+
+generic_auth_scheme = HTTPBearer(
+    scheme_name="Authentication",
     auto_error=False,
 )
 
@@ -65,15 +72,53 @@ def get_token_service(
 
 
 async def get_current_user(
-    local_credentials: Annotated[
+    credentials: Annotated[
         HTTPAuthorizationCredentials | None,
+        Depends(generic_auth_scheme),
+    ],
+    authentication_service: Annotated[
+        TokenServiceInterface,
+        Depends(get_token_service),
+    ],
+) -> User:
+    if credentials is None:
+        raise InvalidAccessTokenError()
+    return await authentication_service.authenticate(
+        credentials.credentials,
+    )
+
+async def get_current_local_user(
+    credentials: Annotated[
+        str | None,
         Depends(local_auth_scheme),
     ],
-    email_credentials: Annotated[
-        HTTPAuthorizationCredentials | None,
+    authentication_service: Annotated[
+        TokenServiceInterface,
+        Depends(get_token_service),
+    ],
+) -> User:
+    if credentials is None:
+        raise InvalidAccessTokenError()
+    return await authentication_service.authenticate(credentials)
+
+
+async def get_current_email_user(
+    credentials: Annotated[
+        str | None,
         Depends(email_auth_scheme),
     ],
-    google_credentials: Annotated[
+    authentication_service: Annotated[
+        TokenServiceInterface,
+        Depends(get_token_service),
+    ],
+) -> User:
+    if credentials is None:
+        raise InvalidAccessTokenError()
+    return await authentication_service.authenticate(credentials)
+
+
+async def get_current_google_user(
+    credentials: Annotated[
         HTTPAuthorizationCredentials | None,
         Depends(google_auth_scheme),
     ],
@@ -82,11 +127,8 @@ async def get_current_user(
         Depends(get_token_service),
     ],
 ) -> User:
-    credentials = local_credentials or email_credentials or google_credentials
-
     if credentials is None:
         raise InvalidAccessTokenError()
-
     return await authentication_service.authenticate(
         credentials.credentials,
     )

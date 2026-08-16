@@ -3,8 +3,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, status
+from fastapi.security import OAuth2PasswordRequestForm
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_email_user
 from app.email_auth.dependencies import (
     get_current_email_identity,
     get_email_login_service,
@@ -60,12 +61,20 @@ async def register(
 )
 async def login(
     request: Request,
-    data: EmailLoginRequestSchema,
+    form_data: Annotated[
+        OAuth2PasswordRequestForm,
+        Depends(),
+    ],
     service: Annotated[
         EmailLoginServiceInterface,
         Depends(get_email_login_service),
     ],
 ):
+    data = EmailLoginRequestSchema(
+        email=form_data.username,
+        password=form_data.password,
+    )
+
     return await service.login(
         data=data,
         ip_address=request.client.host if request.client else None,
@@ -96,7 +105,7 @@ async def confirm_login(
     response_model=TwoFactorChallengeResponseSchema,
 )
 async def enable_two_factor(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_email_user)],
     email_identity: Annotated[
         EmailIdentity,
         Depends(get_current_email_identity),
@@ -118,7 +127,7 @@ async def enable_two_factor(
 )
 async def confirm_enable_two_factor(
     data: TwoFactorConfirmRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_email_user)],
     email_identity: Annotated[
         EmailIdentity,
         Depends(get_current_email_identity),
@@ -141,7 +150,7 @@ async def confirm_enable_two_factor(
     response_model=TwoFactorChallengeResponseSchema,
 )
 async def disable_two_factor(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_email_user)],
     email_identity: Annotated[
         EmailIdentity,
         Depends(get_current_email_identity),
@@ -163,7 +172,7 @@ async def disable_two_factor(
 )
 async def confirm_disable_two_factor(
     data: TwoFactorConfirmRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_email_user)],
     email_identity: Annotated[
         EmailIdentity,
         Depends(get_current_email_identity),
@@ -185,7 +194,7 @@ async def confirm_disable_two_factor(
     response_model=TwoFactorStatusResponseSchema,
 )
 async def get_two_factor_status(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_email_user)],
     service: Annotated[
         TwoFactorServiceInterface,
         Depends(get_two_factor_service),

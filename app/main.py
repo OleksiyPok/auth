@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
 from sqlalchemy import inspect
 from sqlmodel import SQLModel
 
@@ -49,6 +48,43 @@ app = FastAPI(
         # "operationsSorter": "alpha",
     },
 )
+original_openapi = app.openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = original_openapi()
+    security_schemes = openapi_schema.setdefault("components", {}).setdefault("securitySchemes", {})
+    openapi_schema["components"]["securitySchemes"] = {
+        "Local Authentication": {
+            "type": "oauth2",
+            "flows": {
+                "password": {
+                    "tokenUrl": "/api/v1/auth/login",
+                },
+            },
+        },
+        "Email Authentication": {
+            "type": "oauth2",
+            "flows": {
+                "password": {
+                    "tokenUrl": "/api/v1/auth/email/login",
+                },
+            },
+        },
+        "Google Authentication": security_schemes.get(
+            "Google Authentication",
+            {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            },
+        ),
+    }
+    app.openapi_schema = openapi_schema
+    return openapi_schema
+
+app.openapi = custom_openapi
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,44 +95,6 @@ app.add_middleware(
 )
 
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-
-    openapi_schema = get_openapi(
-        title=app.title,
-        version="1.0.0",
-        description=app.description,
-        routes=app.routes,
-    )
-
-    openapi_schema["components"]["securitySchemes"] = {
-        "Local Authentication": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Access token obtained through local authentication.",
-        },
-        "Email Authentication": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Access token obtained through email authentication.",
-        },
-        "Google Authentication": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Access token obtained through Google authentication.",
-        },
-    }
-
-    app.openapi_schema = openapi_schema
-
-    return app.openapi_schema
-
-
-app.openapi = custom_openapi
 
 register_exception_handlers(app)
 
