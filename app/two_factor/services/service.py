@@ -229,6 +229,7 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         settings.two_factor_enabled = True
         await self._repository.update_settings(settings)
+        await self._send_action_notification(user, "enable")
 
     async def request_disable(
         self,
@@ -265,3 +266,28 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         settings.two_factor_enabled = False
         await self._repository.update_settings(settings)
+        await self._send_action_notification(user, "disable")
+
+    async def _send_action_notification(
+        self,
+        user: User,
+        action: str,
+    ) -> None:
+        if action == "enable":
+            subject = "Two-factor authentication enabled"
+            body = (
+                "Two-factor authentication has been successfully enabled "
+                "for your account."
+            )
+        else:
+            subject = "Two-factor authentication disabled"
+            body = (
+                "Two-factor authentication has been successfully disabled "
+                "for your account."
+            )
+
+        await self._email_service.send(
+            to=user.email,
+            subject=subject,
+            body=body,
+        )
