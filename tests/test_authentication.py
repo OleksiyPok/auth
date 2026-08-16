@@ -26,7 +26,7 @@ class TestUserRegistration:
     def test_register_success(self, client: TestClient):
         """Successful user registration should return 201."""
         data = RegisterRequestSchema(
-            login="newuser",
+            username="newuser",
             password="password123",
             email="newuser@example.com",
             first_name="New",
@@ -43,7 +43,7 @@ class TestUserRegistration:
     def test_register_duplicate_login(self, client: TestClient):
         """Duplicate login should return 409."""
         data = RegisterRequestSchema(
-            login="duplicateuser",
+            username="duplicateuser",
             password="password123",
             email="duplicate@example.com",
             first_name="Duplicate",
@@ -78,7 +78,7 @@ class TestUserLogin:
     def test_login_success(self, client: TestClient):
         """Successful login should return 200."""
         register_data = RegisterRequestSchema(
-            login="loginuser",
+            username="loginuser",
             password="password123",
             email="loginuser@example.com",
             first_name="Login",
@@ -150,7 +150,7 @@ class TestTokenRefresh:
     def test_refresh_token_success(self, client: TestClient):
         """Valid refresh token should return new tokens."""
         register_data = RegisterRequestSchema(
-            login="refreshuser",
+            username="refreshuser",
             password="password123",
             email="refresh@example.com",
             first_name="Refresh",
@@ -188,7 +188,7 @@ class TestTokenRefresh:
     def test_refresh_token_rotation(self, client: TestClient):
         """Old refresh token should become invalid after rotation."""
         register_data = RegisterRequestSchema(
-            login="rotationuser",
+            username="rotationuser",
             password="password123",
             email="rotation@example.com",
             first_name="Rotation",
@@ -244,7 +244,7 @@ class TestUserLogout:
     def test_logout_success(self, client: TestClient):
         """Valid logout should return 204."""
         register_data = RegisterRequestSchema(
-            login="logoutuser",
+            username="logoutuser",
             password="password123",
             email="logout@example.com",
             first_name="Logout",
@@ -282,7 +282,7 @@ class TestUserLogout:
     def test_logout_invalidates_refresh_token(self, client: TestClient):
         """Refresh token should become invalid after logout."""
         register_data = RegisterRequestSchema(
-            login="logoutinvalidate",
+            username="logoutinvalidate",
             password="password123",
             email="logoutinvalidate@example.com",
             first_name="Logout",

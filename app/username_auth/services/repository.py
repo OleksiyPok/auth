@@ -25,13 +25,13 @@ class UsernameIdentityRepository(UsernameIdentityRepositoryInterface):
         )
         return result.scalar_one_or_none()
 
-    async def get_by_login(
+    async def get_by_username(
         self,
-        login: str,
+        username: str,
     ) -> UsernameIdentity | None:
         result = await self._session.execute(
             select(UsernameIdentity).where(
-                UsernameIdentity.login == login,
+                UsernameIdentity.username == username,
             )
         )
         return result.scalar_one_or_none()

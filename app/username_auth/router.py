@@ -18,7 +18,7 @@ from app.username_auth.services.login_service_interface import UsernameLoginServ
 from app.username_auth.services.register_service_interface import (
     UsernameRegisterServiceInterface,
 )
-from app.sessions.schemas import AuthenticationResponseSchema, TokenResponseSchema
+from app.sessions.schemas import TokenResponseSchema
 
 router = APIRouter(
     prefix="/auth",
@@ -59,7 +59,7 @@ async def login(
     ],
 ):
     data = LoginRequestSchema(
-        login=form_data.username,
+        username=form_data.username,
         password=form_data.password,
     )
 

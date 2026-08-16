@@ -10,7 +10,7 @@ from app.db.types import UTCDateTime
 
 
 class UsernameIdentity(SQLModel, table=True):
-    __tablename__ = "local_identities"
+    __tablename__ = "username_identities"
 
     id: str = Field(
         default_factory=lambda: str(uuid7()),
@@ -23,7 +23,7 @@ class UsernameIdentity(SQLModel, table=True):
         unique=True,
     )
 
-    login: str = Field(
+    username: str = Field(
         unique=True,
         index=True,
     )

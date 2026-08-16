@@ -31,7 +31,7 @@ class UsernameLoginService(UsernameLoginServiceInterface):
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
-        identity = await self._local_identity_repository.get_by_login(data.login)
+        identity = await self._local_identity_repository.get_by_username(data.username)
 
         if not identity:
             raise InvalidCredentialsError()

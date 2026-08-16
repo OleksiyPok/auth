@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class RegisterRequestSchema(BaseModel):
-    login: str
+    username: str
     password: str
     email: str
     first_name: str
@@ -13,7 +13,7 @@ class RegisterRequestSchema(BaseModel):
 
 class RegisterResponseSchema(BaseModel):
     id: str
-    login: str
+    username: str
     email: str
     first_name: str
     last_name: str
@@ -21,5 +21,5 @@ class RegisterResponseSchema(BaseModel):
 
 
 class LoginRequestSchema(BaseModel):
-    login: str
+    username: str
     password: str

@@ -29,7 +29,7 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
         data: RegisterRequestSchema,
     ) -> RegisterResponseSchema:
 
-        if await self._local_identity_repository.get_by_login(data.login):
+        if await self._local_identity_repository.get_by_username(data.username):
             raise UserAlreadyExistsError()
 
         user = User(
@@ -42,7 +42,7 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
 
         identity = UsernameIdentity(
             user_id=user.id,
-            login=data.login,
+            username=data.username,
             password_hash=hash_password(data.password),
         )
 
@@ -52,7 +52,7 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
 
         return RegisterResponseSchema(
             id=user.id,
-            login=identity.login,
+            username=identity.username,
             email=user.email,
             first_name=user.first_name,
             last_name=user.last_name,

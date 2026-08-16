@@ -14,9 +14,9 @@ class UsernameIdentityRepositoryInterface(ABC):
     ) -> UsernameIdentity | None: ...
 
     @abstractmethod
-    async def get_by_login(
+    async def get_by_username(
         self,
-        login: str,
+        username: str,
     ) -> UsernameIdentity | None: ...
 
     @abstractmethod
