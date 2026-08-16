@@ -1,3 +1,5 @@
+# app/two_factor/router.py
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
@@ -32,6 +34,7 @@ async def confirm_login(
     return await service.confirm_login(
         challenge_id=data.challenge_id,
         code=data.code,
+        provider="email",
     )
 
 

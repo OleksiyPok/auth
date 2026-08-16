@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 
+from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.google_auth.exceptions import GoogleOAuthStateError
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository.repository_interface import (
@@ -14,7 +15,6 @@ from app.infrastructure.google.oauth import (
     get_google_user_info,
 )
 from app.sessions.schemas import AuthenticationResponseSchema
-from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 

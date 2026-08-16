@@ -1,3 +1,5 @@
+# app/email_auth/repository/repository_interface.py
+
 from abc import ABC, abstractmethod
 
 from app.email_auth.models import EmailIdentity

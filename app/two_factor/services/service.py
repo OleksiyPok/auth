@@ -1,8 +1,10 @@
+# app/two_factor/services/service.py
+
 import secrets
 from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
-from app.infrastructure.email import send_email
+from app.infrastructure.email.base import EmailService
 from app.infrastructure.password import hash_password, verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.exceptions import (
@@ -30,9 +32,11 @@ class TwoFactorService(TwoFactorServiceInterface):
         self,
         repository: TwoFactorRepositoryInterface,
         auth_session_service: AuthSessionServiceInterface,
+        email_service: EmailService,
     ):
         self._repository = repository
         self._auth_session_service = auth_session_service
+        self._email_service = email_service
 
     async def _send_challenge(
         self,
@@ -57,8 +61,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=(
-                datetime.now(timezone.utc)
-                + timedelta(minutes=CHALLENGE_EXPIRE_MINUTES)
+                datetime.now(timezone.utc) + timedelta(minutes=CHALLENGE_EXPIRE_MINUTES)
             ),
         )
         challenge = await self._repository.create_challenge(challenge)
@@ -71,8 +74,8 @@ class TwoFactorService(TwoFactorServiceInterface):
         elif purpose == "disable":
             subject = "Disable email two-factor authentication"
 
-        await send_email(
-            recipient=user.email,
+        await self._email_service.send(
+            to=user.email,
             subject=subject,
             body=(
                 f"Your verification code is: {code}\n\n"

@@ -1,3 +1,5 @@
+# app/two_factor/repository/repository.py
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -64,9 +66,7 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         challenge_id: str,
     ) -> TwoFactorChallenge | None:
         result = await self._session.execute(
-            select(TwoFactorChallenge).where(
-                TwoFactorChallenge.id == challenge_id
-            )
+            select(TwoFactorChallenge).where(TwoFactorChallenge.id == challenge_id)
         )
         return result.scalar_one_or_none()
 

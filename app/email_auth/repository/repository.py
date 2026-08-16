@@ -1,3 +1,5 @@
+# app/email_auth/repository/repository.py
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 

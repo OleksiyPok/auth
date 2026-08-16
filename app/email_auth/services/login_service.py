@@ -1,11 +1,15 @@
+# app/email_auth/services/login_service.py
+
 from app.email_auth.exceptions import InvalidEmailCredentialsError
-from app.email_auth.repository.repository_interface import EmailIdentityRepositoryInterface
+from app.email_auth.repository.repository_interface import (
+    EmailIdentityRepositoryInterface,
+)
 from app.email_auth.schemas import EmailLoginRequestSchema
 from app.email_auth.services.login_service_interface import EmailLoginServiceInterface
 from app.infrastructure.password import verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
-from app.users.exceptions import UserNotFoundError
+from app.users.exceptions import InactiveUserError, UserNotFoundError
 from app.users.repository.repository_interface import UserRepositoryInterface
 
 
@@ -41,6 +45,9 @@ class EmailLoginService(EmailLoginServiceInterface):
 
         if not user:
             raise UserNotFoundError()
+
+        if not user.is_active:
+            raise InactiveUserError()
 
         two_factor_enabled = await self._two_factor_service.is_enabled(
             user.id,

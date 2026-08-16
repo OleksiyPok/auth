@@ -1,3 +1,5 @@
+# app/two_factor/exceptions.py
+
 from fastapi import status
 
 from app.core.exceptions import AppError

@@ -1,3 +1,5 @@
+# app/email_auth/router.py
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, status
@@ -15,7 +17,9 @@ from app.email_auth.schemas import (
     EmailRegisterResponseSchema,
 )
 from app.email_auth.services.login_service_interface import EmailLoginServiceInterface
-from app.email_auth.services.register_service_interface import EmailRegisterServiceInterface
+from app.email_auth.services.register_service_interface import (
+    EmailRegisterServiceInterface,
+)
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.schemas import (

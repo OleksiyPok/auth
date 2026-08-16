@@ -1,7 +1,11 @@
+# app/local_auth/services/login_service.py
+
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.infrastructure.password import verify_password
 from app.local_auth.exceptions import InvalidCredentialsError
-from app.local_auth.repository.repository_interface import LocalIdentityRepositoryInterface
+from app.local_auth.repository.repository_interface import (
+    LocalIdentityRepositoryInterface,
+)
 from app.local_auth.schemas import LoginRequestSchema
 from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
 from app.sessions.schemas import AuthenticationResponseSchema

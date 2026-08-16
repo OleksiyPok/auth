@@ -1,3 +1,5 @@
+# app/two_factor/schemas.py
+
 from pydantic import BaseModel
 
 from app.sessions.schemas import AuthenticationResponseSchema

@@ -1,3 +1,5 @@
+# app/two_factor/repository/repository_interface.py
+
 from abc import ABC, abstractmethod
 
 from app.two_factor.models import TwoFactorChallenge, UserSecuritySettings

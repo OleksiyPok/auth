@@ -1,3 +1,5 @@
+# app/local_auth/services/login_service_interface.py
+
 from abc import ABC, abstractmethod
 
 from app.local_auth.schemas import LoginRequestSchema

@@ -1,3 +1,5 @@
+# app/email_auth/services/register_service.py
+
 from app.email_auth.models import EmailIdentity
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,

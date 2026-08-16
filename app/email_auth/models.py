@@ -1,3 +1,5 @@
+# app/email_auth/models.py
+
 from datetime import datetime, timezone
 
 from sqlalchemy import Column

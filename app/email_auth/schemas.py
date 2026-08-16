@@ -1,3 +1,5 @@
+# app/email_auth/schemas.py
+
 from pydantic import BaseModel
 
 from app.sessions.schemas import AuthenticationResponseSchema

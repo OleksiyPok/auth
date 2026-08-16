@@ -32,23 +32,35 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
-    GOOGLE_CLIENT_ID: str
-    GOOGLE_CLIENT_SECRET: str
-    GOOGLE_REDIRECT_URI: str
+    # Email
+    EMAIL_SERVICE: str = "dummy"
 
-    EMAIL_SMTP_HOST: str = "localhost"
-    EMAIL_SMTP_PORT: int = 587
-    EMAIL_SMTP_USERNAME: str = ""
-    EMAIL_SMTP_PASSWORD: str = ""
-    EMAIL_SMTP_STARTTLS: bool = True
-    EMAIL_SMTP_TIMEOUT: int = 10
-    EMAIL_FROM: str = "no-reply@localhost"
+    # Sender
+    MAIL_FROM_EMAIL: str | None = None
+    MAIL_FROM_NAME: str | None = None
 
+    # Mailtrap
+    MAILTRAP_USER: str | None = None
+    MAILTRAP_SMTP_PASSWORD: str | None = None
+
+    MAILTRAP_SMTP_HOST: str | None = None
+    MAILTRAP_SMTP_PORT: int = 587
+    MAILTRAP_USE_TLS: bool = True
+
+    # Mailjet
+    MAILJET_API_KEY: str | None = None
+    MAILJET_SECRET_KEY: str | None = None
+
+    # Seed data
     SUPERADMIN_LOGIN: str
     SUPERADMIN_PASSWORD: str
     SUPERADMIN_EMAIL: str
     SUPERADMIN_FIRST_NAME: str = "System"
     SUPERADMIN_LAST_NAME: str = "Superadministrator"
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+    GOOGLE_REDIRECT_URI: str
 
 
 settings = Settings()
