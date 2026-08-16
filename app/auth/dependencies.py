@@ -33,7 +33,7 @@ email_auth_scheme = OAuth2PasswordBearer(
 )
 
 generic_auth_scheme = HTTPBearer(
-    scheme_name="Authentication",
+    scheme_name="Username Authentication",
     auto_error=False,
 )
 
