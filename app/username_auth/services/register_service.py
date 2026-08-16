@@ -3,7 +3,7 @@
 from app.infrastructure.password import hash_password
 from app.username_auth.models import UsernameIdentity
 from app.username_auth.repository.repository_interface import (
-    LocalIdentityRepositoryInterface,
+    UsernameIdentityRepositoryInterface,
 )
 from app.username_auth.schemas import RegisterRequestSchema, RegisterResponseSchema
 from app.username_auth.services.register_service_interface import (
@@ -19,7 +19,7 @@ class LocalRegisterService(LocalRegisterServiceInterface):
     def __init__(
         self,
         user_repository: UserRepositoryInterface,
-        local_identity_repository: LocalIdentityRepositoryInterface,
+        local_identity_repository: UsernameIdentityRepositoryInterface,
     ):
         self._user_repository = user_repository
         self._local_identity_repository = local_identity_repository

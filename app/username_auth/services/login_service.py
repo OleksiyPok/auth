@@ -4,7 +4,7 @@ from app.auth.services.auth_session_service_interface import AuthSessionServiceI
 from app.infrastructure.password import verify_password
 from app.username_auth.exceptions import InvalidCredentialsError
 from app.username_auth.repository.repository_interface import (
-    LocalIdentityRepositoryInterface,
+    UsernameIdentityRepositoryInterface,
 )
 from app.username_auth.schemas import LoginRequestSchema
 from app.username_auth.services.login_service_interface import LocalLoginServiceInterface
@@ -17,7 +17,7 @@ class LocalLoginService(LocalLoginServiceInterface):
 
     def __init__(
         self,
-        local_identity_repository: LocalIdentityRepositoryInterface,
+        local_identity_repository: UsernameIdentityRepositoryInterface,
         user_repository: UserRepositoryInterface,
         auth_session_service: AuthSessionServiceInterface,
     ):

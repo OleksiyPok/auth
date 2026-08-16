@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from app.username_auth.models import UsernameIdentity
 
 
-class LocalIdentityRepositoryInterface(ABC):
+class UsernameIdentityRepositoryInterface(ABC):
 
     @abstractmethod
     async def get_by_id(

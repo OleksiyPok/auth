@@ -8,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_auth_session_service
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.db.session import get_session
-from app.username_auth.repository.repository import LocalIdentityRepository
+from app.username_auth.repository.repository import UsernameIdentityRepository
 from app.username_auth.repository.repository_interface import (
-    LocalIdentityRepositoryInterface,
+    UsernameIdentityRepositoryInterface,
 )
 from app.username_auth.services.login_service import LocalLoginService
 from app.username_auth.services.login_service_interface import LocalLoginServiceInterface
@@ -27,8 +27,8 @@ async def get_local_identity_repository(
         AsyncSession,
         Depends(get_session),
     ],
-) -> LocalIdentityRepositoryInterface:
-    return LocalIdentityRepository(session)
+) -> UsernameIdentityRepositoryInterface:
+    return UsernameIdentityRepository(session)
 
 
 async def get_local_register_service(
@@ -37,7 +37,7 @@ async def get_local_register_service(
         Depends(get_user_repository),
     ],
     local_identity_repository: Annotated[
-        LocalIdentityRepositoryInterface,
+        UsernameIdentityRepositoryInterface,
         Depends(get_local_identity_repository),
     ],
 ) -> LocalRegisterServiceInterface:
@@ -49,7 +49,7 @@ async def get_local_register_service(
 
 async def get_local_login_service(
     local_identity_repository: Annotated[
-        LocalIdentityRepositoryInterface,
+        UsernameIdentityRepositoryInterface,
         Depends(get_local_identity_repository),
     ],
     user_repository: Annotated[
