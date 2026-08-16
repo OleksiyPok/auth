@@ -22,9 +22,11 @@ from app.email_auth.services.register_service_interface import (
 )
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.dependencies import get_two_factor_service
+
 from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,
     TwoFactorConfirmRequestSchema,
+    TwoFactorStatusResponseSchema,
 )
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.models import User
@@ -177,3 +179,21 @@ async def confirm_disable_two_factor(
         data.code,
         EMAIL_PROVIDER,
     )
+
+    @router.get(
+        "/2fa/status",
+        response_model=TwoFactorStatusResponseSchema,
+    )
+    async def get_two_factor_status(
+        current_user: Annotated[User, Depends(get_current_user)],
+        service: Annotated[
+            TwoFactorServiceInterface,
+            Depends(get_two_factor_service),
+        ],
+    ):
+        return TwoFactorStatusResponseSchema(
+            enabled=await service.is_enabled(
+                current_user.id,
+                EMAIL_PROVIDER,
+            ),
+        )
