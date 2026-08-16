@@ -20,7 +20,7 @@ from app.users.dependencies import get_user_repository
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
-local_auth_scheme = OAuth2PasswordBearer(
+username_auth_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login",
     scheme_name="Local Authentication",
     auto_error=False,
@@ -92,10 +92,10 @@ async def get_current_user(
     )
 
 
-async def get_current_local_user(
+async def get_current_username_user(
     credentials: Annotated[
         str | None,
-        Depends(local_auth_scheme),
+        Depends(username_auth_scheme),
     ],
     authentication_service: Annotated[
         TokenServiceInterface,
