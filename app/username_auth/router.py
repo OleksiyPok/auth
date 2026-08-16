@@ -14,7 +14,7 @@ from app.username_auth.schemas import (
     RegisterRequestSchema,
     RegisterResponseSchema,
 )
-from app.username_auth.services.login_service_interface import LocalLoginServiceInterface
+from app.username_auth.services.login_service_interface import UsernameLoginServiceInterface
 from app.username_auth.services.register_service_interface import (
     LocalRegisterServiceInterface,
 )
@@ -54,7 +54,7 @@ async def login(
         Depends(),
     ],
     service: Annotated[
-        LocalLoginServiceInterface,
+        UsernameLoginServiceInterface,
         Depends(get_local_login_service),
     ],
 ):

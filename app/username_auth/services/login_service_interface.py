@@ -6,7 +6,7 @@ from app.username_auth.schemas import LoginRequestSchema
 from app.sessions.schemas import AuthenticationResponseSchema
 
 
-class LocalLoginServiceInterface(ABC):
+class UsernameLoginServiceInterface(ABC):
 
     @abstractmethod
     async def login(
