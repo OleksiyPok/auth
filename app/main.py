@@ -55,8 +55,12 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = original_openapi()
-    security_schemes = openapi_schema.setdefault("components", {}).setdefault(
-        "securitySchemes", {}
+    security_schemes = openapi_schema.setdefault(
+        "components",
+        {},
+    ).setdefault(
+        "securitySchemes",
+        {},
     )
     openapi_schema["components"]["securitySchemes"] = {
         "Local Authentication": {
@@ -74,6 +78,12 @@ def custom_openapi():
                     "tokenUrl": "/api/v1/auth/email/login",
                 },
             },
+        },
+        "Email Bearer Authentication": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Access token obtained after email authentication and two-factor verification.",
         },
         "Google Authentication": security_schemes.get(
             "Google Authentication",
