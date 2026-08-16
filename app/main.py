@@ -62,7 +62,7 @@ def custom_openapi():
     original_security_schemes = components.get("securitySchemes", {})
 
     components["securitySchemes"] = {
-        "Local Authentication": {
+        "Username Authentication": {
             "type": "oauth2",
             "flows": {
                 "password": {

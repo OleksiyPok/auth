@@ -46,7 +46,7 @@ class UsernameLoginService(UsernameLoginServiceInterface):
 
         tokens = await self._auth_session_service.create_tokens(
             user_id=user.id,
-            provider="local",
+            provider="username",
             ip_address=ip_address,
             user_agent=user_agent,
         )

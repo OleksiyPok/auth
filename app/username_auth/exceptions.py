@@ -6,7 +6,7 @@ from app.core.exceptions import AppError
 
 
 class LocalAuthError(AppError):
-    """Base exception for local authentication."""
+    """Base exception for username authentication."""
 
 
 class InvalidCredentialsError(LocalAuthError):
@@ -17,5 +17,5 @@ class InvalidCredentialsError(LocalAuthError):
 
 class LocalIdentityNotFoundError(LocalAuthError):
     status_code = status.HTTP_404_NOT_FOUND
-    code = "LOCAL_IDENTITY_NOT_FOUND"
-    message = "Local identity not found"
+    code = "USERNAME_IDENTITY_NOT_FOUND"
+    message = "Username identity not found"

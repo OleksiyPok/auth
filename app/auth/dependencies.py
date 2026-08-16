@@ -22,7 +22,7 @@ from app.users.repository.repository_interface import UserRepositoryInterface
 
 username_auth_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login",
-    scheme_name="Local Authentication",
+    scheme_name="Username Authentication",
     auto_error=False,
 )
 

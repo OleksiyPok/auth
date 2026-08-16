@@ -28,7 +28,7 @@ class SessionService(SessionServiceInterface):
         user_id: str,
         refresh_token: str,
         expires_delta: timedelta,
-        provider: str = "local",
+        provider: str = "username",
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> Session:

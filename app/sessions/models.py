@@ -22,7 +22,7 @@ class Session(SQLModel, table=True):
     )
 
     provider: str = Field(
-        default="local",
+        default="username",
         max_length=32,
     )
 

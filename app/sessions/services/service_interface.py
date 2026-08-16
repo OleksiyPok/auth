@@ -16,7 +16,7 @@ class SessionServiceInterface(ABC):
         user_id: str,
         refresh_token: str,
         expires_delta: timedelta,
-        provider: str = "local",
+        provider: str = "username",
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Session: ...

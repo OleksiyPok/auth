@@ -22,14 +22,14 @@ from app.sessions.schemas import AuthenticationResponseSchema
 
 router = APIRouter(
     prefix="/auth",
-    tags=["Local Authentication"],
+    tags=["Username Authentication"],
 )
 
 
 @router.post(
     "/register",
     summary="Register user account",
-    description="Creates a new user account using local authentication.",
+    description="Creates a new user account using username authentication.",
     response_model=RegisterResponseSchema,
     status_code=status.HTTP_201_CREATED,
 )
