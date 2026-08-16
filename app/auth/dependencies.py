@@ -32,11 +32,6 @@ email_auth_scheme = OAuth2PasswordBearer(
     auto_error=False,
 )
 
-email_bearer_auth_scheme = HTTPBearer(
-    scheme_name="Email Bearer Authentication",
-    auto_error=False,
-)
-
 generic_auth_scheme = HTTPBearer(
     scheme_name="Authentication",
     auto_error=False,
@@ -113,28 +108,18 @@ async def get_current_local_user(
 
 
 async def get_current_email_user(
-    email_credentials: Annotated[
+    credentials: Annotated[
         str | None,
         Depends(email_auth_scheme),
-    ],
-    bearer_credentials: Annotated[
-        HTTPAuthorizationCredentials | None,
-        Depends(email_bearer_auth_scheme),
     ],
     authentication_service: Annotated[
         TokenServiceInterface,
         Depends(get_token_service),
     ],
 ) -> User:
-    if bearer_credentials is not None:
-        return await authentication_service.authenticate(
-            bearer_credentials.credentials,
-        )
-    if email_credentials is not None:
-        return await authentication_service.authenticate(
-            email_credentials,
-        )
-    raise InvalidAccessTokenError()
+    if credentials is None:
+        raise InvalidAccessTokenError()
+    return await authentication_service.authenticate(credentials)
 
 
 async def get_current_google_user(

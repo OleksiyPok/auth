@@ -48,21 +48,20 @@ app = FastAPI(
         # "operationsSorter": "alpha",
     },
 )
+
 original_openapi = app.openapi
 
 
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
+
     openapi_schema = original_openapi()
-    security_schemes = openapi_schema.setdefault(
-        "components",
-        {},
-    ).setdefault(
-        "securitySchemes",
-        {},
-    )
-    openapi_schema["components"]["securitySchemes"] = {
+
+    components = openapi_schema.setdefault("components", {})
+    original_security_schemes = components.get("securitySchemes", {})
+
+    components["securitySchemes"] = {
         "Local Authentication": {
             "type": "oauth2",
             "flows": {
@@ -83,9 +82,12 @@ def custom_openapi():
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
-            "description": "Access token obtained after email authentication and two-factor verification.",
+            "description": (
+                "Access token obtained after email authentication "
+                "and two-factor verification."
+            ),
         },
-        "Google Authentication": security_schemes.get(
+        "Google Authentication": original_security_schemes.get(
             "Google Authentication",
             {
                 "type": "http",
@@ -94,7 +96,33 @@ def custom_openapi():
             },
         ),
     }
+
+    for path_item in openapi_schema.get("paths", {}).values():
+        for operation in path_item.values():
+            if not isinstance(operation, dict):
+                continue
+
+            security = operation.get("security")
+
+            if not security:
+                continue
+
+            if not any(
+                "Email Authentication" in requirement for requirement in security
+            ):
+                continue
+
+            if not any(
+                "Email Bearer Authentication" in requirement for requirement in security
+            ):
+                security.append(
+                    {
+                        "Email Bearer Authentication": [],
+                    }
+                )
+
     app.openapi_schema = openapi_schema
+
     return openapi_schema
 
 
