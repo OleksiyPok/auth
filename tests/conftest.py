@@ -11,7 +11,7 @@ from sqlmodel import SQLModel
 
 from app.db.session import get_session
 from app.infrastructure.password import hash_password
-from app.local_auth.models import LocalIdentity
+from app.username_auth.models import LocalIdentity
 from app.main import app
 from app.users.models import User
 

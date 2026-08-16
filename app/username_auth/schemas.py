@@ -1,4 +1,4 @@
-# app/local_auth/schemas.py
+# app/username_auth/schemas.py
 
 from pydantic import BaseModel
 

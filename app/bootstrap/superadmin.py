@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.rbac.roles import Role
 from app.core.config import settings
 from app.infrastructure.password import hash_password
-from app.local_auth.models import LocalIdentity
+from app.username_auth.models import LocalIdentity
 from app.users.models import User
 
 

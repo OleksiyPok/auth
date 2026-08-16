@@ -1,4 +1,4 @@
-# app/local_auth/dependencies.py
+# app/username_auth/dependencies.py
 
 from typing import Annotated
 
@@ -8,14 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_auth_session_service
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.db.session import get_session
-from app.local_auth.repository.repository import LocalIdentityRepository
-from app.local_auth.repository.repository_interface import (
+from app.username_auth.repository.repository import LocalIdentityRepository
+from app.username_auth.repository.repository_interface import (
     LocalIdentityRepositoryInterface,
 )
-from app.local_auth.services.login_service import LocalLoginService
-from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
-from app.local_auth.services.register_service import LocalRegisterService
-from app.local_auth.services.register_service_interface import (
+from app.username_auth.services.login_service import LocalLoginService
+from app.username_auth.services.login_service_interface import LocalLoginServiceInterface
+from app.username_auth.services.register_service import LocalRegisterService
+from app.username_auth.services.register_service_interface import (
     LocalRegisterServiceInterface,
 )
 from app.users.dependencies import get_user_repository

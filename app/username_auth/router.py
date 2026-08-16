@@ -1,21 +1,21 @@
-# app/local_auth/router.py
+# app/username_auth/router.py
 
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.local_auth.dependencies import (
+from app.username_auth.dependencies import (
     get_local_login_service,
     get_local_register_service,
 )
-from app.local_auth.schemas import (
+from app.username_auth.schemas import (
     LoginRequestSchema,
     RegisterRequestSchema,
     RegisterResponseSchema,
 )
-from app.local_auth.services.login_service_interface import LocalLoginServiceInterface
-from app.local_auth.services.register_service_interface import (
+from app.username_auth.services.login_service_interface import LocalLoginServiceInterface
+from app.username_auth.services.register_service_interface import (
     LocalRegisterServiceInterface,
 )
 from app.sessions.schemas import AuthenticationResponseSchema

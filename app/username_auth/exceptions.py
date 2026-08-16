@@ -1,4 +1,4 @@
-# app/local_auth/exceptions.py
+# app/username_auth/exceptions.py
 
 from fastapi import status
 

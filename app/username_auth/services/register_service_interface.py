@@ -1,8 +1,8 @@
-# app/local_auth/services/register_service_interface.py
+# app/username_auth/services/register_service_interface.py
 
 from abc import ABC, abstractmethod
 
-from app.local_auth.schemas import RegisterRequestSchema, RegisterResponseSchema
+from app.username_auth.schemas import RegisterRequestSchema, RegisterResponseSchema
 
 
 class LocalRegisterServiceInterface(ABC):

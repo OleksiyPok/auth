@@ -1,8 +1,8 @@
-# app/local_auth/repository/repository_interface.py
+# app/username_auth/repository/repository_interface.py
 
 from abc import ABC, abstractmethod
 
-from app.local_auth.models import LocalIdentity
+from app.username_auth.models import LocalIdentity
 
 
 class LocalIdentityRepositoryInterface(ABC):
