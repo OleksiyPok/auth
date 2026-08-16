@@ -180,20 +180,20 @@ async def confirm_disable_two_factor(
         EMAIL_PROVIDER,
     )
 
-    @router.get(
-        "/2fa/status",
-        response_model=TwoFactorStatusResponseSchema,
+@router.get(
+    "/2fa/status",
+    response_model=TwoFactorStatusResponseSchema,
+)
+async def get_two_factor_status(
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[
+        TwoFactorServiceInterface,
+        Depends(get_two_factor_service),
+    ],
+):
+    return TwoFactorStatusResponseSchema(
+        enabled=await service.is_enabled(
+            current_user.id,
+            EMAIL_PROVIDER,
+        ),
     )
-    async def get_two_factor_status(
-        current_user: Annotated[User, Depends(get_current_user)],
-        service: Annotated[
-            TwoFactorServiceInterface,
-            Depends(get_two_factor_service),
-        ],
-    ):
-        return TwoFactorStatusResponseSchema(
-            enabled=await service.is_enabled(
-                current_user.id,
-                EMAIL_PROVIDER,
-            ),
-        )
