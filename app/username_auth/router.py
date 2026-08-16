@@ -18,7 +18,7 @@ from app.username_auth.services.login_service_interface import UsernameLoginServ
 from app.username_auth.services.register_service_interface import (
     UsernameRegisterServiceInterface,
 )
-from app.sessions.schemas import AuthenticationResponseSchema
+from app.sessions.schemas import AuthenticationResponseSchema, TokenResponseSchema
 
 router = APIRouter(
     prefix="/auth",
@@ -45,7 +45,7 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=AuthenticationResponseSchema,
+    response_model=TokenResponseSchema,
 )
 async def login(
     request: Request,

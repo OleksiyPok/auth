@@ -170,12 +170,7 @@ class SessionService(SessionServiceInterface):
         return session
 
     async def logout(
-        self,
-        refresh_token: str,
+            self,
+            user: User,
     ) -> None:
-        session = await self.get_by_refresh_token(
-            refresh_token,
-        )
-
-        if session:
-            await self.revoke(session)
+        await self.revoke_all_sessions(user)

@@ -4,11 +4,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_token_service
+from app.auth.dependencies import get_token_service, get_current_user
 from app.auth.services.token_service_interface import TokenServiceInterface
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.schemas import RefreshTokenRequestSchema, TokenResponseSchema
 from app.sessions.services.service_interface import SessionServiceInterface
+from app.users.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -37,12 +38,15 @@ async def refresh(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def logout(
-    data: RefreshTokenRequestSchema,
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
     service: Annotated[
         SessionServiceInterface,
         Depends(get_sessions_service),
     ],
 ):
     await service.logout(
-        data.refresh_token,
+        current_user,
     )
