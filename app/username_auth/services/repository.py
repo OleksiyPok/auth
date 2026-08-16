@@ -5,11 +5,11 @@ from sqlmodel import select
 
 from app.username_auth.models import UsernameIdentity
 from app.username_auth.services.repository_interface import (
-    LocalIdentityRepositoryInterface,
+    UsernameIdentityRepositoryInterface,
 )
 
 
-class LocalIdentityRepository(LocalIdentityRepositoryInterface):
+class UsernameIdentityRepository(UsernameIdentityRepositoryInterface):
 
     def __init__(self, session: AsyncSession):
         self._session = session
