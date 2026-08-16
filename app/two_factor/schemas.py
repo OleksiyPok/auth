@@ -19,5 +19,6 @@ class TwoFactorConfirmRequestSchema(BaseModel):
 class TwoFactorLoginConfirmResponseSchema(AuthenticationResponseSchema):
     pass
 
+
 class TwoFactorStatusResponseSchema(BaseModel):
     enabled: bool

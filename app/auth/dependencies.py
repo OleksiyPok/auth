@@ -3,7 +3,11 @@
 from typing import Annotated
 
 from fastapi import Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
+from fastapi.security import (
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+    OAuth2PasswordBearer,
+)
 
 from app.auth.exceptions import InvalidAccessTokenError
 from app.auth.services.auth_session_service import AuthSessionService
@@ -86,6 +90,7 @@ async def get_current_user(
     return await authentication_service.authenticate(
         credentials.credentials,
     )
+
 
 async def get_current_local_user(
     credentials: Annotated[

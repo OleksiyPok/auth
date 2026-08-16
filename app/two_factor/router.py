@@ -49,7 +49,10 @@ async def enable(
         Depends(get_two_factor_service),
     ],
 ):
-    return await service.request_enable(current_user, provider="email",)
+    return await service.request_enable(
+        current_user,
+        provider="email",
+    )
 
 
 @router.post(
@@ -83,7 +86,10 @@ async def disable(
         Depends(get_two_factor_service),
     ],
 ):
-    return await service.request_disable(current_user, provider="email",)
+    return await service.request_disable(
+        current_user,
+        provider="email",
+    )
 
 
 @router.post(
@@ -104,4 +110,3 @@ async def confirm_disable(
         data.code,
         provider="email",
     )
-

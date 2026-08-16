@@ -23,7 +23,6 @@ from app.email_auth.services.register_service_interface import (
 )
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.dependencies import get_two_factor_service
-
 from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,
     TwoFactorConfirmRequestSchema,
@@ -188,6 +187,7 @@ async def confirm_disable_two_factor(
         data.code,
         EMAIL_PROVIDER,
     )
+
 
 @router.get(
     "/2fa/status",

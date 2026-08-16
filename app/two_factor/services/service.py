@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.infrastructure.email.base import EmailService
+from app.infrastructure.email.templates import TEMPLATE_REGISTRY
 from app.infrastructure.password import hash_password, verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.config import settings as fa_settings
@@ -273,19 +274,14 @@ class TwoFactorService(TwoFactorServiceInterface):
         user: User,
         action: str,
     ) -> None:
-        if action == "enable":
-            subject = "Two-factor authentication enabled"
-            body = (
-                "Two-factor authentication has been successfully enabled "
-                "for your account."
-            )
-        else:
-            subject = "Two-factor authentication disabled"
-            body = (
-                "Two-factor authentication has been successfully disabled "
-                "for your account."
-            )
-
+        template_name = {
+            "enable": "TWO_FACTOR_ENABLED",
+            "disable": "TWO_FACTOR_DISABLED",
+        }[action]
+        template = TEMPLATE_REGISTRY[template_name]
+        rendered = template.substitute()
+        subject, body = rendered.split("\n\n", 1)
+        subject = subject.removeprefix("Subject: ")
         await self._email_service.send(
             to=user.email,
             subject=subject,

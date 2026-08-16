@@ -50,11 +50,14 @@ app = FastAPI(
 )
 original_openapi = app.openapi
 
+
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = original_openapi()
-    security_schemes = openapi_schema.setdefault("components", {}).setdefault("securitySchemes", {})
+    security_schemes = openapi_schema.setdefault("components", {}).setdefault(
+        "securitySchemes", {}
+    )
     openapi_schema["components"]["securitySchemes"] = {
         "Local Authentication": {
             "type": "oauth2",
@@ -84,6 +87,7 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return openapi_schema
 
+
 app.openapi = custom_openapi
 
 app.add_middleware(
@@ -93,7 +97,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 register_exception_handlers(app)
