@@ -5,8 +5,13 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 
 from app.core.config import settings
-from app.infrastructure.google.config import GOOGLE_OAUTH_SCOPES
 from app.infrastructure.google.exceptions import GoogleOAuthError
+
+GOOGLE_OAUTH_SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 
 
 def create_google_oauth_flow(
