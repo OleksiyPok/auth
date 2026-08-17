@@ -2,13 +2,15 @@
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.infrastructure.password import verify_password
+from app.sessions.schemas import AuthenticationResponseSchema
 from app.username_auth.exceptions import InvalidCredentialsError
 from app.username_auth.repository.repository_interface import (
     UsernameIdentityRepositoryInterface,
 )
 from app.username_auth.schemas import LoginRequestSchema
-from app.username_auth.services.login_service_interface import UsernameLoginServiceInterface
-from app.sessions.schemas import AuthenticationResponseSchema
+from app.username_auth.services.login_service_interface import (
+    UsernameLoginServiceInterface,
+)
 from app.users.exceptions import UserNotFoundError
 from app.users.repository.repository_interface import UserRepositoryInterface
 

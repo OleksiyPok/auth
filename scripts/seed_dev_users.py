@@ -16,7 +16,7 @@ from app.users.models import User
 
 DEV_USERS = [
     {
-        "login": "Superadmin",
+        "username": "Superadmin",
         "password": "Superadmin",
         "email": "superadmin@example.com",
         "first_name": "Dev",
@@ -24,7 +24,7 @@ DEV_USERS = [
         "role": Role.SUPERADMIN,
     },
     {
-        "login": "Admin",
+        "username": "Admin",
         "password": "Admin",
         "email": "admin@example.com",
         "first_name": "Dev",
@@ -32,7 +32,7 @@ DEV_USERS = [
         "role": Role.ADMIN,
     },
     {
-        "login": "Manager",
+        "username": "Manager",
         "password": "Manager",
         "email": "manager@example.com",
         "first_name": "Dev",
@@ -40,7 +40,7 @@ DEV_USERS = [
         "role": Role.MANAGER,
     },
     {
-        "login": "User_1",
+        "username": "User_1",
         "password": "User_1",
         "email": "user_1@example.com",
         "first_name": "Dev",
@@ -48,7 +48,7 @@ DEV_USERS = [
         "role": Role.USER,
     },
     {
-        "login": "User_2",
+        "username": "User_2",
         "password": "User_2",
         "email": "user_2@example.com",
         "first_name": "Dev",
@@ -64,16 +64,16 @@ async def seed_dev_users() -> None:
     async with session_factory() as session:
         for data in DEV_USERS:
             result = await session.execute(
-                select(User).where(User.login == data["login"])
+                select(User).where(User.username == data["username"])
             )
             user = result.scalar_one_or_none()
 
             if user:
-                print(f"SKIP: {data['login']} already exists ({user.role})")
+                print(f"SKIP: {data['username']} already exists ({user.role})")
                 continue
 
-            user = User(
-                login=data["login"],
+            identity = User(
+                username=data["username"],
                 password_hash=hash_password(data["password"]),
                 email=data["email"],
                 first_name=data["first_name"],
@@ -82,7 +82,7 @@ async def seed_dev_users() -> None:
                 is_active=True,
             )
 
-            session.add(user)
+            session.add(identity)
 
             added_users.append(data)
 
@@ -96,7 +96,7 @@ async def seed_dev_users() -> None:
 
         for user in added_users:
             print(
-                f"Login: {user['login']:<12} "
+                f"Username: {user['username']:<12} "
                 f"Password: {user['password']:<12} "
                 f"Role: {user['role']:<12} "
                 f"Email: {user['email']}"

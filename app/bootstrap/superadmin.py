@@ -25,7 +25,7 @@ async def create_initial_superadmin(session: AsyncSession) -> None:
 
     identity = UsernameIdentity(
         user_id=superadmin.id,
-        login=settings.SUPERADMIN_LOGIN,
+        username=settings.SUPERADMIN_LOGIN,
         password_hash=hash_password(settings.SUPERADMIN_PASSWORD),
     )
 

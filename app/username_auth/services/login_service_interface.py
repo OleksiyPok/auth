@@ -2,8 +2,8 @@
 
 from abc import ABC, abstractmethod
 
-from app.username_auth.schemas import LoginRequestSchema
 from app.sessions.schemas import AuthenticationResponseSchema
+from app.username_auth.schemas import LoginRequestSchema
 
 
 class UsernameLoginServiceInterface(ABC):

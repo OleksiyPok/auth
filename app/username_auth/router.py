@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from app.sessions.schemas import TokenResponseSchema
 from app.username_auth.dependencies import (
     get_username_login_service,
     get_username_register_service,
@@ -14,11 +15,12 @@ from app.username_auth.schemas import (
     RegisterRequestSchema,
     RegisterResponseSchema,
 )
-from app.username_auth.services.login_service_interface import UsernameLoginServiceInterface
+from app.username_auth.services.login_service_interface import (
+    UsernameLoginServiceInterface,
+)
 from app.username_auth.services.register_service_interface import (
     UsernameRegisterServiceInterface,
 )
-from app.sessions.schemas import TokenResponseSchema
 
 router = APIRouter(
     prefix="/auth",

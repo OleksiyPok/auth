@@ -13,7 +13,9 @@ from app.username_auth.repository.repository_interface import (
     UsernameIdentityRepositoryInterface,
 )
 from app.username_auth.services.login_service import UsernameLoginService
-from app.username_auth.services.login_service_interface import UsernameLoginServiceInterface
+from app.username_auth.services.login_service_interface import (
+    UsernameLoginServiceInterface,
+)
 from app.username_auth.services.register_service import UsernameRegisterService
 from app.username_auth.services.register_service_interface import (
     UsernameRegisterServiceInterface,

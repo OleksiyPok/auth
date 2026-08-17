@@ -16,8 +16,8 @@ Note: All tests only check response codes, not response text.
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from app.username_auth.schemas import RegisterRequestSchema
 from app.sessions.schemas import RefreshTokenRequestSchema
+from app.username_auth.schemas import RegisterRequestSchema
 
 
 class TestUserRegistration:

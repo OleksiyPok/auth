@@ -170,7 +170,7 @@ class SessionService(SessionServiceInterface):
         return session
 
     async def logout(
-            self,
-            user: User,
+        self,
+        user: User,
     ) -> None:
         await self.revoke_all_sessions(user)
