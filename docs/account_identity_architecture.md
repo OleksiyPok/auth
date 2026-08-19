@@ -1,4 +1,4 @@
-# Архитектура аккаунтов, пользователей и идентичностей
+# Архитектура аккаунтов, пользователей, идентичностей и аутентификации
 
 ## 1. Основная модель
 
@@ -22,6 +22,8 @@ User
 
 Разные типы Identity не объединяются в одну универсальную модель только ради унификации. Каждый тип Identity может иметь собственные свойства и правила.
 
+---
+
 ## 2. User может иметь несколько идентичностей
 
 Один User может одновременно иметь несколько identities разных типов.
@@ -36,6 +38,8 @@ User
 ```
 
 Количество типов Identity в будущем может расширяться: Apple, Phone, Passkey, GitHub, Telegram и т. д.
+
+---
 
 ## 3. У одного User может быть только одна Identity конкретного типа
 
@@ -72,6 +76,8 @@ User A
 
 > **User может иметь много identities, но максимум одну identity каждого типа.**
 
+---
+
 ## 4. Identity принадлежит только одному User
 
 Каждая Identity в каждый момент времени принадлежит ровно одному User.
@@ -79,6 +85,8 @@ User A
 Одна и та же Identity не может одновременно быть связана с двумя аккаунтами.
 
 При linking Identity переносится от одного User к другому.
+
+---
 
 ## 5. Идентификатор Identity глобально уникален
 
@@ -104,6 +112,8 @@ GoogleIdentity
 Один и тот же идентификатор одного типа не может принадлежать двум разным identities.
 
 Это гарантирует однозначное определение аккаунта по конкретному authentication identity.
+
+---
 
 ## 6. Identity и контактные данные — не одно и то же
 
@@ -133,6 +143,8 @@ User
 
 Контакт и Identity — разные понятия.
 
+---
+
 ## 7. Для каждого типа контакта может быть несколько значений
 
 Пользователь может сохранить несколько email, телефонов и других контактных данных одного типа.
@@ -147,6 +159,8 @@ Email contacts
 ```
 
 Среди значений одного типа может быть один ключевой контакт, используемый как основной для соответствующей функции.
+
+---
 
 ## 8. Только ключевая Identity определяет способ входа
 
@@ -168,6 +182,8 @@ EmailIdentity
 ```
 
 Следовательно, пользователь не может автоматически войти через email только потому, что этот email где-то сохранён в UsernameIdentity.
+
+---
 
 ## 9. Identity определяет право на конкретный способ авторизации
 
@@ -191,6 +207,8 @@ UsernameIdentity
 то email является лишь связанными с username данными.
 
 Он **не становится EmailIdentity автоматически**.
+
+---
 
 ## 10. Контакт не превращается в Identity автоматически
 
@@ -216,6 +234,8 @@ EmailIdentity
 
 Существует одна EmailIdentity, а значение email внутри UsernameIdentity остаётся дополнительными данными.
 
+---
+
 ## 11. Если Identity одного типа уже существует, другое значение этого типа не становится ключом автоматически
 
 Например:
@@ -239,6 +259,8 @@ UsernameIdentity
 Для превращения его в ключ email-аутентификации требуется **явное действие пользователя и соответствующее подтверждение**.
 
 Это принципиально важно для безопасности.
+
+---
 
 ## 12. Linking не должен смешивать контактные данные и identities
 
@@ -269,6 +291,8 @@ GoogleIdentity → User
 
 Email должен стать самостоятельной EmailIdentity только в результате соответствующего явно определённого процесса.
 
+---
+
 ## 13. Unlink должен учитывать Identity и контакты отдельно
 
 При удалении Identity:
@@ -292,6 +316,8 @@ User
 
 Unlink удаляет или переносит **право идентификации**, а не автоматически меняет остальные способы доступа.
 
+---
+
 ## 14. User без Identity существовать не должен
 
 Это фундаментальный инвариант.
@@ -313,6 +339,8 @@ User
 - либо выполнить другую явно определённую бизнес-операцию.
 
 Но система не должна оставлять обычный User без Identity.
+
+---
 
 ## 15. Linking двух пользователей
 
@@ -339,6 +367,8 @@ User A
 то User B больше не должен существовать как пустой аккаунт.
 
 Если у него не осталось identities, он должен быть удалён либо обработан другим предусмотренным сценарием.
+
+---
 
 ## 16. Merge нескольких пользователей
 
@@ -374,6 +404,8 @@ User A
 
 Исходные Users после успешного объединения не должны оставаться пустыми.
 
+---
+
 ## 17. Split / unlink также должен быть полноценной операцией
 
 Обратная операция должна быть возможна.
@@ -400,31 +432,784 @@ User B
 
 При этом новая структура должна быть создана осознанно, а не как побочный эффект удаления связи.
 
-## 18. Главный принцип модели
+---
 
-Вся архитектура строится вокруг разделения трёх понятий:
+# 18. Аутентификация как отдельная часть архитектуры
+
+**Authentication** отвечает за проверку того, что субъект обладает соответствующей Identity, и за управление сессиями после успешной аутентификации.
+
+При этом Authentication не должна подменять модель User/Identity.
+
+Концептуально:
 
 ```text
 User
+ │
+ └── Identity
+       │
+       ▼
+ Authentication
+       │
+       ▼
+ Session
 ```
 
-— аккаунт и владелец данных.
+Identity определяет, **каким способом пользователь может быть идентифицирован**.
+
+Authentication определяет, **как происходит проверка этого способа идентификации**.
+
+Session представляет **результат успешной аутентификации и состояние доступа пользователя**.
+
+---
+
+## 19. Authentication Service
+
+Аутентификация является отдельной областью бизнес-логики и не должна быть непосредственно связана с конкретной инфраструктурой.
+
+Auth Service отвечает за authentication-related use cases, например:
+
+- регистрацию;
+- аутентификацию;
+- создание и управление сессиями;
+- завершение сессии;
+- восстановление доступа.
+
+При этом конкретные способы аутентификации реализуются через соответствующие Identity и механизмы проверки.
+
+Например:
+
+```text
+EmailIdentity
+      │
+      ▼
+Email Authentication
+      │
+      ▼
+Session
+```
+
+или:
+
+```text
+GoogleIdentity
+      │
+      ▼
+Google OAuth / OIDC Authentication
+      │
+      ▼
+Session
+```
+
+или:
+
+```text
+PhoneIdentity
+      │
+      ▼
+Phone OTP Authentication
+      │
+      ▼
+Session
+```
+
+Таким образом, добавление нового способа входа не должно требовать изменения самой сущности User.
+
+---
+
+## 20. Аутентификация и credentials
+
+Пароль является **механизмом аутентификации конкретной Identity**, а не общей характеристикой User.
+
+Каждая Identity является самостоятельным способом идентификации и аутентификации. Она имеет собственный идентификатор и собственный механизм подтверждения владения этой Identity.
+
+Например:
+
+```text
+User
+├── EmailIdentity
+│     ├── email
+│     └── password authentication
+│
+├── UsernameIdentity
+│     ├── username
+│     └── password authentication
+│
+└── GoogleIdentity
+      ├── google_user_id
+      └── OAuth / OIDC authentication
+```
+
+Это означает:
+
+- пароль EmailIdentity относится к EmailIdentity;
+- пароль UsernameIdentity относится к UsernameIdentity;
+- OAuth/OIDC credentials GoogleIdentity относятся к GoogleIdentity;
+- разные Identity не обязаны использовать один и тот же credential;
+- наличие одной Identity не создаёт автоматически credential для другой Identity.
+
+Таким образом, User не имеет единого общего пароля только потому, что несколько Identity принадлежат одному User.
+
+Концептуально:
 
 ```text
 Identity
+      │
+      ├── identifier
+      │
+      └── authentication mechanism / credentials
 ```
 
-— подтверждённый способ идентификации/аутентификации аккаунта.
+Authentication credential является частью способа аутентификации конкретной Identity. Поэтому изменение или удаление credential одной Identity не должно автоматически изменять credential другой Identity.
+
+Пароль должен храниться в защищённом виде через механизм password hashing.
+
+---
+
+# 20.1. Identity не объединяются в одну Identity
+
+Объединение нескольких способов идентификации не означает объединение их credentials или authentication mechanisms.
+
+Например, изначально существуют:
 
 ```text
-Contact
+User A
+└── EmailIdentity
+      ├── email
+      └── password
 ```
 
-— дополнительная контактная информация пользователя, которая сама по себе не даёт права входа.
+и:
 
-Их нельзя считать взаимозаменяемыми.
+```text
+User B
+└── GoogleIdentity
+      ├── google_user_id
+      └── OAuth / OIDC
+```
 
-## 19. Итоговая модель
+После явного linking / merge:
+
+```text
+User A
+├── EmailIdentity
+│     ├── email
+│     └── password
+│
+└── GoogleIdentity
+      ├── google_user_id
+      └── OAuth / OIDC
+```
+
+Identity остаются самостоятельными.
+
+Merge означает изменение принадлежности:
+
+```text
+GoogleIdentity
+      │
+      ▼
+    User A
+```
+
+а не объединение Identity в одну сущность.
+
+Credentials также не объединяются.
+
+---
+
+# 20.2. Один User может иметь разные authentication mechanisms
+
+Один User может иметь несколько Identity, каждая из которых использует свой способ authentication.
+
+Например:
+
+```text
+User
+├── EmailIdentity
+│     └── password authentication
+│
+├── UsernameIdentity
+│     └── password authentication
+│
+└── GoogleIdentity
+      └── OAuth / OIDC authentication
+```
+
+Это означает, что Email + password и Username + password являются двумя самостоятельными authentication flows, даже если после linking они принадлежат одному User.
+
+OAuth / OIDC Google flow является отдельным механизмом и не требует создания или передачи пароля.
+
+---
+
+# 20.3. Linking Identity не переносит authentication credentials
+
+Операция linking означает:
+
+> существующая Identity связывается с существующим User.
+
+Она не означает:
+
+> credentials одной Identity становятся credentials другой Identity.
+
+Например:
+
+```text
+User A
+└── EmailIdentity
+      └── password A
+
+User B
+└── GoogleIdentity
+      └── OAuth / OIDC
+```
+
+после linking:
+
+```text
+User A
+├── EmailIdentity
+│     └── password A
+│
+└── GoogleIdentity
+      └── OAuth / OIDC
+```
+
+Password A остаётся связанным с EmailIdentity.
+
+OAuth / OIDC остаётся связанным с GoogleIdentity.
+
+Никакого общего пароля или другого общего credential между ними не возникает.
+
+---
+
+# 20.4. Authentication и Identity — разные уровни
+
+Identity отвечает на вопрос:
+
+> **Каким способом субъект идентифицирует себя как конкретную Identity?**
+
+Authentication отвечает на вопрос:
+
+> **Как система проверяет владение этой Identity?**
+
+Например:
+
+```text
+EmailIdentity
+    │
+    └── email
+          │
+          ▼
+    Password Authentication
+          │
+          ▼
+        User
+```
+
+или:
+
+```text
+GoogleIdentity
+    │
+    └── google_user_id
+          │
+          ▼
+      OAuth / OIDC
+          │
+          ▼
+        User
+```
+
+Обе Identity могут принадлежать одному User, но authentication mechanisms остаются независимыми.
+
+---
+
+# 20.5. Изменение credentials не меняет Identity
+
+Изменение пароля не создаёт новую Identity и не меняет User.
+
+Аналогично, изменение или обновление OAuth credentials Google не превращает GoogleIdentity в другую Identity.
+
+Identity остаётся той же, пока явно не выполняется операция изменения самой Identity.
+
+---
+
+# 20.6. Независимость Identity и Session
+
+Каждая успешная authentication создаёт Session для User.
+
+При этом Session должна сохранять информацию о том, через какую Identity была выполнена authentication.
+
+Концептуально:
+
+```text
+User
+├── EmailIdentity
+│     └── Session A
+│
+├── GoogleIdentity
+│     └── Session B
+│
+└── UsernameIdentity
+      └── Session C
+```
+
+Модель Session должна позволять определить:
+
+```text
+Session
+├── user_id
+└── identity_id
+```
+
+Это позволяет независимо управлять активными authentication sessions различных Identity.
+
+Например, logout / revoke GoogleIdentity может завершить sessions, связанные с GoogleIdentity, не завершая sessions, созданные через EmailIdentity или UsernameIdentity.
+
+При этом полный logout User может завершить все его sessions.
+
+---
+
+# 20.7. Revocation одной Identity не должна автоматически уничтожать остальные
+
+Если:
+
+```text
+User
+├── EmailIdentity
+├── UsernameIdentity
+└── GoogleIdentity
+```
+
+и пользователь удаляет / revokes GoogleIdentity:
+
+```text
+User
+├── EmailIdentity
+└── UsernameIdentity
+```
+
+то:
+
+- EmailIdentity продолжает существовать;
+- UsernameIdentity продолжает существовать;
+- их authentication mechanisms продолжают работать;
+- sessions, относящиеся к GoogleIdentity, должны быть завершены или отозваны согласно правилам revocation;
+- sessions других Identity не должны автоматически завершаться.
+
+Если удаляется последняя Identity User, применяется правило из раздела 14: User не должен оставаться обычным User без Identity.
+
+---
+
+# 20.8. Один User не означает один способ authentication
+
+Наличие одного User означает только наличие одного аккаунта и владельца данных.
+
+Например:
+
+```text
+User A
+├── EmailIdentity
+├── UsernameIdentity
+└── GoogleIdentity
+```
+
+не означает:
+
+```text
+User A
+└── One shared authentication credential
+```
+
+Правильная интерпретация:
+
+```text
+User A
+│
+├── EmailIdentity
+│     └── Email authentication
+│
+├── UsernameIdentity
+│     └── Username authentication
+│
+└── GoogleIdentity
+      └── Google OAuth / OIDC authentication
+```
+
+Именно поэтому Identity должны оставаться самостоятельными сущностями даже после их linking.
+
+---
+
+# 20.9. Главный принцип Identity и Authentication
+
+> **Identity — самостоятельный способ идентификации, принадлежащий одному User. Authentication mechanism и credentials принадлежат соответствующему способу authentication этой Identity. Несколько Identity могут принадлежать одному User, но их credentials и authentication mechanisms не объединяются автоматически. Linking / merging объединяет принадлежность Identity одному User, а не сами Identity и не их credentials.**
+
+---
+
+## 21. Сессия
+
+После успешной аутентификации система может создать **Session**, связанную с User и с той Identity, через которую была выполнена аутентификация.
+
+Концептуально:
+
+```text
+Identity
+      │
+      ▼
+ Authentication
+      │
+      ▼
+ Session
+   ├── user_id
+   └── identity_id
+```
+
+Один User может иметь несколько одновременно существующих сессий, в том числе сессии, созданные через разные Identity.
+
+Например:
+
+```text
+User
+├── EmailIdentity
+│     └── Session #1
+│
+├── UsernameIdentity
+│     └── Session #2
+│
+└── GoogleIdentity
+      └── Session #3
+```
+
+Сессия не является Identity.
+
+Identity отвечает на вопрос:
+
+> Каким способом этот User может быть идентифицирован?
+
+Authentication отвечает на вопрос:
+
+> Как система проверяет владение этой Identity?
+
+Session отвечает на вопрос:
+
+> Есть ли сейчас активный результат успешной аутентификации, и через какую Identity он был получен?
+
+Хранение `identity_id` в Session позволяет независимо управлять сессиями разных Identity.
+
+Например:
+
+```text
+Session #1 → EmailIdentity
+Session #2 → GoogleIdentity
+```
+
+При отзыве GoogleIdentity Session #2 может быть отозвана, не затрагивая Session #1.
+
+Полный logout User, наоборот, может завершить все его sessions.
+
+---
+
+## 22. Access Token и Refresh Token
+
+Для token-based authentication могут использоваться:
+
+```text
+Session
+├── Access Token
+└── Refresh Token
+```
+
+Access Token представляет краткоживущий результат авторизации текущего доступа.
+
+Refresh Token используется для продолжения сессии и получения нового Access Token.
+
+Token infrastructure не должна быть частью модели User или Identity.
+
+То есть:
+
+```text
+User
+├── Identity
+├── Identity
+└── Identity
+
+Session
+├── Access Token
+└── Refresh Token
+```
+
+а не:
+
+```text
+User
+└── access_token
+└── refresh_token
+```
+
+---
+
+## 23. Password Reset
+
+Восстановление пароля является операцией Authentication и не должно создавать новую Identity.
+
+Концептуально:
+
+```text
+EmailIdentity
+      │
+      ▼
+Password Reset
+      │
+      ▼
+изменение authentication credential
+```
+
+Если пользователь изменяет пароль, его Identity не меняется.
+
+Если пользователь получает письмо для восстановления пароля на контактный email, это само по себе также не создаёт EmailIdentity.
+
+Право использовать конкретный email для authentication определяется наличием соответствующей EmailIdentity.
+
+---
+
+# 24. Архитектурные слои
+
+Auth Service должен следовать принципам **Clean Architecture / Hexagonal Architecture**.
+
+Основное правило:
+
+> зависимости направлены внутрь, а бизнес-логика не зависит от инфраструктуры.
+
+Концептуальная схема:
+
+```text
+External World
+      ↓
+Router / Controller
+      ↓
+Service / Use Cases
+      ↓
+Interfaces
+      ↑
+Implementations
+```
+
+Или:
+
+```text
+Router → Service → Interfaces ← Implementations
+```
+
+---
+
+# 25. Router / Controller
+
+Router является внешним входом в систему.
+
+Он отвечает за:
+
+- получение HTTP-запросов;
+- валидацию входных данных;
+- преобразование DTO;
+- вызов соответствующего Service / Use Case;
+- формирование HTTP-ответа.
+
+Router не должен содержать бизнес-логику.
+
+Например:
+
+```text
+POST /auth/login
+        ↓
+     Router
+        ↓
+ Authentication Service
+```
+
+Решение о том, существует ли Identity, допустима ли операция или можно ли создать Session, относится к бизнес-логике, а не к Router.
+
+---
+
+# 26. Service / Use Cases
+
+Service содержит бизнес-логику и use cases.
+
+Service работает с доменной моделью:
+
+```text
+User
+Identity
+Contact
+Session
+```
+
+и не должен напрямую зависеть от:
+
+- конкретной базы данных;
+- HTTP framework;
+- JWT library;
+- password hashing library;
+- SMTP provider;
+- конкретного OAuth provider;
+- других инфраструктурных реализаций.
+
+Service использует Interfaces.
+
+---
+
+# 27. Interfaces
+
+Interfaces определяют контракты между бизнес-логикой и внешними зависимостями.
+
+Примеры:
+
+```text
+UserRepository
+IdentityRepository
+SessionRepository
+PasswordResetRepository
+
+TokenProvider
+PasswordHasher
+EmailSender
+```
+
+Также отдельные authentication providers могут быть представлены через соответствующие интерфейсы.
+
+Например:
+
+```text
+AuthenticationProvider
+├── EmailAuthenticationProvider
+├── GoogleAuthenticationProvider
+└── PhoneAuthenticationProvider
+```
+
+Интерфейс определяет поведение, но не его конкретную реализацию.
+
+---
+
+# 28. Implementations
+
+Implementations содержат конкретные реализации Interfaces.
+
+Например:
+
+```text
+UserRepository
+├── PostgresUserRepository
+└── MongoUserRepository
+```
+
+```text
+SessionRepository
+└── RedisSessionRepository
+```
+
+```text
+TokenProvider
+└── JWTTokenProvider
+```
+
+```text
+PasswordHasher
+└── ArgonPasswordHasher
+```
+
+```text
+EmailSender
+├── SMTPEmailSender
+└── SendgridEmailSender
+```
+
+Для внешней authentication provider:
+
+```text
+GoogleAuthenticationProvider
+└── Google OAuth / OIDC implementation
+```
+
+Implementations могут зависеть от:
+
+- базы данных;
+- Redis;
+- SMTP;
+- внешних API;
+- OAuth/OIDC libraries;
+- JWT libraries;
+- других third-party libraries.
+
+Бизнес-логика от этих деталей зависеть не должна.
+
+---
+
+# 29. Dependency Rules
+
+### Правило 1
+
+Зависимости направлены внутрь.
+
+Правильно:
+
+```text
+Router → Service → Interfaces
+Implementations → Interfaces
+```
+
+Неправильно:
+
+```text
+Service → PostgreSQL
+Service → Redis
+Service → SMTP
+Service → JWT library
+```
+
+---
+
+### Правило 2
+
+Business logic должна оставаться infrastructure-agnostic.
+
+Service не должен знать:
+
+- какая база данных используется;
+- какой email provider используется;
+- какая библиотека используется для JWT;
+- какой конкретный password hashing implementation используется;
+- какой внешний OAuth provider реализует конкретную Implementation.
+
+---
+
+### Правило 3
+
+Infrastructure должна быть заменяемой.
+
+Например:
+
+```text
+UserRepository
+├── PostgresUserRepository
+└── MongoUserRepository
+```
+
+или:
+
+```text
+EmailSender
+├── SMTPEmailSender
+└── SendgridEmailSender
+```
+
+Замена Implementation не должна требовать изменения основной бизнес-логики.
+
+---
+
+# 30. Связь архитектуры Authentication с User и Identity
+
+Authentication не должна становиться альтернативной моделью аккаунта.
+
+Правильная структура:
 
 ```text
                          USER
@@ -437,6 +1222,10 @@ Contact
              │             │             │
              ▼             ▼             ▼
         authentication  authentication  authentication
+             │             │             │
+             └─────────────┼─────────────┘
+                           ▼
+                       Session
 ```
 
 При этом рядом с User могут существовать:
@@ -461,14 +1250,105 @@ User
 └── Other contacts
 ```
 
-**Identity определяет доступ. Contact — нет.**
+Identity определяет возможность идентификации и authentication.
+
+Contact — нет.
+
+Session представляет результат успешной authentication.
+
+---
+
+# 31. Главный принцип модели
+
+Вся архитектура строится вокруг разделения четырёх понятий:
+
+```text
+User
+```
+
+— аккаунт и владелец данных.
+
+```text
+Identity
+```
+
+— подтверждённый способ идентификации/аутентификации аккаунта.
+
+```text
+Contact
+```
+
+— дополнительная контактная информация пользователя, которая сама по себе не даёт права входа.
+
+```text
+Session
+```
+
+— состояние активного доступа, созданное в результате успешной аутентификации.
+
+Их нельзя считать взаимозаменяемыми.
+
+---
+
+# 32. Итоговая модель
+
+```text
+                         USER
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+        Identities      Contacts       Data
+             │
+      ┌──────┼──────┐
+      │      │      │
+      ▼      ▼      ▼
+    Email  Username Google
+      │      │      │
+      └──────┼──────┘
+             │
+             ▼
+       Authentication
+             │
+             ▼
+          Session
+          /     \
+         ▼       ▼
+ Access Token  Refresh Token
+```
+
+При этом:
+
+```text
+User
+├── Identities
+│   ├── EmailIdentity
+│   ├── UsernameIdentity
+│   └── GoogleIdentity
+│
+├── Contacts
+│   ├── Email contacts
+│   ├── Phone contacts
+│   └── Other contacts
+│
+└── Sessions
+    ├── Session #1
+    ├── Session #2
+    └── ...
+```
 
 Для каждого типа Identity у User существует максимум одна активная Identity, но сам User может иметь много identities разных типов.
 
 Контактных данных одного типа может быть много, но только явно выбранный и подтверждённый механизм может сделать конкретное значение ключом соответствующей Identity.
 
-## Архитектурная точка назначения
+Authentication проверяет Identity и создаёт Session.
+
+Session не является Identity и не заменяет её.
+
+---
+
+# 33. Архитектурная точка назначения
 
 В дальнейшем все решения по моделям должны соответствовать следующей формуле:
 
-> **Один User может иметь много способов идентификации, но максимум один способ каждого типа. Identity является ключом доступа, Contact является только данными. Один User не может существовать без Identity. Linking, unlinking, merging и splitting меняют связи между User и Identity, но не должны автоматически превращать контактные данные в способы авторизации. Любое превращение контактных данных в ключ доступа требует явного подтверждения пользователя.**
+> **Один User может иметь много способов идентификации, но максимум один способ каждого типа. Identity является ключом доступа, Contact является только данными. Один User не может существовать без Identity. Linking, unlinking, merging и splitting меняют связи между User и Identity, но не должны автоматически превращать контактные данные в способы авторизации. Любое превращение контактных данных в ключ доступа требует явного подтверждения пользователя. Authentication проверяет Identity и создаёт Session. Authentication и Session не должны изменять фундаментальную модель User, Identity и Contact. Бизнес-логика не зависит от конкретной инфраструктуры, а внешние системы подключаются через Interfaces и их Implementations.**
