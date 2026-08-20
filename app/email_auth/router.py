@@ -116,6 +116,8 @@ async def enable_two_factor(
 ):
     return await service.request_enable(
         current_user,
+        email_identity.id,
+        email_identity.email,
         EMAIL_PROVIDER,
     )
 
@@ -138,6 +140,7 @@ async def confirm_enable_two_factor(
 ):
     await service.confirm_enable(
         current_user,
+        email_identity.email,
         data.challenge_id,
         data.code,
         EMAIL_PROVIDER,
@@ -161,6 +164,8 @@ async def disable_two_factor(
 ):
     return await service.request_disable(
         current_user,
+        email_identity.id,
+        email_identity.email,
         EMAIL_PROVIDER,
     )
 
@@ -183,6 +188,7 @@ async def confirm_disable_two_factor(
 ):
     await service.confirm_disable(
         current_user,
+        email_identity.email,
         data.challenge_id,
         data.code,
         EMAIL_PROVIDER,

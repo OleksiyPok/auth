@@ -45,7 +45,6 @@ async def get_all(
     return [
         UserResponseSchema(
             id=user.id,
-            email=user.email,
             first_name=user.first_name,
             last_name=user.last_name,
             role=user.role,
@@ -70,7 +69,6 @@ async def get_me(
 ) -> UserResponseSchema:
     return UserResponseSchema(
         id=current_user.id,
-        email=current_user.email,
         first_name=current_user.first_name,
         last_name=current_user.last_name,
         role=current_user.role,
@@ -96,7 +94,6 @@ async def get_by_id(
 
     return UserDetailedResponseSchema(
         id=user.id,
-        email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
         role=user.role,
@@ -132,7 +129,6 @@ async def update_self(
 
     return UserResponseSchema(
         id=user.id,
-        email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
         role=user.role,
@@ -161,7 +157,6 @@ async def assign_role(
 
     return UserResponseSchema(
         id=user.id,
-        email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
         role=user.role,

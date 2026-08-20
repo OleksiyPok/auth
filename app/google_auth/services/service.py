@@ -83,11 +83,12 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             google_user_id,
         )
 
+        identity = existing_identity
+
         if existing_identity is not None:
             user_id = existing_identity.user_id
         else:
             user = User(
-                email=google_user["email"],
                 first_name=google_user["first_name"],
                 last_name=google_user["last_name"],
             )
@@ -100,6 +101,8 @@ class GoogleAuthService(GoogleAuthServiceInterface):
                 google_user_id=google_user_id,
             )
 
+            identity = await self._repository.create_identity(identity)
+
             await self._repository.create_identity(identity)
 
         user = await self._user_repository.get_by_id(user_id)
@@ -109,7 +112,7 @@ class GoogleAuthService(GoogleAuthServiceInterface):
 
         tokens = await self._auth_session_service.create_tokens(
             user_id=user.id,
-            provider="google",
+            identity_id=identity.id,
             ip_address=ip_address,
             user_agent=user_agent,
         )

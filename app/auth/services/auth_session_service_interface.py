@@ -12,7 +12,7 @@ class AuthSessionServiceInterface(ABC):
     async def create_tokens(
         self,
         user_id: str,
-        provider: str,
+        identity_id: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TokenResponseSchema: ...

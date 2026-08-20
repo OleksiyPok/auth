@@ -5,6 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
+from app.email_auth.dependencies import get_current_email_identity
+from app.email_auth.models import EmailIdentity
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,
@@ -44,6 +46,10 @@ async def confirm_login(
 )
 async def enable(
     current_user: Annotated[User, Depends(get_current_user)],
+    email_identity: Annotated[
+        EmailIdentity,
+        Depends(get_current_email_identity),
+    ],
     service: Annotated[
         TwoFactorServiceInterface,
         Depends(get_two_factor_service),
@@ -51,6 +57,8 @@ async def enable(
 ):
     return await service.request_enable(
         current_user,
+        email_identity.id,
+        email_identity.email,
         provider="email",
     )
 
@@ -62,6 +70,10 @@ async def enable(
 async def confirm_enable(
     data: TwoFactorConfirmRequestSchema,
     current_user: Annotated[User, Depends(get_current_user)],
+    email_identity: Annotated[
+        EmailIdentity,
+        Depends(get_current_email_identity),
+    ],
     service: Annotated[
         TwoFactorServiceInterface,
         Depends(get_two_factor_service),
@@ -69,9 +81,10 @@ async def confirm_enable(
 ):
     await service.confirm_enable(
         current_user,
+        email_identity.email,
         data.challenge_id,
         data.code,
-        provider="email",
+        "email",
     )
 
 
@@ -81,6 +94,10 @@ async def confirm_enable(
 )
 async def disable(
     current_user: Annotated[User, Depends(get_current_user)],
+    email_identity: Annotated[
+        EmailIdentity,
+        Depends(get_current_email_identity),
+    ],
     service: Annotated[
         TwoFactorServiceInterface,
         Depends(get_two_factor_service),
@@ -88,6 +105,8 @@ async def disable(
 ):
     return await service.request_disable(
         current_user,
+        email_identity.id,
+        email_identity.email,
         provider="email",
     )
 
@@ -99,6 +118,7 @@ async def disable(
 async def confirm_disable(
     data: TwoFactorConfirmRequestSchema,
     current_user: Annotated[User, Depends(get_current_user)],
+    email_identity: Annotated[EmailIdentity, Depends(get_current_email_identity)],
     service: Annotated[
         TwoFactorServiceInterface,
         Depends(get_two_factor_service),
@@ -106,7 +126,8 @@ async def confirm_disable(
 ):
     await service.confirm_disable(
         current_user,
+        email_identity.email,
         data.challenge_id,
         data.code,
-        provider="email",
+        "email",
     )

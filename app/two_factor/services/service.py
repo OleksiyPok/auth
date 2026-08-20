@@ -43,6 +43,8 @@ class TwoFactorService(TwoFactorServiceInterface):
     async def _send_challenge(
         self,
         user: User,
+        email: str,
+        identity_id: str,
         purpose: str,
         provider: str,
         ip_address: str | None = None,
@@ -58,6 +60,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         challenge = TwoFactorChallenge(
             user_id=user.id,
             purpose=purpose,
+            identity_id=identity_id,
             code_hash=hash_password(code),
             provider=provider,
             ip_address=ip_address,
@@ -77,7 +80,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             subject = "Disable email two-factor authentication"
 
         await self._email_service.send(
-            to=user.email,
+            to=email,
             subject=subject,
             body=(
                 f"Your verification code is: {code}\n\n"
@@ -137,6 +140,8 @@ class TwoFactorService(TwoFactorServiceInterface):
     async def authenticate_or_challenge(
         self,
         user: User,
+        identity_id: str,
+        email: str,
         provider: str,
         two_factor_enabled: bool,
         ip_address: str | None = None,
@@ -145,10 +150,11 @@ class TwoFactorService(TwoFactorServiceInterface):
         if not two_factor_enabled:
             tokens = await self._auth_session_service.create_tokens(
                 user_id=user.id,
-                provider=provider,
+                identity_id=identity_id,
                 ip_address=ip_address,
                 user_agent=user_agent,
             )
+
             return AuthenticationResponseSchema(
                 **tokens.model_dump(),
                 requires_two_factor=False,
@@ -156,6 +162,8 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         challenge = await self._send_challenge(
             user=user,
+            email=email,
+            identity_id=identity_id,
             purpose="login",
             provider=provider,
             ip_address=ip_address,
@@ -185,7 +193,7 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         tokens = await self._auth_session_service.create_tokens(
             user_id=challenge.user_id,
-            provider=provider,
+            identity_id=challenge.identity_id,
             ip_address=challenge.ip_address,
             user_agent=challenge.user_agent,
         )
@@ -198,18 +206,30 @@ class TwoFactorService(TwoFactorServiceInterface):
     async def request_enable(
         self,
         user: User,
+        identity_id: str,
+        email: str,
         provider: str,
     ) -> TwoFactorChallengeResponseSchema:
-        settings = await self._repository.get_or_create_settings(user.id, provider)
+        settings = await self._repository.get_or_create_settings(
+            user.id,
+            provider,
+        )
 
         if settings.two_factor_enabled:
             raise TwoFactorAlreadyEnabledError()
 
-        return await self._send_challenge(user, "enable", provider)
+        return await self._send_challenge(
+            user=user,
+            email=email,
+            identity_id=identity_id,
+            purpose="enable",
+            provider=provider,
+        )
 
     async def confirm_enable(
         self,
         user: User,
+        email: str,
         challenge_id: str,
         code: str,
         provider: str,
@@ -230,23 +250,39 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         settings.two_factor_enabled = True
         await self._repository.update_settings(settings)
-        await self._send_action_notification(user, "enable")
+
+        await self._send_action_notification(
+            email,
+            "enable",
+        )
 
     async def request_disable(
         self,
         user: User,
+        identity_id: str,
+        email: str,
         provider: str,
     ) -> TwoFactorChallengeResponseSchema:
-        settings = await self._repository.get_or_create_settings(user.id, provider)
+        settings = await self._repository.get_or_create_settings(
+            user.id,
+            provider,
+        )
 
         if not settings.two_factor_enabled:
             raise TwoFactorAlreadyDisabledError()
 
-        return await self._send_challenge(user, "disable", provider)
+        return await self._send_challenge(
+            user=user,
+            email=email,
+            identity_id=identity_id,
+            purpose="disable",
+            provider=provider,
+        )
 
     async def confirm_disable(
         self,
         user: User,
+        email: str,
         challenge_id: str,
         code: str,
         provider: str,
@@ -267,11 +303,15 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         settings.two_factor_enabled = False
         await self._repository.update_settings(settings)
-        await self._send_action_notification(user, "disable")
+
+        await self._send_action_notification(
+            email,
+            "disable",
+        )
 
     async def _send_action_notification(
         self,
-        user: User,
+        email: str,
         action: str,
     ) -> None:
         template_name = {
@@ -283,7 +323,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         subject, body = rendered.split("\n\n", 1)
         subject = subject.removeprefix("Subject: ")
         await self._email_service.send(
-            to=user.email,
+            to=email,
             subject=subject,
             body=body,
         )

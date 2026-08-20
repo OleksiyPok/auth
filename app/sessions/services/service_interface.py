@@ -14,9 +14,9 @@ class SessionServiceInterface(ABC):
     async def create_session(
         self,
         user_id: str,
+        identity_id: str,
         refresh_token: str,
         expires_delta: timedelta,
-        provider: str = "username",
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Session: ...
@@ -46,6 +46,12 @@ class SessionServiceInterface(ABC):
         self,
         user_id: str,
     ) -> list[Session]: ...
+
+    @abstractmethod
+    async def revoke_identity_sessions(
+        self,
+        identity_id: str,
+    ) -> None: ...
 
     @abstractmethod
     async def revoke(

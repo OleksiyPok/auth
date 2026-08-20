@@ -22,17 +22,16 @@ class AuthSessionService(AuthSessionServiceInterface):
     async def create_tokens(
         self,
         user_id: str,
-        provider: str,
+        identity_id: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TokenResponseSchema:
-
         refresh_token = generate_refresh_token()
 
         session = await self._session_service.create_session(
             user_id=user_id,
+            identity_id=identity_id,
             refresh_token=refresh_token,
-            provider=provider,
             expires_delta=timedelta(
                 days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
             ),
@@ -44,6 +43,7 @@ class AuthSessionService(AuthSessionServiceInterface):
             subject=user_id,
             additional_claims={
                 "sid": session.id,
+                "identity_id": identity_id,
             },
         )
 
@@ -62,6 +62,7 @@ class AuthSessionService(AuthSessionServiceInterface):
             subject=session.user_id,
             additional_claims={
                 "sid": session.id,
+                "identity_id": session.identity_id,
             },
         )
 

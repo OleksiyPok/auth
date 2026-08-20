@@ -39,13 +39,20 @@ class TokenService(TokenServiceInterface):
 
         user_id = payload.get("sub")
         session_id = payload.get("sid")
+        identity_id = payload.get("identity_id")
 
-        if not user_id or not session_id:
+        if not user_id or not session_id or not identity_id:
             raise InvalidAccessTokenError()
 
-        await self._session_service.validate_session(
+        session = await self._session_service.validate_session(
             session_id,
         )
+
+        if session.user_id != user_id:
+            raise InvalidAccessTokenError()
+
+        if session.identity_id != identity_id:
+            raise InvalidAccessTokenError()
 
         user = await self._repository.get_by_id(
             user_id,

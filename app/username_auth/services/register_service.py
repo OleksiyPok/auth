@@ -33,7 +33,6 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
             raise UserAlreadyExistsError()
 
         user = User(
-            email=data.email,
             first_name=data.first_name,
             last_name=data.last_name,
         )
@@ -53,7 +52,6 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
         return RegisterResponseSchema(
             id=user.id,
             username=identity.username,
-            email=user.email,
             first_name=user.first_name,
             last_name=user.last_name,
             role=user.role,

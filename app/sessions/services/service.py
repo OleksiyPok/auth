@@ -26,9 +26,9 @@ class SessionService(SessionServiceInterface):
     async def create_session(
         self,
         user_id: str,
+        identity_id: str,
         refresh_token: str,
         expires_delta: timedelta,
-        provider: str = "username",
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> Session:
@@ -36,7 +36,7 @@ class SessionService(SessionServiceInterface):
 
         session = Session(
             user_id=user_id,
-            provider=provider,
+            identity_id=identity_id,
             refresh_token_hash=hash_refresh_token(refresh_token),
             expires_at=now + expires_delta,
             ip_address=ip_address,
@@ -89,6 +89,15 @@ class SessionService(SessionServiceInterface):
             user_id,
         )
 
+    async def get_identity_sessions(
+        self,
+        identity_id: str,
+    ) -> list[Session]:
+
+        return await self._repository.get_active_identity_sessions(
+            identity_id,
+        )
+
     async def revoke(
         self,
         session: Session,
@@ -118,6 +127,15 @@ class SessionService(SessionServiceInterface):
 
         await self.revoke(
             session,
+        )
+
+    async def revoke_identity_sessions(
+        self,
+        identity_id: str,
+    ) -> None:
+
+        await self._repository.deactivate_identity_sessions(
+            identity_id,
         )
 
     async def validate_refresh_token(

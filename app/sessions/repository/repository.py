@@ -128,6 +128,38 @@ class SessionRepository(SessionRepositoryInterface):
         result = await self._session.execute(statement)
         return list(result.scalars().all())
 
+    async def get_active_identity_sessions(
+        self,
+        identity_id: str,
+    ) -> list[Session]:
+        statement = (
+            select(Session)
+            .where(
+                cast(
+                    ColumnElement[str],
+                    Session.identity_id,
+                )
+                == identity_id
+            )
+            .where(
+                cast(
+                    ColumnElement[bool],
+                    Session.is_active,
+                )
+            )
+            .order_by(
+                desc(
+                    cast(
+                        ColumnElement[datetime],
+                        Session.created_at,
+                    )
+                )
+            )
+        )
+
+        result = await self._session.execute(statement)
+        return list(result.scalars().all())
+
     async def deactivate_user_sessions(
         self,
         user_id: str,
@@ -145,6 +177,37 @@ class SessionRepository(SessionRepositoryInterface):
                 is_active=False,
                 revoked_at=datetime.now(timezone.utc),
                 updated_at=datetime.now(timezone.utc),
+            )
+        )
+
+        await self._session.execute(statement)
+        await self._session.commit()
+
+    async def deactivate_identity_sessions(
+        self,
+        identity_id: str,
+    ) -> None:
+        now = datetime.now(timezone.utc)
+
+        statement = (
+            update(Session)
+            .where(
+                cast(
+                    ColumnElement[str],
+                    Session.identity_id,
+                )
+                == identity_id
+            )
+            .where(
+                cast(
+                    ColumnElement[bool],
+                    Session.is_active,
+                )
+            )
+            .values(
+                is_active=False,
+                revoked_at=now,
+                updated_at=now,
             )
         )
 

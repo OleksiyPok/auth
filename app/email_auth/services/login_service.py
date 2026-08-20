@@ -56,6 +56,8 @@ class EmailLoginService(EmailLoginServiceInterface):
 
         return await self._two_factor_service.authenticate_or_challenge(
             user=user,
+            identity_id=identity.id,
+            email=identity.email,
             provider="email",
             two_factor_enabled=two_factor_enabled,
             ip_address=ip_address,

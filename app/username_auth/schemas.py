@@ -6,7 +6,6 @@ from pydantic import BaseModel
 class RegisterRequestSchema(BaseModel):
     username: str
     password: str
-    email: str
     first_name: str
     last_name: str
 
@@ -14,7 +13,6 @@ class RegisterRequestSchema(BaseModel):
 class RegisterResponseSchema(BaseModel):
     id: str
     username: str
-    email: str
     first_name: str
     last_name: str
     role: str

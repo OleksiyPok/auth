@@ -21,9 +21,9 @@ class Session(SQLModel, table=True):
         foreign_key="users.id",
     )
 
-    provider: str = Field(
-        default="username",
-        max_length=32,
+    identity_id: str = Field(
+        index=True,
+        nullable=False,
     )
 
     refresh_token_hash: str

@@ -38,7 +38,6 @@ class EmailRegisterService(EmailRegisterServiceInterface):
 
         user = await self._user_repository.create(
             User(
-                email=email,
                 first_name=data.first_name,
                 last_name=data.last_name,
             )

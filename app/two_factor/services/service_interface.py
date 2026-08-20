@@ -20,6 +20,8 @@ class TwoFactorServiceInterface(ABC):
     async def authenticate_or_challenge(
         self,
         user: User,
+        identity_id: str,
+        email: str,
         provider: str,
         two_factor_enabled: bool,
         ip_address: str | None = None,
@@ -38,6 +40,8 @@ class TwoFactorServiceInterface(ABC):
     async def request_enable(
         self,
         user: User,
+        identity_id: str,
+        email: str,
         provider: str,
     ) -> TwoFactorChallengeResponseSchema: ...
 
@@ -45,6 +49,7 @@ class TwoFactorServiceInterface(ABC):
     async def confirm_enable(
         self,
         user: User,
+        email: str,
         challenge_id: str,
         code: str,
         provider: str,
@@ -54,6 +59,8 @@ class TwoFactorServiceInterface(ABC):
     async def request_disable(
         self,
         user: User,
+        identity_id: str,
+        email: str,
         provider: str,
     ) -> TwoFactorChallengeResponseSchema: ...
 
@@ -61,6 +68,7 @@ class TwoFactorServiceInterface(ABC):
     async def confirm_disable(
         self,
         user: User,
+        email: str,
         challenge_id: str,
         code: str,
         provider: str,

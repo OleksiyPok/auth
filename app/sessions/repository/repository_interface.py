@@ -38,9 +38,21 @@ class SessionRepositoryInterface(ABC):
     ) -> list[Session]: ...
 
     @abstractmethod
+    async def get_active_identity_sessions(
+        self,
+        identity_id: str,
+    ) -> list[Session]: ...
+
+    @abstractmethod
     async def deactivate_user_sessions(
         self,
         user_id: str,
+    ) -> None: ...
+
+    @abstractmethod
+    async def deactivate_identity_sessions(
+        self,
+        identity_id: str,
     ) -> None: ...
 
     @abstractmethod
