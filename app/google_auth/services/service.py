@@ -103,8 +103,6 @@ class GoogleAuthService(GoogleAuthServiceInterface):
 
             identity = await self._repository.create_identity(identity)
 
-            await self._repository.create_identity(identity)
-
         user = await self._user_repository.get_by_id(user_id)
 
         if not user:
