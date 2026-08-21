@@ -11,11 +11,10 @@ from app.db.types import UTCDateTime
 
 class UserSecuritySettings(SQLModel, table=True):
     __tablename__ = "user_security_settings"
-    __table_args__ = (UniqueConstraint("user_id", "provider"),)
+    __table_args__ = (UniqueConstraint("user_id"),)
 
     id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
     user_id: str = Field(foreign_key="users.id", index=True)
-    provider: str = Field(default="email", max_length=32, index=True)
     two_factor_enabled: bool = Field(default=False, nullable=False)
 
     created_at: datetime = Field(
@@ -40,7 +39,6 @@ class TwoFactorChallenge(SQLModel, table=True):
     identity_id: str = Field(index=True, nullable=False)
     purpose: str = Field(max_length=32, index=True)
     code_hash: str
-    provider: str | None = Field(default=None, max_length=32)
     ip_address: str | None = Field(default=None, max_length=45)
     user_agent: str | None = None
     expires_at: datetime = Field(sa_type=UTCDateTime, nullable=False)

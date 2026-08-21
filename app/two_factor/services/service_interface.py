@@ -13,7 +13,6 @@ class TwoFactorServiceInterface(ABC):
     async def is_enabled(
         self,
         user_id: str,
-        provider: str,
     ) -> bool: ...
 
     @abstractmethod
@@ -22,7 +21,6 @@ class TwoFactorServiceInterface(ABC):
         user: User,
         identity_id: str,
         email: str,
-        provider: str,
         two_factor_enabled: bool,
         ip_address: str | None = None,
         user_agent: str | None = None,
@@ -33,7 +31,6 @@ class TwoFactorServiceInterface(ABC):
         self,
         challenge_id: str,
         code: str,
-        provider: str,
     ) -> AuthenticationResponseSchema: ...
 
     @abstractmethod
@@ -42,7 +39,6 @@ class TwoFactorServiceInterface(ABC):
         user: User,
         identity_id: str,
         email: str,
-        provider: str,
     ) -> TwoFactorChallengeResponseSchema: ...
 
     @abstractmethod
@@ -52,7 +48,6 @@ class TwoFactorServiceInterface(ABC):
         email: str,
         challenge_id: str,
         code: str,
-        provider: str,
     ) -> None: ...
 
     @abstractmethod
@@ -61,7 +56,6 @@ class TwoFactorServiceInterface(ABC):
         user: User,
         identity_id: str,
         email: str,
-        provider: str,
     ) -> TwoFactorChallengeResponseSchema: ...
 
     @abstractmethod
@@ -71,5 +65,4 @@ class TwoFactorServiceInterface(ABC):
         email: str,
         challenge_id: str,
         code: str,
-        provider: str,
     ) -> None: ...

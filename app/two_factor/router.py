@@ -36,7 +36,6 @@ async def confirm_login(
     return await service.confirm_login(
         challenge_id=data.challenge_id,
         code=data.code,
-        provider="email",
     )
 
 
@@ -59,7 +58,6 @@ async def enable(
         current_user,
         email_identity.id,
         email_identity.email,
-        provider="email",
     )
 
 
@@ -84,7 +82,6 @@ async def confirm_enable(
         email_identity.email,
         data.challenge_id,
         data.code,
-        "email",
     )
 
 
@@ -107,7 +104,6 @@ async def disable(
         current_user,
         email_identity.id,
         email_identity.email,
-        provider="email",
     )
 
 
@@ -129,5 +125,4 @@ async def confirm_disable(
         email_identity.email,
         data.challenge_id,
         data.code,
-        "email",
     )

@@ -46,14 +46,11 @@ class TwoFactorService(TwoFactorServiceInterface):
         email: str,
         identity_id: str,
         purpose: str,
-        provider: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TwoFactorChallengeResponseSchema:
         await self._repository.invalidate_active_challenges(
-            user.id,
-            purpose,
-            provider,
+            user.id, purpose, identity_id
         )
 
         code = f"{secrets.randbelow(1_000_000):0{CODE_LENGTH}d}"
@@ -62,7 +59,6 @@ class TwoFactorService(TwoFactorServiceInterface):
             purpose=purpose,
             identity_id=identity_id,
             code_hash=hash_password(code),
-            provider=provider,
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=(
@@ -98,16 +94,10 @@ class TwoFactorService(TwoFactorServiceInterface):
         challenge_id: str,
         code: str,
         purpose: str,
-        provider: str,
     ) -> TwoFactorChallenge:
         challenge = await self._repository.get_challenge(challenge_id)
 
-        if (
-            not challenge
-            or challenge.purpose != purpose
-            or challenge.provider != provider
-            or challenge.used
-        ):
+        if not challenge or challenge.purpose != purpose or challenge.used:
             raise TwoFactorChallengeNotFoundError()
 
         if challenge.expires_at <= datetime.now(timezone.utc):
@@ -132,9 +122,8 @@ class TwoFactorService(TwoFactorServiceInterface):
     async def is_enabled(
         self,
         user_id: str,
-        provider: str,
     ) -> bool:
-        settings = await self._repository.get_settings(user_id, provider)
+        settings = await self._repository.get_settings(user_id)
         return bool(settings and settings.two_factor_enabled)
 
     async def authenticate_or_challenge(
@@ -142,7 +131,6 @@ class TwoFactorService(TwoFactorServiceInterface):
         user: User,
         identity_id: str,
         email: str,
-        provider: str,
         two_factor_enabled: bool,
         ip_address: str | None = None,
         user_agent: str | None = None,
@@ -165,7 +153,6 @@ class TwoFactorService(TwoFactorServiceInterface):
             email=email,
             identity_id=identity_id,
             purpose="login",
-            provider=provider,
             ip_address=ip_address,
             user_agent=user_agent,
         )
@@ -182,13 +169,11 @@ class TwoFactorService(TwoFactorServiceInterface):
         self,
         challenge_id: str,
         code: str,
-        provider: str,
     ) -> AuthenticationResponseSchema:
         challenge = await self._verify_challenge(
             challenge_id,
             code,
             "login",
-            provider,
         )
 
         tokens = await self._auth_session_service.create_tokens(
@@ -208,11 +193,9 @@ class TwoFactorService(TwoFactorServiceInterface):
         user: User,
         identity_id: str,
         email: str,
-        provider: str,
     ) -> TwoFactorChallengeResponseSchema:
         settings = await self._repository.get_or_create_settings(
             user.id,
-            provider,
         )
 
         if settings.two_factor_enabled:
@@ -223,7 +206,6 @@ class TwoFactorService(TwoFactorServiceInterface):
             email=email,
             identity_id=identity_id,
             purpose="enable",
-            provider=provider,
         )
 
     async def confirm_enable(
@@ -232,19 +214,17 @@ class TwoFactorService(TwoFactorServiceInterface):
         email: str,
         challenge_id: str,
         code: str,
-        provider: str,
     ) -> None:
         challenge = await self._verify_challenge(
             challenge_id,
             code,
             "enable",
-            provider,
         )
 
         if challenge.user_id != user.id:
             raise TwoFactorChallengeNotFoundError()
 
-        settings = await self._repository.get_or_create_settings(user.id, provider)
+        settings = await self._repository.get_or_create_settings(user.id)
         if settings.two_factor_enabled:
             raise TwoFactorAlreadyEnabledError()
 
@@ -261,11 +241,9 @@ class TwoFactorService(TwoFactorServiceInterface):
         user: User,
         identity_id: str,
         email: str,
-        provider: str,
     ) -> TwoFactorChallengeResponseSchema:
         settings = await self._repository.get_or_create_settings(
             user.id,
-            provider,
         )
 
         if not settings.two_factor_enabled:
@@ -276,7 +254,6 @@ class TwoFactorService(TwoFactorServiceInterface):
             email=email,
             identity_id=identity_id,
             purpose="disable",
-            provider=provider,
         )
 
     async def confirm_disable(
@@ -285,19 +262,17 @@ class TwoFactorService(TwoFactorServiceInterface):
         email: str,
         challenge_id: str,
         code: str,
-        provider: str,
     ) -> None:
         challenge = await self._verify_challenge(
             challenge_id,
             code,
             "disable",
-            provider,
         )
 
         if challenge.user_id != user.id:
             raise TwoFactorChallengeNotFoundError()
 
-        settings = await self._repository.get_or_create_settings(user.id, provider)
+        settings = await self._repository.get_or_create_settings(user.id)
         if not settings.two_factor_enabled:
             raise TwoFactorAlreadyDisabledError()
 

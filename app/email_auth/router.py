@@ -31,8 +31,6 @@ from app.two_factor.schemas import (
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.models import User
 
-EMAIL_PROVIDER = "email"
-
 router = APIRouter(
     prefix="/auth/email",
     tags=["Email Authentication"],
@@ -95,7 +93,6 @@ async def confirm_login(
     return await service.confirm_login(
         challenge_id=data.challenge_id,
         code=data.code,
-        provider=EMAIL_PROVIDER,
     )
 
 
@@ -118,7 +115,6 @@ async def enable_two_factor(
         current_user,
         email_identity.id,
         email_identity.email,
-        EMAIL_PROVIDER,
     )
 
 
@@ -143,7 +139,6 @@ async def confirm_enable_two_factor(
         email_identity.email,
         data.challenge_id,
         data.code,
-        EMAIL_PROVIDER,
     )
 
 
@@ -166,7 +161,6 @@ async def disable_two_factor(
         current_user,
         email_identity.id,
         email_identity.email,
-        EMAIL_PROVIDER,
     )
 
 
@@ -191,7 +185,6 @@ async def confirm_disable_two_factor(
         email_identity.email,
         data.challenge_id,
         data.code,
-        EMAIL_PROVIDER,
     )
 
 
@@ -209,6 +202,5 @@ async def get_two_factor_status(
     return TwoFactorStatusResponseSchema(
         enabled=await service.is_enabled(
             current_user.id,
-            EMAIL_PROVIDER,
         ),
     )

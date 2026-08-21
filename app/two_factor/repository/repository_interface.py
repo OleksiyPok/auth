@@ -11,14 +11,12 @@ class TwoFactorRepositoryInterface(ABC):
     async def get_settings(
         self,
         user_id: str,
-        provider: str,
     ) -> UserSecuritySettings | None: ...
 
     @abstractmethod
     async def get_or_create_settings(
         self,
         user_id: str,
-        provider: str,
     ) -> UserSecuritySettings: ...
 
     @abstractmethod
@@ -44,7 +42,7 @@ class TwoFactorRepositoryInterface(ABC):
         self,
         user_id: str,
         purpose: str,
-        provider: str,
+        identity_id: str,
     ) -> None: ...
 
     @abstractmethod

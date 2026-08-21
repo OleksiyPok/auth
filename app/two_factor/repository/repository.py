@@ -12,15 +12,10 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def get_settings(
-        self,
-        user_id: str,
-        provider: str,
-    ) -> UserSecuritySettings | None:
+    async def get_settings(self, user_id: str) -> UserSecuritySettings | None:
         result = await self._session.execute(
             select(UserSecuritySettings).where(
                 UserSecuritySettings.user_id == user_id,
-                UserSecuritySettings.provider == provider,
             )
         )
         return result.scalar_one_or_none()
@@ -28,16 +23,12 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
     async def get_or_create_settings(
         self,
         user_id: str,
-        provider: str,
     ) -> UserSecuritySettings:
-        settings = await self.get_settings(user_id, provider)
+        settings = await self.get_settings(user_id)
         if settings:
             return settings
 
-        settings = UserSecuritySettings(
-            user_id=user_id,
-            provider=provider,
-        )
+        settings = UserSecuritySettings(user_id=user_id)
         self._session.add(settings)
         await self._session.flush()
         await self._session.refresh(settings)
@@ -74,13 +65,13 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         self,
         user_id: str,
         purpose: str,
-        provider: str,
+        identity_id: str,
     ) -> None:
         result = await self._session.execute(
             select(TwoFactorChallenge).where(
                 TwoFactorChallenge.user_id == user_id,
                 TwoFactorChallenge.purpose == purpose,
-                TwoFactorChallenge.provider == provider,
+                TwoFactorChallenge.identity_id == identity_id,
                 TwoFactorChallenge.used == False,
             )
         )

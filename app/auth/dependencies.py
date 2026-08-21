@@ -85,7 +85,6 @@ async def get_current_user(
         Depends(get_token_service),
     ],
 ) -> User:
-    print("AUTH CREDENTIALS:", credentials)
 
     if credentials is None:
         raise InvalidAccessTokenError()

@@ -49,16 +49,12 @@ class EmailLoginService(EmailLoginServiceInterface):
         if not user.is_active:
             raise InactiveUserError()
 
-        two_factor_enabled = await self._two_factor_service.is_enabled(
-            user.id,
-            "email",
-        )
+        two_factor_enabled = await self._two_factor_service.is_enabled(user.id)
 
         return await self._two_factor_service.authenticate_or_challenge(
             user=user,
             identity_id=identity.id,
             email=identity.email,
-            provider="email",
             two_factor_enabled=two_factor_enabled,
             ip_address=ip_address,
             user_agent=user_agent,
