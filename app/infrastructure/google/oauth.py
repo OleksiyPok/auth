@@ -91,7 +91,7 @@ def get_google_user_info(credentials) -> dict:
             credentials.id_token,
             requests.Request(),
             settings.GOOGLE_CLIENT_ID,
-            clock_skew_in_seconds=5,
+            clock_skew_in_seconds=15,
         )
 
         google_user_id = token_info.get("sub")

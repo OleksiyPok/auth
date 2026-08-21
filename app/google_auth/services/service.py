@@ -50,11 +50,11 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         return authorization_url
 
     async def handle_callback(
-        self,
-        code: str,
-        state: str,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
+            self,
+            code: str,
+            state: str,
+            ip_address: str | None = None,
+            user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
         oauth_state = await self._repository.get_oauth_state(state)
 
@@ -79,33 +79,32 @@ class GoogleAuthService(GoogleAuthServiceInterface):
 
         google_user_id = google_user["google_user_id"]
 
-        existing_identity = await self._repository.get_identity_by_google_user_id(
+        identity = await self._repository.get_identity_by_google_user_id(
             google_user_id,
         )
 
-        identity = existing_identity
-
-        if existing_identity is not None:
-            user_id = existing_identity.user_id
-        else:
-            user = User(
-                first_name=google_user["first_name"],
-                last_name=google_user["last_name"],
+        if identity is None:
+            user = await self._user_repository.create(
+                User(
+                    first_name=google_user["first_name"],
+                    last_name=google_user["last_name"],
+                )
             )
 
-            user = await self._user_repository.create(user)
-            user_id = user.id
-
-            identity = GoogleIdentity(
-                user_id=user_id,
-                google_user_id=google_user_id,
+            identity = await self._repository.create_identity(
+                GoogleIdentity(
+                    user_id=user.id,
+                    google_user_id=google_user_id,
+                )
             )
 
-            identity = await self._repository.create_identity(identity)
+            await self._user_repository.commit()
 
-        user = await self._user_repository.get_by_id(user_id)
+        user = await self._user_repository.get_by_id(
+            identity.user_id,
+        )
 
-        if not user:
+        if user is None:
             raise GoogleOAuthStateError("Google user not found")
 
         tokens = await self._auth_session_service.create_tokens(

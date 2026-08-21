@@ -82,12 +82,7 @@ def custom_openapi():
             "scheme": "bearer",
             "bearerFormat": "JWT",
             "description": "Access token used to access protected resources.",
-        },
-        "Google Authentication": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-        },
+        }
     }
 
     app.openapi_schema = openapi_schema
