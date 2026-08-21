@@ -72,8 +72,8 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
         return result.scalar_one_or_none()
 
     async def create_identity(
-            self,
-            identity: GoogleIdentity,
+        self,
+        identity: GoogleIdentity,
     ) -> GoogleIdentity:
         self._session.add(identity)
         await self._session.flush()

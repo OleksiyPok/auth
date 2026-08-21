@@ -82,7 +82,7 @@ def custom_openapi():
             "scheme": "bearer",
             "bearerFormat": "JWT",
             "description": "Access token used to access protected resources.",
-        }
+        },
     }
 
     app.openapi_schema = openapi_schema

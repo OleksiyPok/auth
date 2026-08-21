@@ -50,11 +50,11 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         return authorization_url
 
     async def handle_callback(
-            self,
-            code: str,
-            state: str,
-            ip_address: str | None = None,
-            user_agent: str | None = None,
+        self,
+        code: str,
+        state: str,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
         oauth_state = await self._repository.get_oauth_state(state)
 
