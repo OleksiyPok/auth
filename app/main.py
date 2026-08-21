@@ -59,7 +59,6 @@ def custom_openapi():
     openapi_schema = original_openapi()
 
     components = openapi_schema.setdefault("components", {})
-    original_security_schemes = components.get("securitySchemes", {})
 
     components["securitySchemes"] = {
         "Username Authentication": {
@@ -78,48 +77,18 @@ def custom_openapi():
                 },
             },
         },
-        "Email Bearer Authentication": {
+        "Authentication": {
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
-            "description": (
-                "Access token obtained after email authentication "
-                "and two-factor verification."
-            ),
+            "description": "Access token used to access protected resources.",
         },
-        "Google Authentication": original_security_schemes.get(
-            "Google Authentication",
-            {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-            },
-        ),
+        "Google Authentication": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        },
     }
-
-    for path_item in openapi_schema.get("paths", {}).values():
-        for operation in path_item.values():
-            if not isinstance(operation, dict):
-                continue
-
-            security = operation.get("security")
-
-            if not security:
-                continue
-
-            if not any(
-                "Email Authentication" in requirement for requirement in security
-            ):
-                continue
-
-            if not any(
-                "Email Bearer Authentication" in requirement for requirement in security
-            ):
-                security.append(
-                    {
-                        "Email Bearer Authentication": [],
-                    }
-                )
 
     app.openapi_schema = openapi_schema
 
