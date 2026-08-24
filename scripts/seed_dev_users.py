@@ -11,49 +11,32 @@ from sqlmodel import select
 
 from app.auth.rbac.roles import Role
 from app.db.session import session_factory
+from app.email_auth.models import EmailIdentity
+from app.google_auth.models import GoogleIdentity
 from app.infrastructure.password import hash_password
+from app.username_auth.models import UsernameIdentity
 from app.users.models import User
 
 DEV_USERS = [
     {
-        "username": "Superadmin",
-        "password": "Superadmin",
-        "email": "superadmin@example.com",
-        "first_name": "Dev",
-        "last_name": "Superadmin",
-        "role": Role.SUPERADMIN,
+        "type": "username",
+        "username": "Username_user",
+        "password": "Username_user",
+        "first_name": "Username_user",
+        "last_name": "Develop",
     },
     {
-        "username": "Admin",
-        "password": "Admin",
-        "email": "admin@example.com",
-        "first_name": "Dev",
-        "last_name": "Admin",
-        "role": Role.ADMIN,
+        "type": "email",
+        "email": "email_user@example.com",
+        "password": "Email_user",
+        "first_name": "Email_user",
+        "last_name": "Develop",
     },
     {
-        "username": "Manager",
-        "password": "Manager",
-        "email": "manager@example.com",
-        "first_name": "Dev",
-        "last_name": "Manager",
-        "role": Role.MANAGER,
-    },
-    {
-        "username": "User_1",
-        "password": "User_1",
-        "email": "user_1@example.com",
-        "first_name": "Dev",
-        "last_name": "User One",
-        "role": Role.USER,
-    },
-    {
-        "username": "User_2",
-        "password": "User_2",
-        "email": "user_2@example.com",
-        "first_name": "Dev",
-        "last_name": "User Two",
-        "role": Role.USER,
+        "type": "google",
+        "google_user_id": "Google-user",
+        "first_name": "Google-user",
+        "last_name": "Develop",
     },
 ]
 
@@ -62,31 +45,132 @@ async def seed_dev_users() -> None:
     added_users = []
 
     async with session_factory() as session:
-        for data in DEV_USERS:
+        async with session.begin():
+
+            # ---------------------------------------------------------
+            # Username Identity
+            # ---------------------------------------------------------
+
+            username_data = next(
+                data for data in DEV_USERS if data["type"] == "username"
+            )
+
             result = await session.execute(
-                select(User).where(User.username == data["username"])
+                select(UsernameIdentity).where(
+                    UsernameIdentity.username == username_data["username"]
+                )
             )
-            user = result.scalar_one_or_none()
+            username_identity = result.scalar_one_or_none()
 
-            if user:
-                print(f"SKIP: {data['username']} already exists ({user.role})")
-                continue
+            if username_identity is None:
+                user = User(
+                    first_name=username_data["first_name"],
+                    last_name=username_data["last_name"],
+                    role=Role.USER,
+                    is_active=True,
+                )
 
-            identity = User(
-                username=data["username"],
-                password_hash=hash_password(data["password"]),
-                email=data["email"],
-                first_name=data["first_name"],
-                last_name=data["last_name"],
-                role=data["role"],
-                is_active=True,
+                session.add(user)
+                await session.flush()
+
+                identity = UsernameIdentity(
+                    user_id=user.id,
+                    username=username_data["username"],
+                    password_hash=hash_password(username_data["password"]),
+                )
+
+                session.add(identity)
+                await session.flush()
+
+                added_users.append(
+                    {
+                        "type": "Username",
+                        "login": username_data["username"],
+                        "password": username_data["password"],
+                        "user_id": user.id,
+                    }
+                )
+
+            # ---------------------------------------------------------
+            # Email Identity
+            # ---------------------------------------------------------
+
+            email_data = next(data for data in DEV_USERS if data["type"] == "email")
+
+            result = await session.execute(
+                select(EmailIdentity).where(EmailIdentity.email == email_data["email"])
             )
+            email_identity = result.scalar_one_or_none()
 
-            session.add(identity)
+            if email_identity is None:
+                user = User(
+                    first_name=email_data["first_name"],
+                    last_name=email_data["last_name"],
+                    role=Role.USER,
+                    is_active=True,
+                )
 
-            added_users.append(data)
+                session.add(user)
+                await session.flush()
 
-        await session.commit()
+                identity = EmailIdentity(
+                    user_id=user.id,
+                    email=email_data["email"],
+                    password_hash=hash_password(email_data["password"]),
+                )
+
+                session.add(identity)
+                await session.flush()
+
+                added_users.append(
+                    {
+                        "type": "Email",
+                        "login": email_data["email"],
+                        "password": email_data["password"],
+                        "user_id": user.id,
+                    }
+                )
+
+            # ---------------------------------------------------------
+            # Google Identity
+            # ---------------------------------------------------------
+
+            google_data = next(data for data in DEV_USERS if data["type"] == "google")
+
+            result = await session.execute(
+                select(GoogleIdentity).where(
+                    GoogleIdentity.google_user_id == google_data["google_user_id"]
+                )
+            )
+            google_identity = result.scalar_one_or_none()
+
+            if google_identity is None:
+                user = User(
+                    first_name=google_data["first_name"],
+                    last_name=google_data["last_name"],
+                    role=Role.USER,
+                    is_active=True,
+                )
+
+                session.add(user)
+                await session.flush()
+
+                identity = GoogleIdentity(
+                    user_id=user.id,
+                    google_user_id=google_data["google_user_id"],
+                )
+
+                session.add(identity)
+                await session.flush()
+
+                added_users.append(
+                    {
+                        "type": "Google",
+                        "login": google_data["google_user_id"],
+                        "password": None,
+                        "user_id": user.id,
+                    }
+                )
 
     print("\nDevelopment users seeded.")
 
@@ -96,11 +180,16 @@ async def seed_dev_users() -> None:
 
         for user in added_users:
             print(
-                f"Username: {user['username']:<12} "
-                f"Password: {user['password']:<12} "
-                f"Role: {user['role']:<12} "
-                f"Email: {user['email']}"
+                f"Identity: {user['type']:<10} "
+                f"Login: {user['login']:<30} "
+                f"Role: {Role.USER}"
             )
+
+            if user["password"] is not None:
+                print(f"Password: {user['password']:<30}")
+
+            print(f"User ID: {user['user_id']}")
+            print()
 
         print("-" * 80)
         print(f"Total added: {len(added_users)}")
