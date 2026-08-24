@@ -51,8 +51,6 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             )
         )
 
-        await self._user_repository.commit()
-
         return EmailRegisterResponseSchema(
             id=user.id,
             email=identity.email,

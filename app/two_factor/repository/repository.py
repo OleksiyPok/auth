@@ -39,7 +39,7 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         settings: UserSecuritySettings,
     ) -> UserSecuritySettings:
         self._session.add(settings)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(settings)
         return settings
 
@@ -48,7 +48,7 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         challenge: TwoFactorChallenge,
     ) -> TwoFactorChallenge:
         self._session.add(challenge)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(challenge)
         return challenge
 
@@ -85,6 +85,6 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         challenge: TwoFactorChallenge,
     ) -> TwoFactorChallenge:
         self._session.add(challenge)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(challenge)
         return challenge

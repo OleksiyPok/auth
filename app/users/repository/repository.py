@@ -38,13 +38,13 @@ class UserRepository(UserRepositoryInterface):
         user: User,
     ) -> User:
         self._session.add(user)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(user)
         return user
 
     async def deactivate(self, user: User) -> User:
         user.is_active = False
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(user)
         return user
 
@@ -53,7 +53,7 @@ class UserRepository(UserRepositoryInterface):
         user: User,
     ) -> User:
         await self._session.delete(user)
-        await self._session.commit()
+        await self._session.flush()
         return user
 
     async def count_active_superadmins(self) -> int:
@@ -65,6 +65,3 @@ class UserRepository(UserRepositoryInterface):
         result = await self._session.execute(stmt)
 
         return result.scalar_one()
-
-    async def commit(self) -> None:
-        await self._session.commit()

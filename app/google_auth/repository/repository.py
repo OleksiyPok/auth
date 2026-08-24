@@ -19,7 +19,7 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
         oauth_state: GoogleOAuthState,
     ) -> GoogleOAuthState:
         self._session.add(oauth_state)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(oauth_state)
 
         return oauth_state
@@ -42,7 +42,7 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
     ) -> GoogleOAuthState:
         oauth_state.used = True
 
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(oauth_state)
 
         return oauth_state

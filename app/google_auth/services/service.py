@@ -98,8 +98,6 @@ class GoogleAuthService(GoogleAuthServiceInterface):
                 )
             )
 
-            await self._user_repository.commit()
-
         user = await self._user_repository.get_by_id(
             identity.user_id,
         )

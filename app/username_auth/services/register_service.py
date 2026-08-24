@@ -47,8 +47,6 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
 
         await self._local_identity_repository.create(identity)
 
-        await self._user_repository.commit()
-
         return RegisterResponseSchema(
             id=user.id,
             username=identity.username,

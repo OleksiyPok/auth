@@ -27,6 +27,3 @@ class UserRepositoryInterface(ABC):
 
     @abstractmethod
     async def count_active_superadmins(self) -> int | None: ...
-
-    @abstractmethod
-    async def commit(self) -> None: ...

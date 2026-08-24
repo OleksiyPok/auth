@@ -24,7 +24,7 @@ class SessionRepository(SessionRepositoryInterface):
         session: Session,
     ) -> Session:
         self._session.add(session)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(session)
         return session
 
@@ -85,7 +85,7 @@ class SessionRepository(SessionRepositoryInterface):
         session: Session,
     ) -> Session:
         self._session.add(session)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(session)
         return session
 
@@ -94,7 +94,7 @@ class SessionRepository(SessionRepositoryInterface):
         session: Session,
     ) -> None:
         await self._session.delete(session)
-        await self._session.commit()
+        await self._session.flush()
 
     async def get_active_user_sessions(
         self,
@@ -181,7 +181,7 @@ class SessionRepository(SessionRepositoryInterface):
         )
 
         await self._session.execute(statement)
-        await self._session.commit()
+        await self._session.flush()
 
     async def deactivate_identity_sessions(
         self,
@@ -212,4 +212,4 @@ class SessionRepository(SessionRepositoryInterface):
         )
 
         await self._session.execute(statement)
-        await self._session.commit()
+        await self._session.flush()

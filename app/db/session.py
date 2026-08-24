@@ -15,4 +15,5 @@ session_factory = async_sessionmaker(
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with session_factory() as session:
-        yield session
+        async with session.begin():
+            yield session
