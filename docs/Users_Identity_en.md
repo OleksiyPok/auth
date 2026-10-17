@@ -233,3 +233,24 @@ When an **Identity** is deleted, its associated sessions must be terminated or r
 8. Authentication verifies ownership of an **Identity**, and a **Session** records the result of successful authentication.
 9. **Merge** and **Split** do not merge the **Identity** themselves or their credentials.
 10. All operations must preserve the integrity of the model and the consistency of **Session** with the current ownership of **Identity**.
+
+## 11. Possible Extensions
+
+The rules in sections 1–10 are fixed for the current version of the model. The extensions below are not part of it and are recorded only as a direction for future development.
+
+### 11.1. Per-Type Limit on Identity
+
+Instead of a single rule of "at most one **Identity** of each type per **User**", the maximum number of **Identity** may be defined separately for each type:
+
+| Identity type                            | Maximum per **User** | Comment                                                                                                                             |
+|------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| External providers (e.g. GoogleIdentity) | several              | For example, a work and a personal Google account. They have no credentials of their own, so they add no complexity.                |
+| UsernameIdentity                         | one                  | Several local logins with different passwords complicate credential management.                                                     |
+| EmailIdentity                            | one                  | Additional addresses remain **Contact**. Several confirmed addresses may be introduced later as a separate feature.                 |
+
+Consequences of this extension:
+
+- **Merge** conflicts (6.1) would remain only for types with a limit of one. For external providers such conflicts disappear.
+- The wording of rules 2.1, 2.3, 7.5 and 10.2 would change from "at most one **Identity** of each type" to "at most the number of **Identity** allowed for the type".
+- Global uniqueness of an identifier within its type and the requirement that a **User** has at least one **Identity** remain unchanged.
+- Credentials still belong to a specific **Identity** (section 8). Several EmailIdentity per **User** would require a separate decision, because a password would then more naturally belong to the **User** than to each address.
