@@ -76,6 +76,24 @@ Rules:
 
 The presence of data within one **Identity** does not automatically create other **Identity**.
 
+### 4.1. Verification Before Creating an Identity
+
+An **Identity** is created only after ownership of its identifier has been verified. For an EmailIdentity this means confirming access to the email address, for example with a one-time code.
+
+Until the address is confirmed, a registration request is not an **Identity** and does not reserve the address.
+
+### 4.2. Matching Email Does Not Link Identity
+
+A person may sign in through an external provider (for example, Google), and the verified email received from it may match the email of an existing EmailIdentity of some **User**. This match does not prove that the new **Identity** belongs to that **User**.
+
+In this case the system:
+
+- must not link the new **Identity** to the existing **User** automatically;
+- must not merge **Users** automatically;
+- may offer to sign in to the existing **User** and, after successful authentication, perform **Link** under the rules of this section.
+
+Without such authentication, the new **Identity** remains separate and belongs to its own **User**. Consolidation is then possible only through **Merge**.
+
 ## 5. Unlink
 
 **Unlink** is the operation of removing a specific **Identity** from a **User**.
@@ -233,6 +251,8 @@ When an **Identity** is deleted, its associated sessions must be terminated or r
 8. Authentication verifies ownership of an **Identity**, and a **Session** records the result of successful authentication.
 9. **Merge** and **Split** do not merge the **Identity** themselves or their credentials.
 10. All operations must preserve the integrity of the model and the consistency of **Session** with the current ownership of **Identity**.
+11. An **Identity** is created only after ownership of its identifier has been verified. A pending registration is not an **Identity**.
+12. A match of email or other attributes does not link an **Identity** or merge **Users** automatically. Consolidation requires **Link** after authentication, or an explicit **Merge**.
 
 ## 11. Possible Extensions
 
