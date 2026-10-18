@@ -50,3 +50,7 @@ class TwoFactorRepositoryInterface(ABC):
         self,
         challenge: TwoFactorChallenge,
     ) -> TwoFactorChallenge: ...
+
+
+    @abstractmethod
+    async def increment_challenge_attempts(self, challenge_id: str) -> int: ...

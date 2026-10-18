@@ -107,10 +107,9 @@ class TwoFactorService(TwoFactorServiceInterface):
             raise TwoFactorTooManyAttemptsError()
 
         if not verify_password(code, challenge.code_hash):
-            challenge.attempts += 1
-            await self._repository.update_challenge(challenge)
+            attempts = await self._repository.increment_challenge_attempts(challenge.id)
 
-            if challenge.attempts >= MAX_ATTEMPTS:
+            if attempts >= MAX_ATTEMPTS:
                 raise TwoFactorTooManyAttemptsError()
 
             raise InvalidTwoFactorCodeError()

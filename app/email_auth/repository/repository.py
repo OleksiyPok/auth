@@ -1,9 +1,10 @@
 # app/email_auth/repository/repository.py
 
-from sqlalchemy import delete
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import col, select
 
+from app.db.session import session_factory
 from app.email_auth.models import EmailIdentity, EmailRegistration
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
@@ -45,7 +46,6 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
         await self._session.refresh(identity)
         return identity
 
-
     async def create_registration(
         self, registration: EmailRegistration
     ) -> EmailRegistration:
@@ -60,13 +60,23 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
         )
         return result.scalar_one_or_none()
 
-    async def update_registration(
-        self, registration: EmailRegistration
-    ) -> EmailRegistration:
-        self._session.add(registration)
-        await self._session.flush()
-        await self._session.refresh(registration)
-        return registration
+    # noinspection PyMethodMayBeStatic
+    async def increment_registration_attempts(self, registration_id: str) -> int:
+        # Separate transaction: the counter must survive the rollback of the
+        # request transaction that happens when the service raises an error.
+        async with session_factory() as session:
+            async with session.begin():
+                await session.execute(
+                    update(EmailRegistration)
+                    .where(col(EmailRegistration.id) == registration_id)
+                    .values(attempts=EmailRegistration.attempts + 1)
+                )
+                result = await session.execute(
+                    select(EmailRegistration.attempts).where(
+                        EmailRegistration.id == registration_id
+                    )
+                )
+                return result.scalar_one()
 
     async def delete_registration(self, registration: EmailRegistration) -> None:
         await self._session.delete(registration)
@@ -74,5 +84,5 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
 
     async def delete_registrations_by_email(self, email: str) -> None:
         await self._session.execute(
-            delete(EmailRegistration).where(EmailRegistration.email == email)
+            delete(EmailRegistration).where(col(EmailRegistration.email) == email)
         )

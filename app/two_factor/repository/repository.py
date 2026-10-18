@@ -1,8 +1,10 @@
 # app/two_factor/repository/repository.py
 
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import col, select
 
+from app.db.session import session_factory
 from app.two_factor.models import TwoFactorChallenge, UserSecuritySettings
 from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
 
@@ -88,3 +90,21 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         await self._session.flush()
         await self._session.refresh(challenge)
         return challenge
+
+    # noinspection PyMethodMayBeStatic
+    async def increment_challenge_attempts(self, challenge_id: str) -> int:
+        # Separate transaction: the counter must survive the rollback of the
+        # request transaction that happens when the service raises an error.
+        async with session_factory() as session:
+            async with session.begin():
+                await session.execute(
+                    update(TwoFactorChallenge)
+                    .where(col(TwoFactorChallenge.id) == challenge_id)
+                    .values(attempts=TwoFactorChallenge.attempts + 1)
+                )
+                result = await session.execute(
+                    select(TwoFactorChallenge.attempts).where(
+                        TwoFactorChallenge.id == challenge_id
+                    )
+                )
+                return result.scalar_one()

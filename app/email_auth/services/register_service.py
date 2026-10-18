@@ -106,10 +106,13 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             raise EmailVerificationTooManyAttemptsError()
 
         if not verify_password(data.code, registration.code_hash):
-            registration.attempts += 1
-            await self._email_identity_repository.update_registration(registration)
+            attempts = (
+                await self._email_identity_repository.increment_registration_attempts(
+                    registration.id
+                )
+            )
 
-            if registration.attempts >= MAX_ATTEMPTS:
+            if attempts >= MAX_ATTEMPTS:
                 raise EmailVerificationTooManyAttemptsError()
 
             raise InvalidEmailVerificationCodeError()
