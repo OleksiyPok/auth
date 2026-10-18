@@ -1,522 +1,158 @@
 # AGENTS.md
 
-# Project Environment
+Instructions for AI coding agents working in this repository.
 
-This project runs in the following environment:
+## Project
 
-- Operating System: Windows 11
-- Terminal: Windows PowerShell
-- Language: Python
-- Framework: FastAPI
-- ORM: SQLModel / SQLAlchemy
-- Validation: Pydantic
-- API style: REST
-
-Always assume Windows PowerShell environment.
-
-Do not assume:
-- Linux
-- Unix
-- Bash
-- macOS
-- WSL
-- Git Bash
+- Stack: Python, FastAPI, SQLModel / SQLAlchemy (async), Pydantic, REST.
+- Developer environment: Windows 11, Windows PowerShell.
+- Identity model specification: `docs/Users_Identity_en.md` and `docs/Users_Identity_ru.md`.
+  Both versions must stay symmetric. The spec is a working hypothesis, not a law: decisions may be revisited when there are good arguments.
+- Backlog of planned work: `todo_en.md`.
 
 ---
 
-# Terminal Command Rules
+## Terminal and environment rules
 
-## IMPORTANT
+Always assume Windows PowerShell. Do not assume Linux, macOS, WSL, Bash or Git Bash.
 
-All terminal commands must be valid Windows PowerShell commands.
+All commands must be valid PowerShell, ready to copy and paste.
 
-Commands must be ready to copy and paste directly into PowerShell.
-
-Never generate:
-
-- Unix syntax
-- Bash syntax
-- Linux paths
-- macOS commands
-- CMD-specific syntax
+- Never chain commands (`&&`, `;`). Run them separately.
+- Use Windows paths with `\`. Never invent paths; verify real ones first.
+- Use PowerShell commands, not Unix ones: `Get-ChildItem`, `Get-Content`, `Select-String`, `Get-Location`, `New-Item`, `Remove-Item`, `Copy-Item`, `Move-Item`.
+- Never use `ls`, `cat`, `grep`, `find`, `pwd`, `touch`, `rm`, `cp`, `mv`, `chmod`, `sudo`, `apt`, `bash`, `sh`.
+- Use `python -m pytest` and `python -m pip install`, not `pytest` / `pip install`.
+- Check existing dependencies before adding a new one.
 
 ---
 
-# Forbidden Shell Commands
+## Project structure
 
-Never use:
-
-```
-ls
-ls -la
-cat
-grep
-find
-pwd
-touch
-rm
-cp
-mv
-chmod
-sudo
-apt
-bash
-sh
-```
-
-Use PowerShell equivalents:
-
-```
-Get-ChildItem
-Get-Content
-Select-String
-Get-Location
-New-Item
-Remove-Item
-Copy-Item
-Move-Item
-```
-
----
-
-# Command Execution Rules
-
-Never chain commands.
-
-Do not use:
-
-```
-command1 && command2
-command1 ; command2
-```
-
-Run commands separately.
-
-Wrong:
-
-```powershell
-cd C:\Projects\FastApi\auth\auth-prj && python -m pytest
-```
-
-Correct:
-
-```powershell
-cd C:\Projects\FastApi\auth\auth-prj
-
-python -m pytest
-```
-
----
-
-# Path Rules
-
-Always use Windows paths.
-
-Correct:
-
-```
-C:\Projects\FastApi\auth\auth-prj
-```
-
-Wrong:
-
-```
-/Projects/FastApi/auth/auth-prj
-```
-
-Never replace Windows path separators:
-
-```
-\
-```
-
-with:
-
-```
-/
-```
-
-Never generate Unix-style absolute paths.
-
-Never invent paths.
-
-Before executing commands:
-- verify current project location
-- verify existing folders
-- use real project paths only
-
----
-
-# Project Structure
-
-Follow this architecture:
+One folder per feature inside `app/`:
 
 ```
 app/
-    routers/
-    services/
-    schemas/
-    models/
-    dependencies/
-    core/
-
+    users/  auth/  sessions/  username_auth/  email_auth/  google_auth/  two_factor/
+    infrastructure/     external integrations: email, google, jwt, password
+    core/               settings, base exceptions, exception handlers
+    db/                 engine, session, custom column types
+    bootstrap/          initial data (superadmin)
+    router.py           collects all feature routers
+    main.py             application entry point
 tests/
+scripts/
+docs/
 ```
+
+A feature folder normally contains:
+
+```
+models.py            database models
+schemas.py           request / response models
+exceptions.py        feature exceptions
+dependencies.py      dependency wiring (Depends)
+router.py            HTTP endpoints
+repository/
+    repository.py
+    repository_interface.py
+services/
+    service.py                (or several, e.g. login_service.py, register_service.py)
+    service_interface.py      (one interface per service)
+```
+
+`auth/` additionally contains `rbac/` (roles and permissions) and token / session-issuing services.
+Follow this layout for new features. Do not introduce new top-level layers.
 
 ---
 
-# File Inspection Rules
+## Layer rules
+
+- **Routers**: HTTP endpoints, request handling, response formatting, dependency injection. No business logic.
+- **Services**: business logic, authentication and authorization logic. Depend on repository and service interfaces, never on concrete classes.
+- **Repositories**: database access only, behind an abstract interface. They use `flush`, not `commit`.
+- **Schemas**: request and response models and validation. Never mix them with database models.
+- **Models**: database tables only.
+- **Dependencies** (`dependencies.py`): build repositories and services from `Depends(get_session)` and other dependencies, including current-user and permission checks. Never create sessions manually in route handlers.
+- **Exceptions**: each feature has a base exception derived from `AppError` (`app/core/exceptions.py`) with `status_code`, `code` and `message`. Services raise them; a global handler turns them into responses.
+- **Infrastructure**: wrappers around external systems. No business logic.
+- Do not mix authentication, authorization and user management in one module.
+- When authentication changes, check all related parts: token creation and validation, current-user dependency, permissions and roles, session revocation, logout.
+
+---
+
+## Database and transactions
+
+- `get_session` runs one transaction per request: commit at the end, rollback on any exception.
+- Consequence: any write made before an error is raised is rolled back. Data that must survive an error (for example failed-code attempt counters) needs its own short transaction, as in the `increment_*_attempts` repository methods. Explain such cases with a short comment.
+- Models are registered by being imported; tables are created by `create_all` on startup. There is no Alembic yet, so the schema may be changed directly in models while the database is disposable.
+- The default database is SQLite. Row-level locks (`with_for_update`) have no effect on SQLite; real concurrency protection needs PostgreSQL.
+
+---
+
+## Identity rules (from the spec)
+
+- There is one identity of each type (email, username, Google) per user.
+- An identity is created only after ownership of its identifier is verified. A pending registration is not an identity.
+- A match of email or other attributes never links identities or merges users automatically. Consolidation requires Link from an authenticated session, or an explicit Merge.
+- Email identifiers are normalized with `strip()` + `casefold()`.
+- Terminology: say "email match", not "collision". "Conflict" means two identities of the same type during Merge.
+- A `Contact` entity does not exist yet. When it appears, it holds unverified data and is never used for login or linking.
+
+---
+
+## Working rules
 
 Before modifying code:
 
 1. Read the complete file.
-2. Understand imports.
-3. Find all usages of classes, functions and modules.
-4. Check related files.
-5. Check affected tests.
-6. Update all required imports.
+2. Understand its imports.
+3. Find all usages of the classes and functions you change.
+4. Check related files and affected tests.
+5. Update all required imports.
 
-Do not modify isolated files when changes affect other modules.
+When moving or renaming code, check imports, routers, services, schemas, models, dependencies, tests and `__init__.py` exports. Never leave broken or unused imports, duplicate code, or circular imports.
 
----
+Code style: follow the existing project style. Prefer clear names, simple structure and explicit code. Do not introduce unnecessary abstractions, classes or premature optimization.
 
-# Refactoring Rules
+Do not modify isolated files when a change affects other modules. For large refactoring, work in small logical groups and do not rewrite the project without confirmation.
 
-When moving or renaming code:
-
-Always check:
-
-- imports
-- routers
-- services
-- schemas
-- models
-- dependencies
-- tests
-- __init__.py exports
-
-Never leave:
-
-- broken imports
-- unused imports
-- duplicate classes
-- duplicate functions
-- circular imports
-
-After refactoring:
-
-Verify project consistency.
+When proposing changes, first state which files change, why, and which dependencies are affected. Then make the changes.
 
 ---
 
-# FastAPI Architecture Rules
+## Security rules
 
-Follow separation of responsibilities.
-
-## Routers
-
-Routers contain only:
-
-- HTTP endpoints
-- request handling
-- response formatting
-- dependency injection
-
-Business logic does not belong in routers.
+- Never log or return secrets, password hashes or verification codes. Store codes only as hashes.
+- Verification codes must have an expiry and a limited number of attempts.
+- Every protected endpoint needs an authentication dependency and, where relevant, a permission check.
+- Do not weaken existing checks (identity ownership, role changes, last-superadmin protection) to make a task easier.
 
 ---
 
-## Services
+## Git
 
-Services contain:
-
-- business logic
-- authentication logic
-- authorization logic
-- database operations
+- Do not commit, push, or create branches unless explicitly asked.
+- If asked to hand over changes without committing, provide file contents or precise edits (file, what to replace, where to add).
+- Before finishing, run `git status`, review the changed files, and remove temporary files.
 
 ---
 
-## Schemas
+## Testing
 
-Schemas contain:
-
-- request models
-- response models
-- validation rules
-
-Do not mix schemas with database models.
+- Permanent tests live only in `tests/`, run with `python -m pytest`, and test real backend behavior: API, authentication, authorization, database operations, validation, errors.
+- Existing tests may lag behind the models. Update them when you touch related code.
+- Do not create temporary or debugging tests. If a temporary script is unavoidable, use it for investigation and delete it afterwards.
+- Do not write trivial tests only to increase the count.
 
 ---
 
-## Dependencies
-
-Dependencies contain:
-
-- database sessions
-- authentication dependencies
-- authorization dependencies
-
-Use:
-
-```python
-Depends()
-```
-
-Do not create sessions manually inside route handlers.
-
-Correct:
-
-```python
-def route(
-    session: Session = Depends(get_session)
-):
-    return service_function(session)
-```
-
-Incorrect:
-
-```python
-session = create_session()
-```
-
----
-
-# Authentication / Authorization
-
-For authentication changes check all related components:
-
-- token creation
-- token validation
-- current user dependency
-- permissions
-- roles
-- RBAC checks
-- logout logic
-
-Do not mix:
-
-- authentication
-- authorization
-- user management
-
-into one module.
-
----
-
-# Python Rules
-
-Use:
-
-```powershell
-python -m pytest
-```
-
-instead of:
-
-```powershell
-pytest
-```
-
-Use:
-
-```powershell
-python -m pip install
-```
-
-instead of:
-
-```powershell
-pip install
-```
-
-Before adding dependencies:
-
-Check existing project dependencies first.
-
----
-
-# Testing Rules
-
-Tests are allowed and encouraged.
-
-Permanent tests must:
-
-- be located only inside `tests/`
-- test real backend functionality
-- follow existing test structure
-- be maintained as part of the project
-
-Create tests when:
-
-- implementing new functionality
-- fixing bugs
-- increasing backend coverage
-- verifying important behavior
-
----
-
-# Temporary Test Rules
-
-Do not create temporary debugging tests.
-
-Forbidden examples:
-
-```
-test_debug.py
-test_temp.py
-test_check.py
-debug_test.py
-temporary_test.py
-```
-
-Do not create tests only to verify your own intermediate changes.
-
-If a temporary test or script is created:
-
-1. Use it only for investigation.
-2. Run it.
-3. Remove it before finishing the task.
-
----
-
-# Test Quality Rules
-
-Tests inside `tests/` must be:
-
-- meaningful
-- maintainable
-- related to backend functionality
-- written according to existing project testing style
-
-Do not create trivial tests only to increase the number of tests.
-
-Prefer tests that verify:
-
-- API behavior
-- authentication
-- authorization
-- database operations
-- validation
-- error handling
-- integration between components
-
----
-
-# Temporary Files Cleanup
-
-Before completing any task:
-
-Run:
-
-```powershell
-git status
-```
-
-Review created files.
-
-Remove:
-
-- debug scripts
-- temporary tests
-- generated files
-- temporary logs
-- experimental files
-- unused files
-
-Do not remove:
-
-- existing project files
-- permanent tests
-- intentionally added files
-
-The final repository state must contain only intentional changes.
-
----
-
-# Test Execution
-
-Before running tests:
-
-Check:
-
-- project configuration
-- dependencies
-- test structure
-
-Use:
-
-```powershell
-python -m pytest
-```
-
-Do not create temporary test files for simple verification.
-
----
-
-# Code Style
-
-Follow existing project style.
-
-Do not introduce:
-
-- unnecessary abstractions
-- unnecessary classes
-- premature optimization
-
-Prefer:
-
-- clear names
-- simple structure
-- explicit code
-- maintainable architecture
-
----
-
-# Before Finishing Any Task
-
-Before saying the task is complete:
+## Before finishing any task
 
 1. Review all changed files.
-2. Check imports.
-3. Check references.
-4. Check circular imports.
-5. Check syntax errors.
-6. Run relevant tests.
-7. Run:
+2. Check imports, references, circular imports and syntax.
+3. Run relevant tests (`python -m pytest`).
+4. Run `git status` and remove temporary artifacts.
+5. Report: files changed, added and removed; tests executed; verification result.
 
-```powershell
-git status
-```
-
-8. Remove temporary artifacts.
-
-Report:
-
-- files changed
-- files added
-- files removed
-- tests executed
-- verification result
-
-Do not claim completion if code was not verified.
-
----
-
-# Communication Rules
-
-When proposing changes:
-
-First explain:
-
-- what files will change
-- why they change
-- what dependencies are affected
-
-Then modify files.
-
-For large refactoring:
-
-Work in small logical groups.
-
-Do not rewrite the whole project without confirmation.
+Do not claim completion if the code was not verified. If something could not be run, say so explicitly.
