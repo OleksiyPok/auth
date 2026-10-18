@@ -86,6 +86,8 @@ Until the address is confirmed, a registration request is not an **Identity** an
 
 A person may sign in through an external provider (for example, Google), and the verified email received from it may match the email of an existing EmailIdentity of some **User**. This match does not prove that the new **Identity** belongs to that **User**.
 
+The match is checked only among **Identity**. **Contact** data is not used for this.
+
 In this case the system:
 
 - must not link the new **Identity** to the existing **User** automatically;
