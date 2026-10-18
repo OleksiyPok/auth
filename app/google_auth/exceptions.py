@@ -15,7 +15,6 @@ class GoogleOAuthStateError(GoogleAuthError):
     message = "Invalid or expired Google OAuth state"
 
 
-
 class GoogleEmailNotVerifiedError(GoogleAuthError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "GOOGLE_EMAIL_NOT_VERIFIED"

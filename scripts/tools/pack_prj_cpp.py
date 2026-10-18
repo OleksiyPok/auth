@@ -1,7 +1,9 @@
-from pathlib import Path
-from datetime import datetime
+# scripts/tools/pack_prj_cpp.py
+
 import shutil
 import sys
+from datetime import datetime
+from pathlib import Path
 
 # ============================================================
 # Configuration

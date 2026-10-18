@@ -3,7 +3,10 @@
 from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
-from app.google_auth.exceptions import GoogleEmailNotVerifiedError, GoogleOAuthStateError
+from app.google_auth.exceptions import (
+    GoogleEmailNotVerifiedError,
+    GoogleOAuthStateError,
+)
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,

@@ -21,7 +21,6 @@ class EmailIdentityNotFoundError(EmailAuthError):
     message = "Email identity not found"
 
 
-
 class EmailRegistrationNotFoundError(EmailAuthError):
     status_code = status.HTTP_404_NOT_FOUND
     code = "EMAIL_REGISTRATION_NOT_FOUND"

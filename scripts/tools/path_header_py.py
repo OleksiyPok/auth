@@ -1,4 +1,4 @@
-# scripts/tools/path_header_python.py
+# scripts/tools/path_header_py.py
 
 import re
 import sys

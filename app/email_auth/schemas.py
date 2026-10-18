@@ -11,6 +11,7 @@ class EmailRegisterRequestSchema(BaseModel):
     first_name: str
     last_name: str
 
+
 class EmailRegisterChallengeResponseSchema(BaseModel):
     registration_id: str
     expires_at: str
@@ -20,6 +21,7 @@ class EmailRegisterChallengeResponseSchema(BaseModel):
 class EmailRegisterConfirmRequestSchema(BaseModel):
     registration_id: str
     code: str
+
 
 class EmailRegisterResponseSchema(BaseModel):
     id: str

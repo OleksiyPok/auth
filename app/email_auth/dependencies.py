@@ -58,6 +58,7 @@ async def get_email_register_service(
         email_service,
     )
 
+
 async def get_email_login_service(
     email_identity_repository: Annotated[
         EmailIdentityRepositoryInterface, Depends(get_email_identity_repository)

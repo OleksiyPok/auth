@@ -31,7 +31,6 @@ class EmailIdentity(SQLModel, table=True):
     )
 
 
-
 class EmailRegistration(SQLModel, table=True):
     __tablename__ = "email_registrations"
 

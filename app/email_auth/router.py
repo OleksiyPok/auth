@@ -68,6 +68,7 @@ async def confirm_register(
 ):
     return await service.confirm(data)
 
+
 @router.post(
     "/login",
     response_model=AuthenticationResponseSchema,
