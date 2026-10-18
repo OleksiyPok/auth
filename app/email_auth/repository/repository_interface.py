@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from app.email_auth.models import EmailIdentity
+from app.email_auth.models import EmailIdentity, EmailRegistration
 
 
 class EmailIdentityRepositoryInterface(ABC):
@@ -21,3 +21,25 @@ class EmailIdentityRepositoryInterface(ABC):
 
     @abstractmethod
     async def update(self, identity: EmailIdentity) -> EmailIdentity: ...
+
+
+    @abstractmethod
+    async def create_registration(
+        self, registration: EmailRegistration
+    ) -> EmailRegistration: ...
+
+    @abstractmethod
+    async def get_registration(
+        self, registration_id: str
+    ) -> EmailRegistration | None: ...
+
+    @abstractmethod
+    async def update_registration(
+        self, registration: EmailRegistration
+    ) -> EmailRegistration: ...
+
+    @abstractmethod
+    async def delete_registration(self, registration: EmailRegistration) -> None: ...
+
+    @abstractmethod
+    async def delete_registrations_by_email(self, email: str) -> None: ...

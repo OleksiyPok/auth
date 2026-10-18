@@ -29,3 +29,22 @@ class EmailIdentity(SQLModel, table=True):
         ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
+
+
+
+class EmailRegistration(SQLModel, table=True):
+    __tablename__ = "email_registrations"
+
+    id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
+    email: str = Field(index=True)
+    first_name: str
+    last_name: str
+    password_hash: str
+    code_hash: str
+    expires_at: datetime = Field(sa_type=UTCDateTime, nullable=False)
+    attempts: int = Field(default=0, nullable=False)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=UTCDateTime,
+        nullable=False,
+    )

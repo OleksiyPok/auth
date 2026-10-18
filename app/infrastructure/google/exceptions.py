@@ -7,3 +7,4 @@ class GoogleInfrastructureError(Exception):
 
 class GoogleOAuthError(GoogleInfrastructureError):
     """Google OAuth authorization failed."""
+

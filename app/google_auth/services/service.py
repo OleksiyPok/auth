@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
-from app.google_auth.exceptions import GoogleOAuthStateError
+from app.google_auth.exceptions import GoogleEmailNotVerifiedError, GoogleOAuthStateError
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
@@ -74,6 +74,9 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         )
 
         google_user = get_google_user_info(credentials)
+
+        if not google_user["email_verified"]:
+            raise GoogleEmailNotVerifiedError()
 
         await self._repository.mark_oauth_state_used(oauth_state)
 

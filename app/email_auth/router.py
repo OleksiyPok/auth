@@ -14,6 +14,8 @@ from app.email_auth.dependencies import (
 from app.email_auth.models import EmailIdentity
 from app.email_auth.schemas import (
     EmailLoginRequestSchema,
+    EmailRegisterChallengeResponseSchema,
+    EmailRegisterConfirmRequestSchema,
     EmailRegisterRequestSchema,
     EmailRegisterResponseSchema,
 )
@@ -39,8 +41,8 @@ router = APIRouter(
 
 @router.post(
     "/register",
-    response_model=EmailRegisterResponseSchema,
-    status_code=status.HTTP_201_CREATED,
+    response_model=EmailRegisterChallengeResponseSchema,
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def register(
     data: EmailRegisterRequestSchema,
@@ -51,6 +53,20 @@ async def register(
 ):
     return await service.register(data)
 
+
+@router.post(
+    "/register/confirm",
+    response_model=EmailRegisterResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+)
+async def confirm_register(
+    data: EmailRegisterConfirmRequestSchema,
+    service: Annotated[
+        EmailRegisterServiceInterface,
+        Depends(get_email_register_service),
+    ],
+):
+    return await service.confirm(data)
 
 @router.post(
     "/login",

@@ -98,6 +98,7 @@ def get_google_user_info(credentials) -> dict:
         email = token_info.get("email")
         first_name = token_info.get("given_name")
         last_name = token_info.get("family_name")
+        email_verified = token_info.get("email_verified", False)
 
         if not google_user_id:
             raise GoogleOAuthError("Google ID token does not contain subject")
@@ -108,6 +109,7 @@ def get_google_user_info(credentials) -> dict:
         return {
             "google_user_id": google_user_id,
             "email": email,
+            "email_verified": bool(email_verified),
             "first_name": first_name or "",
             "last_name": last_name or "",
         }

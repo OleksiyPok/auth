@@ -11,6 +11,15 @@ class EmailRegisterRequestSchema(BaseModel):
     first_name: str
     last_name: str
 
+class EmailRegisterChallengeResponseSchema(BaseModel):
+    registration_id: str
+    expires_at: str
+    message: str = "Verification code sent to your email"
+
+
+class EmailRegisterConfirmRequestSchema(BaseModel):
+    registration_id: str
+    code: str
 
 class EmailRegisterResponseSchema(BaseModel):
     id: str

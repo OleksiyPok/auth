@@ -18,7 +18,8 @@ from app.email_auth.services.register_service import EmailRegisterService
 from app.email_auth.services.register_service_interface import (
     EmailRegisterServiceInterface,
 )
-from app.two_factor.dependencies import get_two_factor_service
+from app.infrastructure.email.base import EmailService
+from app.two_factor.dependencies import get_email_service, get_two_factor_service
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.dependencies import get_user_repository
 from app.users.models import User
@@ -49,9 +50,13 @@ async def get_email_register_service(
     email_identity_repository: Annotated[
         EmailIdentityRepositoryInterface, Depends(get_email_identity_repository)
     ],
+    email_service: Annotated[EmailService, Depends(get_email_service)],
 ) -> EmailRegisterServiceInterface:
-    return EmailRegisterService(user_repository, email_identity_repository)
-
+    return EmailRegisterService(
+        user_repository,
+        email_identity_repository,
+        email_service,
+    )
 
 async def get_email_login_service(
     email_identity_repository: Annotated[
