@@ -5,9 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user
 from app.db.session import get_session
-from app.email_auth.exceptions import EmailIdentityNotFoundError
 from app.email_auth.repository.repository import EmailIdentityRepository
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
@@ -22,7 +20,6 @@ from app.infrastructure.email.base import EmailService
 from app.two_factor.dependencies import get_email_service, get_two_factor_service
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.dependencies import get_user_repository
-from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
 
@@ -30,19 +27,6 @@ async def get_email_identity_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> EmailIdentityRepositoryInterface:
     return EmailIdentityRepository(session)
-
-
-async def get_current_email_identity(
-    current_user: Annotated[User, Depends(get_current_user)],
-    repository: Annotated[
-        EmailIdentityRepositoryInterface,
-        Depends(get_email_identity_repository),
-    ],
-):
-    identity = await repository.get_by_user_id(current_user.id)
-    if not identity:
-        raise EmailIdentityNotFoundError()
-    return identity
 
 
 async def get_email_register_service(

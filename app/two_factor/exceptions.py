@@ -43,3 +43,9 @@ class TwoFactorTooManyAttemptsError(TwoFactorError):
     status_code = status.HTTP_429_TOO_MANY_REQUESTS
     code = "TWO_FACTOR_TOO_MANY_ATTEMPTS"
     message = "Too many invalid two-factor code attempts"
+
+
+class TwoFactorMethodNotAvailableError(TwoFactorError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "TWO_FACTOR_METHOD_NOT_AVAILABLE"
+    message = "No confirmation method is available for this account"

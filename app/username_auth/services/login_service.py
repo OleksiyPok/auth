@@ -1,8 +1,8 @@
 # app/username_auth/services/login_service.py
 
-from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.infrastructure.password import verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
+from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.username_auth.exceptions import InvalidCredentialsError
 from app.username_auth.repository.repository_interface import (
     UsernameIdentityRepositoryInterface,
@@ -11,7 +11,7 @@ from app.username_auth.schemas import LoginRequestSchema
 from app.username_auth.services.login_service_interface import (
     UsernameLoginServiceInterface,
 )
-from app.users.exceptions import UserNotFoundError
+from app.users.exceptions import InactiveUserError, UserNotFoundError
 from app.users.repository.repository_interface import UserRepositoryInterface
 
 
@@ -21,11 +21,11 @@ class UsernameLoginService(UsernameLoginServiceInterface):
         self,
         local_identity_repository: UsernameIdentityRepositoryInterface,
         user_repository: UserRepositoryInterface,
-        auth_session_service: AuthSessionServiceInterface,
+        two_factor_service: TwoFactorServiceInterface,
     ):
         self._local_identity_repository = local_identity_repository
         self._user_repository = user_repository
-        self._auth_session_service = auth_session_service
+        self._two_factor_service = two_factor_service
 
     async def login(
         self,
@@ -46,14 +46,12 @@ class UsernameLoginService(UsernameLoginServiceInterface):
         if not user:
             raise UserNotFoundError()
 
-        tokens = await self._auth_session_service.create_tokens(
-            user_id=user.id,
+        if not user.is_active:
+            raise InactiveUserError()
+
+        return await self._two_factor_service.authenticate_or_challenge(
+            user=user,
             identity_id=identity.id,
             ip_address=ip_address,
             user_agent=user_agent,
-        )
-
-        return AuthenticationResponseSchema(
-            **tokens.model_dump(),
-            requires_two_factor=False,
         )

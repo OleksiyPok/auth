@@ -42,7 +42,6 @@ class TwoFactorRepositoryInterface(ABC):
         self,
         user_id: str,
         purpose: str,
-        identity_id: str,
     ) -> None: ...
 
     @abstractmethod

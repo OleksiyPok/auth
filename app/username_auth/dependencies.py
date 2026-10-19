@@ -5,9 +5,9 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_auth_session_service
-from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.db.session import get_session
+from app.two_factor.dependencies import get_two_factor_service
+from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.username_auth.repository.repository import UsernameIdentityRepository
 from app.username_auth.repository.repository_interface import (
     UsernameIdentityRepositoryInterface,
@@ -58,13 +58,13 @@ async def get_username_login_service(
         UserRepositoryInterface,
         Depends(get_user_repository),
     ],
-    auth_session_service: Annotated[
-        AuthSessionServiceInterface,
-        Depends(get_auth_session_service),
+    two_factor_service: Annotated[
+        TwoFactorServiceInterface,
+        Depends(get_two_factor_service),
     ],
 ) -> UsernameLoginServiceInterface:
     return UsernameLoginService(
         local_identity_repository,
         user_repository,
-        auth_session_service,
+        two_factor_service,
     )

@@ -4,6 +4,9 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
+from app.email_auth.repository.repository_interface import (
+    EmailIdentityRepositoryInterface,
+)
 from app.infrastructure.email.base import EmailService
 from app.infrastructure.email.templates import TEMPLATE_REGISTRY
 from app.infrastructure.password import hash_password, verify_password
@@ -15,11 +18,15 @@ from app.two_factor.exceptions import (
     TwoFactorAlreadyEnabledError,
     TwoFactorChallengeNotFoundError,
     TwoFactorCodeExpiredError,
+    TwoFactorMethodNotAvailableError,
     TwoFactorTooManyAttemptsError,
 )
 from app.two_factor.models import TwoFactorChallenge
 from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
-from app.two_factor.schemas import TwoFactorChallengeResponseSchema
+from app.two_factor.schemas import (
+    TwoFactorChallengeResponseSchema,
+    TwoFactorMethodSchema,
+)
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.models import User
 
@@ -28,30 +35,55 @@ MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
 CODE_LENGTH = fa_settings.CODE_LENGTH
 
 
+def _mask_email(email: str) -> str:
+    local, _, domain = email.partition("@")
+    return f"{local[:1]}***@{domain}"
+
+
 class TwoFactorService(TwoFactorServiceInterface):
 
     def __init__(
         self,
         repository: TwoFactorRepositoryInterface,
+        email_identity_repository: EmailIdentityRepositoryInterface,
         auth_session_service: AuthSessionServiceInterface,
         email_service: EmailService,
     ):
         self._repository = repository
+        self._email_identity_repository = email_identity_repository
         self._auth_session_service = auth_session_service
         self._email_service = email_service
+
+    async def _get_email(self, user_id: str) -> str:
+        # The confirmation address is taken from the account, not from the
+        # sign-in method used. If there is none, fail closed.
+        identity = await self._email_identity_repository.get_by_user_id(user_id)
+        if not identity:
+            raise TwoFactorMethodNotAvailableError()
+        return identity.email
+
+    async def get_methods(self, user_id: str) -> list[TwoFactorMethodSchema]:
+        identity = await self._email_identity_repository.get_by_user_id(user_id)
+        if not identity:
+            return []
+        return [
+            TwoFactorMethodSchema(
+                type="email",
+                destination=_mask_email(identity.email),
+            )
+        ]
 
     async def _send_challenge(
         self,
         user: User,
-        email: str,
-        identity_id: str,
         purpose: str,
+        identity_id: str | None = None,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TwoFactorChallengeResponseSchema:
-        await self._repository.invalidate_active_challenges(
-            user.id, purpose, identity_id
-        )
+        email = await self._get_email(user.id)
+
+        await self._repository.invalidate_active_challenges(user.id, purpose)
 
         code = f"{secrets.randbelow(1_000_000):0{CODE_LENGTH}d}"
         challenge = TwoFactorChallenge(
@@ -129,12 +161,10 @@ class TwoFactorService(TwoFactorServiceInterface):
         self,
         user: User,
         identity_id: str,
-        email: str,
-        two_factor_enabled: bool,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
-        if not two_factor_enabled:
+        if not await self.is_enabled(user.id):
             tokens = await self._auth_session_service.create_tokens(
                 user_id=user.id,
                 identity_id=identity_id,
@@ -149,9 +179,8 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         challenge = await self._send_challenge(
             user=user,
-            email=email,
-            identity_id=identity_id,
             purpose="login",
+            identity_id=identity_id,
             ip_address=ip_address,
             user_agent=user_agent,
         )
@@ -187,12 +216,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             requires_two_factor=False,
         )
 
-    async def request_enable(
-        self,
-        user: User,
-        identity_id: str,
-        email: str,
-    ) -> TwoFactorChallengeResponseSchema:
+    async def request_enable(self, user: User) -> TwoFactorChallengeResponseSchema:
         settings = await self._repository.get_or_create_settings(
             user.id,
         )
@@ -202,15 +226,12 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         return await self._send_challenge(
             user=user,
-            email=email,
-            identity_id=identity_id,
             purpose="enable",
         )
 
     async def confirm_enable(
         self,
         user: User,
-        email: str,
         challenge_id: str,
         code: str,
     ) -> None:
@@ -231,15 +252,13 @@ class TwoFactorService(TwoFactorServiceInterface):
         await self._repository.update_settings(settings)
 
         await self._send_action_notification(
-            email,
+            await self._get_email(user.id),
             "enable",
         )
 
     async def request_disable(
         self,
         user: User,
-        identity_id: str,
-        email: str,
     ) -> TwoFactorChallengeResponseSchema:
         settings = await self._repository.get_or_create_settings(
             user.id,
@@ -250,15 +269,12 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         return await self._send_challenge(
             user=user,
-            email=email,
-            identity_id=identity_id,
             purpose="disable",
         )
 
     async def confirm_disable(
         self,
         user: User,
-        email: str,
         challenge_id: str,
         code: str,
     ) -> None:
@@ -279,7 +295,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         await self._repository.update_settings(settings)
 
         await self._send_action_notification(
-            email,
+            await self._get_email(user.id),
             "disable",
         )
 

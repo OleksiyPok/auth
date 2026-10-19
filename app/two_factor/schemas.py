@@ -20,5 +20,11 @@ class TwoFactorLoginConfirmResponseSchema(AuthenticationResponseSchema):
     pass
 
 
+class TwoFactorMethodSchema(BaseModel):
+    type: str
+    destination: str
+
+
 class TwoFactorStatusResponseSchema(BaseModel):
     enabled: bool
+    methods: list[TwoFactorMethodSchema]

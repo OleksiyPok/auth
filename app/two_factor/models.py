@@ -36,7 +36,7 @@ class TwoFactorChallenge(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
     user_id: str = Field(foreign_key="users.id", index=True)
-    identity_id: str = Field(index=True, nullable=False)
+    identity_id: str | None = Field(default=None, index=True)
     purpose: str = Field(max_length=32, index=True)
     code_hash: str
     ip_address: str | None = Field(default=None, max_length=45)

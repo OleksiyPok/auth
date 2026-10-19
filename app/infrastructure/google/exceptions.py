@@ -1,5 +1,6 @@
 # app/infrastructure/google/exceptions.py
 
+
 class GoogleInfrastructureError(Exception):
     """Base exception for Google infrastructure errors."""
 

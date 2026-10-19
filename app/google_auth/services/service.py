@@ -2,7 +2,6 @@
 
 from datetime import datetime, timedelta, timezone
 
-from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.google_auth.exceptions import (
     GoogleEmailNotVerifiedError,
     GoogleOAuthStateError,
@@ -18,6 +17,8 @@ from app.infrastructure.google.oauth import (
     get_google_user_info,
 )
 from app.sessions.schemas import AuthenticationResponseSchema
+from app.two_factor.services.service_interface import TwoFactorServiceInterface
+from app.users.exceptions import InactiveUserError
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
@@ -30,11 +31,11 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         self,
         repository: GoogleAuthRepositoryInterface,
         user_repository: UserRepositoryInterface,
-        auth_session_service: AuthSessionServiceInterface,
+        two_factor_service: TwoFactorServiceInterface,
     ):
         self._repository = repository
         self._user_repository = user_repository
-        self._auth_session_service = auth_session_service
+        self._two_factor_service = two_factor_service
 
     async def create_authorization_url(self) -> str:
         authorization_url, state, code_verifier = get_google_authorization_url()
@@ -111,14 +112,12 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         if user is None:
             raise GoogleOAuthStateError("Google user not found")
 
-        tokens = await self._auth_session_service.create_tokens(
-            user_id=user.id,
+        if not user.is_active:
+            raise InactiveUserError()
+
+        return await self._two_factor_service.authenticate_or_challenge(
+            user=user,
             identity_id=identity.id,
             ip_address=ip_address,
             user_agent=user_agent,
-        )
-
-        return AuthenticationResponseSchema(
-            **tokens.model_dump(),
-            requires_two_factor=False,
         )

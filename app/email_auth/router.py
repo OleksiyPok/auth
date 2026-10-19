@@ -5,13 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.auth.dependencies import get_current_user
-from app.email_auth.dependencies import (
-    get_current_email_identity,
+from app.email_auth.dependencies import (  # get_current_email_identity,
     get_email_login_service,
     get_email_register_service,
 )
-from app.email_auth.models import EmailIdentity
 from app.email_auth.schemas import (
     EmailLoginRequestSchema,
     EmailRegisterChallengeResponseSchema,
@@ -24,14 +21,6 @@ from app.email_auth.services.register_service_interface import (
     EmailRegisterServiceInterface,
 )
 from app.sessions.schemas import AuthenticationResponseSchema
-from app.two_factor.dependencies import get_two_factor_service
-from app.two_factor.schemas import (
-    TwoFactorChallengeResponseSchema,
-    TwoFactorConfirmRequestSchema,
-    TwoFactorStatusResponseSchema,
-)
-from app.two_factor.services.service_interface import TwoFactorServiceInterface
-from app.users.models import User
 
 router = APIRouter(
     prefix="/auth/email",
@@ -93,131 +82,4 @@ async def login(
         data=data,
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
-    )
-
-
-@router.post(
-    "/login/confirm",
-    response_model=AuthenticationResponseSchema,
-)
-async def confirm_login(
-    data: TwoFactorConfirmRequestSchema,
-    service: Annotated[
-        TwoFactorServiceInterface,
-        Depends(get_two_factor_service),
-    ],
-):
-    return await service.confirm_login(
-        challenge_id=data.challenge_id,
-        code=data.code,
-    )
-
-
-@router.post(
-    "/2fa/enable",
-    response_model=TwoFactorChallengeResponseSchema,
-)
-async def enable_two_factor(
-    current_user: Annotated[User, Depends(get_current_user)],
-    email_identity: Annotated[
-        EmailIdentity,
-        Depends(get_current_email_identity),
-    ],
-    service: Annotated[
-        TwoFactorServiceInterface,
-        Depends(get_two_factor_service),
-    ],
-):
-    return await service.request_enable(
-        current_user,
-        email_identity.id,
-        email_identity.email,
-    )
-
-
-@router.post(
-    "/2fa/enable/confirm",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def confirm_enable_two_factor(
-    data: TwoFactorConfirmRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
-    email_identity: Annotated[
-        EmailIdentity,
-        Depends(get_current_email_identity),
-    ],
-    service: Annotated[
-        TwoFactorServiceInterface,
-        Depends(get_two_factor_service),
-    ],
-):
-    await service.confirm_enable(
-        current_user,
-        email_identity.email,
-        data.challenge_id,
-        data.code,
-    )
-
-
-@router.post(
-    "/2fa/disable",
-    response_model=TwoFactorChallengeResponseSchema,
-)
-async def disable_two_factor(
-    current_user: Annotated[User, Depends(get_current_user)],
-    email_identity: Annotated[
-        EmailIdentity,
-        Depends(get_current_email_identity),
-    ],
-    service: Annotated[
-        TwoFactorServiceInterface,
-        Depends(get_two_factor_service),
-    ],
-):
-    return await service.request_disable(
-        current_user,
-        email_identity.id,
-        email_identity.email,
-    )
-
-
-@router.post(
-    "/2fa/disable/confirm",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def confirm_disable_two_factor(
-    data: TwoFactorConfirmRequestSchema,
-    current_user: Annotated[User, Depends(get_current_user)],
-    email_identity: Annotated[
-        EmailIdentity,
-        Depends(get_current_email_identity),
-    ],
-    service: Annotated[
-        TwoFactorServiceInterface,
-        Depends(get_two_factor_service),
-    ],
-):
-    await service.confirm_disable(
-        current_user,
-        email_identity.email,
-        data.challenge_id,
-        data.code,
-    )
-
-
-@router.get(
-    "/2fa/status",
-    response_model=TwoFactorStatusResponseSchema,
-)
-async def get_two_factor_status(
-    current_user: Annotated[User, Depends(get_current_user)],
-    service: Annotated[
-        TwoFactorServiceInterface,
-        Depends(get_two_factor_service),
-    ],
-):
-    return TwoFactorStatusResponseSchema(
-        enabled=await service.is_enabled(
-            current_user.id,
-        ),
     )

@@ -3,7 +3,10 @@
 from abc import ABC, abstractmethod
 
 from app.sessions.schemas import AuthenticationResponseSchema
-from app.two_factor.schemas import TwoFactorChallengeResponseSchema
+from app.two_factor.schemas import (
+    TwoFactorChallengeResponseSchema,
+    TwoFactorMethodSchema,
+)
 from app.users.models import User
 
 
@@ -16,12 +19,16 @@ class TwoFactorServiceInterface(ABC):
     ) -> bool: ...
 
     @abstractmethod
+    async def get_methods(
+        self,
+        user_id: str,
+    ) -> list[TwoFactorMethodSchema]: ...
+
+    @abstractmethod
     async def authenticate_or_challenge(
         self,
         user: User,
         identity_id: str,
-        email: str,
-        two_factor_enabled: bool,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema: ...
@@ -37,15 +44,12 @@ class TwoFactorServiceInterface(ABC):
     async def request_enable(
         self,
         user: User,
-        identity_id: str,
-        email: str,
     ) -> TwoFactorChallengeResponseSchema: ...
 
     @abstractmethod
     async def confirm_enable(
         self,
         user: User,
-        email: str,
         challenge_id: str,
         code: str,
     ) -> None: ...
@@ -54,15 +58,12 @@ class TwoFactorServiceInterface(ABC):
     async def request_disable(
         self,
         user: User,
-        identity_id: str,
-        email: str,
     ) -> TwoFactorChallengeResponseSchema: ...
 
     @abstractmethod
     async def confirm_disable(
         self,
         user: User,
-        email: str,
         challenge_id: str,
         code: str,
     ) -> None: ...

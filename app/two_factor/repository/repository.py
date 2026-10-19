@@ -67,13 +67,11 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         self,
         user_id: str,
         purpose: str,
-        identity_id: str,
     ) -> None:
         result = await self._session.execute(
             select(TwoFactorChallenge).where(
                 TwoFactorChallenge.user_id == user_id,
                 TwoFactorChallenge.purpose == purpose,
-                TwoFactorChallenge.identity_id == identity_id,
                 TwoFactorChallenge.used == False,
             )
         )
@@ -93,8 +91,6 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
 
     # noinspection PyMethodMayBeStatic
     async def increment_challenge_attempts(self, challenge_id: str) -> int:
-        # Separate transaction: the counter must survive the rollback of the
-        # request transaction that happens when the service raises an error.
         async with session_factory() as session:
             async with session.begin():
                 await session.execute(
