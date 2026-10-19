@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = static_config.API_V1_PREFIX
     API_V2_PREFIX: str = static_config.API_V2_PREFIX
 
+    APP_HOST: str = "127.0.0.1"
+    APP_PORT: int = 8000
+
     DATABASE_URL: str = "sqlite+aiosqlite:///./app.db"
 
     CORS_ORIGINS: list[str] = Field(default_factory=list)
