@@ -23,6 +23,9 @@ class EmailIdentityRepositoryInterface(ABC):
     async def update(self, identity: EmailIdentity) -> EmailIdentity: ...
 
     @abstractmethod
+    async def delete(self, identity: EmailIdentity) -> None: ...
+
+    @abstractmethod
     async def create_registration(
         self, registration: EmailRegistration
     ) -> EmailRegistration: ...

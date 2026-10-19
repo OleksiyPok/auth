@@ -36,3 +36,9 @@ class UsernameIdentityRepositoryInterface(ABC):
         self,
         identity: UsernameIdentity,
     ) -> UsernameIdentity: ...
+
+    @abstractmethod
+    async def delete(
+        self,
+        identity: UsernameIdentity,
+    ) -> None: ...

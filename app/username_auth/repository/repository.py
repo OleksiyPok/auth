@@ -64,3 +64,10 @@ class UsernameIdentityRepository(UsernameIdentityRepositoryInterface):
         await self._session.flush()
         await self._session.refresh(identity)
         return identity
+
+    async def delete(
+        self,
+        identity: UsernameIdentity,
+    ) -> None:
+        await self._session.delete(identity)
+        await self._session.flush()

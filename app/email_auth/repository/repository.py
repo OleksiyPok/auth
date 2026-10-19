@@ -46,6 +46,10 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
         await self._session.refresh(identity)
         return identity
 
+    async def delete(self, identity: EmailIdentity) -> None:
+        await self._session.delete(identity)
+        await self._session.flush()
+
     async def create_registration(
         self, registration: EmailRegistration
     ) -> EmailRegistration:

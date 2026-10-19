@@ -89,3 +89,22 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
         await self._session.flush()
         await self._session.refresh(identity)
         return identity
+
+    async def get_identity_by_user_id(
+        self,
+        user_id: str,
+    ) -> GoogleIdentity | None:
+        result = await self._session.execute(
+            select(GoogleIdentity).where(
+                GoogleIdentity.user_id == user_id,
+            )
+        )
+
+        return result.scalar_one_or_none()
+
+    async def delete_identity(
+        self,
+        identity: GoogleIdentity,
+    ) -> None:
+        await self._session.delete(identity)
+        await self._session.flush()

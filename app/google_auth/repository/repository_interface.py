@@ -48,3 +48,15 @@ class GoogleAuthRepositoryInterface(ABC):
         self,
         identity: GoogleIdentity,
     ) -> GoogleIdentity: ...
+
+    @abstractmethod
+    async def get_identity_by_user_id(
+        self,
+        user_id: str,
+    ) -> GoogleIdentity | None: ...
+
+    @abstractmethod
+    async def delete_identity(
+        self,
+        identity: GoogleIdentity,
+    ) -> None: ...
