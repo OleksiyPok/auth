@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.email_auth.dependencies import (  # get_current_email_identity,
+from app.email_auth.dependencies import (
     get_email_login_service,
     get_email_register_service,
 )

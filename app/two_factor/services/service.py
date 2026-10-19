@@ -101,11 +101,11 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         subject = "Your verification code"
         if purpose == "login":
-            subject = "Confirm your email login"
+            subject = "Confirm your login"
         elif purpose == "enable":
-            subject = "Enable email two-factor authentication"
+            subject = "Enable two-factor authentication"
         elif purpose == "disable":
-            subject = "Disable email two-factor authentication"
+            subject = "Disable two-factor authentication"
 
         await self._email_service.send(
             to=email,
@@ -164,6 +164,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
+        # 2FA belongs to the account: it applies to every sign-in method.
         if not await self.is_enabled(user.id):
             tokens = await self._auth_session_service.create_tokens(
                 user_id=user.id,

@@ -91,6 +91,8 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
 
     # noinspection PyMethodMayBeStatic
     async def increment_challenge_attempts(self, challenge_id: str) -> int:
+        # Separate transaction: the counter must survive the rollback of the
+        # request transaction that happens when the service raises an error.
         async with session_factory() as session:
             async with session.begin():
                 await session.execute(
