@@ -78,6 +78,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         user: User,
         purpose: str,
         identity_id: str | None = None,
+        identity_type: str | None = None,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TwoFactorChallengeResponseSchema:
@@ -90,6 +91,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             user_id=user.id,
             purpose=purpose,
             identity_id=identity_id,
+            identity_type=identity_type,
             code_hash=hash_password(code),
             ip_address=ip_address,
             user_agent=user_agent,
@@ -161,6 +163,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         self,
         user: User,
         identity_id: str,
+        identity_type: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
@@ -169,6 +172,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             tokens = await self._auth_session_service.create_tokens(
                 user_id=user.id,
                 identity_id=identity_id,
+                identity_type=identity_type,
                 ip_address=ip_address,
                 user_agent=user_agent,
             )
@@ -182,6 +186,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             user=user,
             purpose="login",
             identity_id=identity_id,
+            identity_type=identity_type,
             ip_address=ip_address,
             user_agent=user_agent,
         )
@@ -205,9 +210,13 @@ class TwoFactorService(TwoFactorServiceInterface):
             "login",
         )
 
+        if challenge.identity_id is None or challenge.identity_type is None:
+            raise TwoFactorChallengeNotFoundError()
+
         tokens = await self._auth_session_service.create_tokens(
             user_id=challenge.user_id,
             identity_id=challenge.identity_id,
+            identity_type=challenge.identity_type,
             ip_address=challenge.ip_address,
             user_agent=challenge.user_agent,
         )

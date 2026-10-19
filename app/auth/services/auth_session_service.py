@@ -23,6 +23,7 @@ class AuthSessionService(AuthSessionServiceInterface):
         self,
         user_id: str,
         identity_id: str,
+        identity_type: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TokenResponseSchema:
@@ -31,6 +32,7 @@ class AuthSessionService(AuthSessionServiceInterface):
         session = await self._session_service.create_session(
             user_id=user_id,
             identity_id=identity_id,
+            identity_type=identity_type,
             refresh_token=refresh_token,
             expires_delta=timedelta(
                 days=settings.REFRESH_TOKEN_EXPIRE_DAYS,

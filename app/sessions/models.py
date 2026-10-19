@@ -26,6 +26,13 @@ class Session(SQLModel, table=True):
         nullable=False,
     )
 
+    # No foreign key: identity_id points to one of three tables, and the type
+    # tells which one. Ownership is checked in code (TokenService).
+    identity_type: str = Field(
+        nullable=False,
+        max_length=16,
+    )
+
     refresh_token_hash: str
 
     is_active: bool = Field(

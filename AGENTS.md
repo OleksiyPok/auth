@@ -34,6 +34,7 @@ One folder per feature inside `app/`:
 ```
 app/
     users/  auth/  sessions/  username_auth/  email_auth/  google_auth/  two_factor/
+    identities/         service over the three identity repositories (no models, no router)
     infrastructure/     external integrations: email, google, jwt, password
     core/               settings, base exceptions, exception handlers
     db/                 engine, session, custom column types
@@ -93,6 +94,7 @@ Follow this layout for new features. Do not introduce new top-level layers.
 ## Identity rules (from the spec)
 
 - There is one identity of each type (email, username, Google) per user.
+- A session stores the identity it was created through (`identity_id` + `identity_type`, no foreign key). `authenticate` and `refresh` check that this identity still exists and belongs to the session's user (`IdentityService.get_owner_id`), so sessions of an unlinked, merged or split identity stop working even if they were not revoked.
 - An identity is created only after ownership of its identifier is verified. A pending registration is not an identity.
 - A match of email or other attributes never links identities or merges users automatically. Consolidation requires Link from an authenticated session, or an explicit Merge.
 - Email identifiers are normalized with `strip()` + `casefold()`.

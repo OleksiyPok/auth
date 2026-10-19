@@ -15,6 +15,7 @@ class SessionServiceInterface(ABC):
         self,
         user_id: str,
         identity_id: str,
+        identity_type: str,
         refresh_token: str,
         expires_delta: timedelta,
         ip_address: Optional[str] = None,

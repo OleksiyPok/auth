@@ -11,6 +11,7 @@ from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
+from app.identities.types import IdentityType
 from app.infrastructure.google.oauth import (
     exchange_google_code,
     get_google_authorization_url,
@@ -118,6 +119,7 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         return await self._two_factor_service.authenticate_or_challenge(
             user=user,
             identity_id=identity.id,
+            identity_type=IdentityType.GOOGLE,
             ip_address=ip_address,
             user_agent=user_agent,
         )

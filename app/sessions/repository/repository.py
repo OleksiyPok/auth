@@ -173,6 +173,12 @@ class SessionRepository(SessionRepositoryInterface):
                 )
                 == user_id
             )
+            .where(
+                cast(
+                    ColumnElement[bool],
+                    Session.is_active,
+                )
+            )
             .values(
                 is_active=False,
                 revoked_at=datetime.now(timezone.utc),

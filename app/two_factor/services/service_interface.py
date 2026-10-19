@@ -29,6 +29,7 @@ class TwoFactorServiceInterface(ABC):
         self,
         user: User,
         identity_id: str,
+        identity_type: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema: ...

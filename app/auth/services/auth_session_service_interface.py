@@ -13,6 +13,7 @@ class AuthSessionServiceInterface(ABC):
         self,
         user_id: str,
         identity_id: str,
+        identity_type: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> TokenResponseSchema: ...

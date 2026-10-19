@@ -7,6 +7,7 @@ from app.email_auth.repository.repository_interface import (
 )
 from app.email_auth.schemas import EmailLoginRequestSchema
 from app.email_auth.services.login_service_interface import EmailLoginServiceInterface
+from app.identities.types import IdentityType
 from app.infrastructure.password import verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
@@ -54,6 +55,7 @@ class EmailLoginService(EmailLoginServiceInterface):
         return await self._two_factor_service.authenticate_or_challenge(
             user=user,
             identity_id=identity.id,
+            identity_type=IdentityType.EMAIL,
             ip_address=ip_address,
             user_agent=user_agent,
         )

@@ -1,6 +1,7 @@
 # app/username_auth/services/login_service.py
 
 from app.core.identifiers import normalize_username
+from app.identities.types import IdentityType
 from app.infrastructure.password import verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
@@ -56,6 +57,7 @@ class UsernameLoginService(UsernameLoginServiceInterface):
         return await self._two_factor_service.authenticate_or_challenge(
             user=user,
             identity_id=identity.id,
+            identity_type=IdentityType.EMAIL,
             ip_address=ip_address,
             user_agent=user_agent,
         )

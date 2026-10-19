@@ -73,7 +73,7 @@ Principles for identity operations: Link, Unlink, Split and Merge are personal o
 
 - [ ] **ID-13 · `IdentityService`**
   - **Why:** Link, Unlink, Split and Merge all need the same basic actions on identities of all three types.
-  - **Do:** small service on top of the three existing repositories: list identities of a user, delete one, change its owner. Add repository methods: `delete`, Google `get_by_user_id`, change `user_id`. No unified `identities` table, no adapters.
+  - **Do:** small service on top of the three existing repositories, already started in ID-20 (`IdentityService.get_owner_id`, `IdentityType`). Add: list identities of a user; delete one together with revoking its sessions; change its owner. Add repository methods `delete` and Google `get_by_user_id`; changing the owner needs no new method (set `user_id`, call `update`). No unified `identities` table, no adapters.
 
 - [ ] **ID-14 · Single place for identifier normalization**
   - **Why:** email is normalized (`strip` + `casefold`) in several services; username is not normalized at all, so `Admin` and `admin` are different names.
@@ -114,11 +114,11 @@ All of these are personal operations of the signed-in user; `self.*` access is e
 
 ## 5. Sessions and 2FA hardening
 
-- [ ] **ID-20 · Verify identity ownership on authenticate**
+- [x] **ID-20 · Verify identity ownership on authenticate**
   - **Why:** `Session.identity_id` has no foreign key and `authenticate` does not check that the identity belongs to the session's user.
-  - **Do:** check ownership when authenticating a token (the key cannot be a single FK across three tables, so check in code).
+  - **Do:** check ownership when authenticating a token (the key cannot be a single FK across three tables, so check in code). Done: `Session.identity_type` tells which table to look in; `IdentityService.get_owner_id` is called from `authenticate` and `refresh`; a missing or foreign identity gives `SessionRevokedError`.
 
-- [ ] **ID-21 · Fix `deactivate_user_sessions`**
+- [x] **ID-21 · Fix `deactivate_user_sessions`**
   - **Why:** it does not filter by `is_active` and overwrites `revoked_at` of already revoked sessions.
   - **Do:** update only active sessions.
 
@@ -130,12 +130,12 @@ All of these are personal operations of the signed-in user; `self.*` access is e
 
 ## 6. Independent 2FA resource with several methods
 
-- [x] **ID-23 · Make 2FA independent of identities**
+- [ ] **ID-23 · Make 2FA independent of identities**
   - **Why:** 2FA is currently tied to the email identity (endpoints `/auth/email/2fa/*`, `identity_id` in `TwoFactorChallenge`, the code goes to the email identity). More verification methods are planned (SMS, authenticator app, WhatsApp message), and deleting an email identity must not break 2FA.
   - **Do:**
     - Add a `TwoFactorMethod` model (`user_id`, type, delivery address or secret, verified flag, default flag). A phone number used for SMS is not an identity and not a `Contact`.
     - Move the API to one resource `/auth/2fa/*`: list methods, add and confirm a method, remove, enable, disable.
-    - Replace `identity_id` in `TwoFactorChallenge` with a method reference; change `request_enable`, `request_disable` and `authenticate_or_challenge` accordingly.
+    - Add a method reference to `TwoFactorChallenge`; keep `identity_id` and `identity_type` for login challenges (the session is created from them after the code is confirmed); change `request_enable`, `request_disable` and `authenticate_or_challenge` accordingly.
     - Put delivery behind a common sender interface (email, SMS, WhatsApp). Authenticator app (TOTP) verifies a code against a secret instead of sending one; store the secret encrypted.
     - Add recovery codes for the case of a lost device or phone.
     - Call the 2FA check from every login flow (email, username, Google).

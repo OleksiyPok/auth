@@ -27,6 +27,7 @@ class SessionService(SessionServiceInterface):
         self,
         user_id: str,
         identity_id: str,
+        identity_type: str,
         refresh_token: str,
         expires_delta: timedelta,
         ip_address: str | None = None,
@@ -37,6 +38,7 @@ class SessionService(SessionServiceInterface):
         session = Session(
             user_id=user_id,
             identity_id=identity_id,
+            identity_type=identity_type,
             refresh_token_hash=hash_refresh_token(refresh_token),
             expires_at=now + expires_delta,
             ip_address=ip_address,

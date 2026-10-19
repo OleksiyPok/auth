@@ -14,6 +14,8 @@ from app.auth.services.auth_session_service import AuthSessionService
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
 from app.auth.services.token_service import TokenService
 from app.auth.services.token_service_interface import TokenServiceInterface
+from app.identities.dependencies import get_identity_service
+from app.identities.services.service_interface import IdentityServiceInterface
 from app.sessions.dependencies import get_sessions_service
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.dependencies import get_user_repository
@@ -67,11 +69,16 @@ def get_token_service(
         AuthSessionServiceInterface,
         Depends(get_auth_session_service),
     ],
+    identity_service: Annotated[
+        IdentityServiceInterface,
+        Depends(get_identity_service),
+    ],
 ) -> TokenServiceInterface:
     return TokenService(
         repository,
         session_service,
         auth_session_service,
+        identity_service,
     )
 
 
