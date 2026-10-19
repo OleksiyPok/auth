@@ -130,7 +130,7 @@ All of these are personal operations of the signed-in user; `self.*` access is e
 
 ## 6. Independent 2FA resource with several methods
 
-- [ ] **ID-23 · Make 2FA independent of identities**
+- [x] **ID-23 · Make 2FA independent of identities**
   - **Why:** 2FA is currently tied to the email identity (endpoints `/auth/email/2fa/*`, `identity_id` in `TwoFactorChallenge`, the code goes to the email identity). More verification methods are planned (SMS, authenticator app, WhatsApp message), and deleting an email identity must not break 2FA.
   - **Do:**
     - Add a `TwoFactorMethod` model (`user_id`, type, delivery address or secret, verified flag, default flag). A phone number used for SMS is not an identity and not a `Contact`.
