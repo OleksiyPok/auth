@@ -2,6 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.identifiers import normalize_email, normalize_username
 from app.auth.rbac.roles import Role
 from app.core.config import settings
 from app.email_auth.models import EmailIdentity
@@ -25,13 +26,13 @@ async def create_initial_superadmin(session: AsyncSession) -> None:
 
     username_identity = UsernameIdentity(
         user_id=superadmin.id,
-        username=settings.SUPERADMIN_LOGIN,
+        username=normalize_username(settings.SUPERADMIN_LOGIN),
         password_hash=hash_password(settings.SUPERADMIN_PASSWORD),
     )
 
     email_identity = EmailIdentity(
         user_id=superadmin.id,
-        email=settings.SUPERADMIN_EMAIL.strip().casefold(),
+        email=normalize_email(settings.SUPERADMIN_EMAIL),
         password_hash=hash_password(settings.SUPERADMIN_PASSWORD),
     )
 

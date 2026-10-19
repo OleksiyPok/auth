@@ -1,5 +1,6 @@
 # app/username_auth/services/login_service.py
 
+from app.core.identifiers import normalize_username
 from app.infrastructure.password import verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
@@ -33,7 +34,10 @@ class UsernameLoginService(UsernameLoginServiceInterface):
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
-        identity = await self._local_identity_repository.get_by_username(data.username)
+
+        username = normalize_username(data.username)
+
+        identity = await self._local_identity_repository.get_by_username(username)
 
         if not identity:
             raise InvalidCredentialsError()

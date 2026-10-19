@@ -3,6 +3,7 @@
 import secrets
 from datetime import datetime, timedelta, timezone
 
+from app.core.identifiers import normalize_email
 from app.email_auth.exceptions import (
     EmailRegistrationNotFoundError,
     EmailVerificationCodeExpiredError,
@@ -50,7 +51,8 @@ class EmailRegisterService(EmailRegisterServiceInterface):
         self,
         data: EmailRegisterRequestSchema,
     ) -> EmailRegisterChallengeResponseSchema:
-        email = data.email.strip().casefold()
+
+        email = normalize_email(data.email)
 
         if await self._email_identity_repository.get_by_email(email):
             raise UserAlreadyExistsError()

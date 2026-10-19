@@ -1,5 +1,6 @@
 # app/username_auth/services/register_service.py
 
+from app.core.identifiers import normalize_username
 from app.infrastructure.password import hash_password
 from app.username_auth.models import UsernameIdentity
 from app.username_auth.repository.repository_interface import (
@@ -29,7 +30,9 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
         data: RegisterRequestSchema,
     ) -> RegisterResponseSchema:
 
-        if await self._local_identity_repository.get_by_username(data.username):
+        username = normalize_username(data.username)
+
+        if await self._local_identity_repository.get_by_username(username):
             raise UserAlreadyExistsError()
 
         user = User(
@@ -41,7 +44,7 @@ class UsernameRegisterService(UsernameRegisterServiceInterface):
 
         identity = UsernameIdentity(
             user_id=user.id,
-            username=data.username,
+            username=username,
             password_hash=hash_password(data.password),
         )
 

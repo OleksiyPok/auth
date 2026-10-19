@@ -10,6 +10,7 @@ import asyncio
 from sqlmodel import select
 
 from app.auth.rbac.roles import Role
+from app.core.identifiers import normalize_email, normalize_username
 from app.db.session import session_factory
 from app.email_auth.models import EmailIdentity
 from app.google_auth.models import GoogleIdentity
@@ -55,11 +56,12 @@ async def seed_dev_users() -> None:
                 data for data in DEV_USERS if data["type"] == "username"
             )
 
+            username = normalize_username(username_data["username"])
+
             result = await session.execute(
-                select(UsernameIdentity).where(
-                    UsernameIdentity.username == username_data["username"]
-                )
+                select(UsernameIdentity).where(UsernameIdentity.username == username)
             )
+
             username_identity = result.scalar_one_or_none()
 
             if username_identity is None:
@@ -75,7 +77,7 @@ async def seed_dev_users() -> None:
 
                 identity = UsernameIdentity(
                     user_id=user.id,
-                    username=username_data["username"],
+                    username=username,
                     password_hash=hash_password(username_data["password"]),
                 )
 
@@ -85,7 +87,7 @@ async def seed_dev_users() -> None:
                 added_users.append(
                     {
                         "type": "Username",
-                        "login": username_data["username"],
+                        "login": username,
                         "password": username_data["password"],
                         "user_id": user.id,
                     }
@@ -96,10 +98,12 @@ async def seed_dev_users() -> None:
             # ---------------------------------------------------------
 
             email_data = next(data for data in DEV_USERS if data["type"] == "email")
+            email = normalize_email(email_data["email"])
 
             result = await session.execute(
-                select(EmailIdentity).where(EmailIdentity.email == email_data["email"])
+                select(EmailIdentity).where(EmailIdentity.email == email)
             )
+
             email_identity = result.scalar_one_or_none()
 
             if email_identity is None:
@@ -115,7 +119,7 @@ async def seed_dev_users() -> None:
 
                 identity = EmailIdentity(
                     user_id=user.id,
-                    email=email_data["email"],
+                    email=email,
                     password_hash=hash_password(email_data["password"]),
                 )
 

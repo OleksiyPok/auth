@@ -1,5 +1,6 @@
 # app/email_auth/services/login_service.py
 
+from app.core.identifiers import normalize_email
 from app.email_auth.exceptions import InvalidEmailCredentialsError
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
@@ -31,7 +32,8 @@ class EmailLoginService(EmailLoginServiceInterface):
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> AuthenticationResponseSchema:
-        email = data.email.strip().casefold()
+
+        email = normalize_email(data.email)
 
         identity = await self._email_identity_repository.get_by_email(email)
 
