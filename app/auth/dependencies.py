@@ -80,17 +80,27 @@ async def get_current_user(
         HTTPAuthorizationCredentials | None,
         Depends(generic_auth_scheme),
     ],
+    username_token: Annotated[
+        str | None,
+        Depends(username_auth_scheme),
+    ],
+    email_token: Annotated[
+        str | None,
+        Depends(email_auth_scheme),
+    ],
     authentication_service: Annotated[
         TokenServiceInterface,
         Depends(get_token_service),
     ],
 ) -> User:
+    # All three schemes read the same "Authorization: Bearer ..." header.
+    # They are listed so that Swagger sends the token after authorizing
+    # with any of them.
+    token = credentials.credentials if credentials else username_token or email_token
 
-    if credentials is None:
+    if token is None:
         raise InvalidAccessTokenError()
-    return await authentication_service.authenticate(
-        credentials.credentials,
-    )
+    return await authentication_service.authenticate(token)
 
 
 async def get_current_username_user(

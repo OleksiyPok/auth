@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.sessions.schemas import TokenResponseSchema
+from app.sessions.schemas import AuthenticationResponseSchema
 from app.username_auth.dependencies import (
     get_username_login_service,
     get_username_register_service,
@@ -47,7 +47,7 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=TokenResponseSchema,
+    response_model=AuthenticationResponseSchema,
 )
 async def login(
     request: Request,
