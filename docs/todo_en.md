@@ -55,7 +55,7 @@ Principles for identity operations: Link, Unlink, Split and Merge are personal o
   - **Why:** `get_session` runs a request in one transaction; raising an error rolled back the attempt counter, so codes could be guessed without limit.
   - **Do:** increment attempts in a separate short transaction (done for registration and 2FA).
 
-- [ ] **ID-10 · Resend verification code**
+- [x] **ID-10 · Resend verification code**
   - **Why:** the user may not receive or may lose the email.
   - **Do:** add an endpoint that issues a new code for an existing pending registration with a cooldown; consider the same for 2FA.
 
