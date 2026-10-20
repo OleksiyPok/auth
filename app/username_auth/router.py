@@ -5,6 +5,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from app.core.identifiers import normalize_username
+from app.core.rate_limit import (
+    LOGIN_IP,
+    LOGIN_USERNAME,
+    REGISTER_IP,
+    limit_by_ip,
+    rate_limiter,
+)
+
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.username_auth.dependencies import (
     get_username_login_service,
@@ -34,6 +43,7 @@ router = APIRouter(
     description="Creates a new user account using username authentication.",
     response_model=RegisterResponseSchema,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(limit_by_ip(REGISTER_IP))],
 )
 async def register(
     data: RegisterRequestSchema,
@@ -48,6 +58,7 @@ async def register(
 @router.post(
     "/login",
     response_model=AuthenticationResponseSchema,
+    dependencies=[Depends(limit_by_ip(LOGIN_IP))],
 )
 async def login(
     request: Request,
@@ -60,6 +71,8 @@ async def login(
         Depends(get_username_login_service),
     ],
 ):
+    rate_limiter.hit(LOGIN_USERNAME, normalize_username(form_data.username))
+
     data = LoginRequestSchema(
         username=form_data.username,
         password=form_data.password,

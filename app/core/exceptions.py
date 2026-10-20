@@ -14,3 +14,10 @@ class AppError(Exception):
         if message is not None:
             self.message = message
         super().__init__(self.message)
+
+
+
+class RateLimitExceededError(AppError):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    code = "RATE_LIMIT_EXCEEDED"
+    message = "Too many requests, try again later"

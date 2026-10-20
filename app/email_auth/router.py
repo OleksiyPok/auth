@@ -5,6 +5,18 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from app.core.identifiers import normalize_email
+from app.core.rate_limit import (
+    CONFIRM_IP,
+    LOGIN_EMAIL,
+    LOGIN_IP,
+    REGISTER_EMAIL,
+    REGISTER_IP,
+    SEND_CODE_IP,
+    limit_by_ip,
+    rate_limiter,
+)
+
 from app.email_auth.dependencies import (
     get_email_login_service,
     get_email_register_service,
@@ -33,6 +45,7 @@ router = APIRouter(
     "/register",
     response_model=EmailRegisterChallengeResponseSchema,
     status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(limit_by_ip(REGISTER_IP))],
 )
 async def register(
     data: EmailRegisterRequestSchema,
@@ -41,12 +54,14 @@ async def register(
         Depends(get_email_register_service),
     ],
 ):
+    rate_limiter.hit(REGISTER_EMAIL, normalize_email(data.email))
     return await service.register(data)
 
 @router.post(
     "/register/resend",
     response_model=EmailRegisterChallengeResponseSchema,
     status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
 )
 async def resend_register_code(
     data: EmailRegisterResendRequestSchema,
@@ -61,6 +76,7 @@ async def resend_register_code(
     "/register/confirm",
     response_model=EmailRegisterResponseSchema,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
 )
 async def confirm_register(
     data: EmailRegisterConfirmRequestSchema,
@@ -75,6 +91,7 @@ async def confirm_register(
 @router.post(
     "/login",
     response_model=AuthenticationResponseSchema,
+    dependencies=[Depends(limit_by_ip(LOGIN_IP))],
 )
 async def login(
     request: Request,
@@ -87,6 +104,8 @@ async def login(
         Depends(get_email_login_service),
     ],
 ):
+    rate_limiter.hit(LOGIN_EMAIL, normalize_email(form_data.username))
+
     data = EmailLoginRequestSchema(
         email=form_data.username,
         password=form_data.password,

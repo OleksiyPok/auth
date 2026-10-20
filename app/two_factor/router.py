@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from app.core.rate_limit import CONFIRM_IP, SEND_CODE_IP, limit_by_ip
 from app.auth.dependencies import get_current_user
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.schemas import (
@@ -32,7 +33,11 @@ async def get_status(
     )
 
 
-@router.post("/login/confirm", response_model=TwoFactorLoginConfirmResponseSchema)
+@router.post(
+    "/login/confirm",
+    response_model=TwoFactorLoginConfirmResponseSchema,
+    dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
+)
 async def confirm_login(
     data: TwoFactorConfirmRequestSchema,
     service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
@@ -43,7 +48,11 @@ async def confirm_login(
     )
 
 
-@router.post("/enable", response_model=TwoFactorChallengeResponseSchema)
+@router.post(
+    "/enable",
+    response_model=TwoFactorChallengeResponseSchema,
+    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+)
 async def enable(
     current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
@@ -51,7 +60,11 @@ async def enable(
     return await service.request_enable(current_user)
 
 
-@router.post("/enable/confirm", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/enable/confirm",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
+)
 async def confirm_enable(
     data: TwoFactorConfirmRequestSchema,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -60,7 +73,11 @@ async def confirm_enable(
     await service.confirm_enable(current_user, data.challenge_id, data.code)
 
 
-@router.post("/disable", response_model=TwoFactorChallengeResponseSchema)
+@router.post(
+    "/disable",
+    response_model=TwoFactorChallengeResponseSchema,
+    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+)
 async def disable(
     current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
@@ -68,7 +85,11 @@ async def disable(
     return await service.request_disable(current_user)
 
 
-@router.post("/disable/confirm", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/disable/confirm",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
+)
 async def confirm_disable(
     data: TwoFactorConfirmRequestSchema,
     current_user: Annotated[User, Depends(get_current_user)],

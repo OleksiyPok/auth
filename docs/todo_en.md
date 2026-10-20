@@ -59,7 +59,7 @@ Principles for identity operations: Link, Unlink, Split and Merge are personal o
   - **Why:** the user may not receive or may lose the email.
   - **Do:** add an endpoint that issues a new code for an existing pending registration with a cooldown; consider the same for 2FA.
 
-- [ ] **ID-11 · Rate limiting**
+- [x] **ID-11 · Rate limiting**
   - **Why:** registration, login and code confirmation can be abused (email spam, password and code guessing).
   - **Do:** limit by IP and by email on `register`, `login`, `confirm` endpoints.
 

@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 
+from app.core.rate_limit import LOGIN_IP, limit_by_ip
 from app.google_auth.dependencies import get_google_auth_service
 from app.google_auth.schemas import GoogleAuthorizationResponseSchema
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
@@ -35,6 +36,7 @@ async def google_login(
 @router.get(
     "/callback",
     response_model=AuthenticationResponseSchema,
+    dependencies=[Depends(limit_by_ip(LOGIN_IP))],
 )
 async def google_callback(
     request: Request,
