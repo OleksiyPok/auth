@@ -42,57 +42,51 @@ Decisions are recorded in both spec versions (`Users_Identity_en.md`, `Users_Ide
 
 ---
 
-## 2. Tests
-
-Existing tests use outdated model fields and request schemas.
-
-- [ ] **ID-04 · Fix `tests/conftest.py` fixtures**
-  - **Do:** create users with the current models (`User` without `email`, `UsernameIdentity(username=...)`); store the username normalized.
-  - **Result:** `regular_user_token`, `admin_user_token` and `superadmin_user_token` return valid tokens; `GET /api/v1/users/me` with each returns 200.
-  - **After:** —
-
-- [ ] **ID-30 · Tests: repository methods with their own session use the test database**
-  - **Do:** make repository methods that open `session_factory` (attempt counters) use the test database during tests.
-  - **Result:** an invalid code increments `attempts` in the test database for both email registration and 2FA challenges; a test proves it.
-  - **After:** ID-04
-
-- [ ] **ID-31 · Fix `tests/test_authentication.py`**
-  - **Do:** align requests and expectations with the current schemas (registration has no `email`; logout needs a bearer token).
-  - **Result:** the file passes.
-  - **After:** ID-04
-
-- [ ] **ID-32 · Fix `tests/test_user_sessions.py`**
-  - **Do:** replace `login` with `username` in registration payloads; align expectations with current endpoints.
-  - **Result:** the file passes.
-  - **After:** ID-04
-
-- [ ] **ID-33 · Fix `tests/test_user_roles.py`**
-  - **Do:** same alignment as for sessions tests; remove `email` from registration payloads.
-  - **Result:** the file passes.
-  - **After:** ID-04
-
-- [ ] **ID-34 · Tests: email registration API**
-  - **Do:** override `EmailService` with a fake that captures the code; cover register, confirm, wrong code, too many attempts, expired code, already registered email.
-  - **Result:** the tests pass and assert status codes and error codes.
-  - **After:** ID-04, ID-30
-
-- [ ] **ID-35 · Tests: two-factor API**
-  - **Do:** cover enable, login challenge and confirm, disable, wrong code, too many attempts.
-  - **Result:** the tests pass.
-  - **After:** ID-04, ID-30
-
-- [ ] **ID-36 · Tests: Google login callback**
-  - **Do:** mock the functions of `app.infrastructure.google.oauth`; cover new user, existing user, unverified email, invalid / used / expired state.
-  - **Result:** the tests pass without network access.
-  - **After:** ID-04
-
----
-
-## 3. Dependencies, database and startup
+## 2. Dependencies, database and startup
 
 - [x] **ID-01 · Valid `requirements.txt`**
   - **Do:** keep only valid packages that the project needs.
   - **Result:** `python -m pip install -r requirements.txt` completes without errors.
+  - **After:** —
+
+- [ ] **ID-97 · `mailjet-rest` in `requirements.txt`**
+  - **Do:** add `mailjet-rest` with an exact version; `app/infrastructure/email/providers/mailjet.py` imports it when the provider registry loads.
+  - **Result:** in a clean virtual environment, installing `requirements.txt` and starting the application ends without `ModuleNotFoundError`.
+  - **After:** —
+
+- [ ] **ID-98 · `httpx` in `requirements-dev.txt`**
+  - **Do:** add `httpx` with an exact version; `fastapi.testclient.TestClient` requires it.
+  - **Result:** in a clean virtual environment with `requirements-dev.txt` installed, `from fastapi.testclient import TestClient` imports without errors.
+  - **After:** —
+
+- [ ] **ID-99 · Exact versions for all packages in `requirements.txt`**
+  - **Do:** pin every package that has no version (the Google packages) to the version installed in the working environment (`python -m pip freeze`).
+  - **Result:** every line of `requirements.txt` has `==`.
+  - **After:** —
+
+- [ ] **ID-100 · Remove unused packages from `requirements.txt`**
+  - **Do:** remove packages that no module imports and no other listed package requires; check imports with `Select-String` over `app`, `scripts` and `tests` (for example `passlib`, `google-api-python-client`, `google-auth-httplib2` are not imported by project code).
+  - **Result:** in a clean virtual environment, installing `requirements.txt` and starting the application succeeds, and every listed package is imported by the project or required by one that is.
+  - **After:** —
+
+- [ ] **ID-101 · `requirements-dev.txt` without duplicates**
+  - **Do:** remove from `requirements-dev.txt` the packages already listed in `requirements.txt` (`pytest`, `pytest-mock`, `pre_commit`); keep `-r requirements.txt` and development-only packages with exact versions.
+  - **Result:** no package appears in both files; installing `requirements-dev.txt` installs the same versions as `requirements.txt` for shared packages.
+  - **After:** —
+
+- [ ] **ID-109 · `.env.example`: required variables**
+  - **Do:** add `.env.example` at the repository root with every required field of `Settings` in `app/core/config.py` (`JWT_SECRET_KEY`, `SUPERADMIN_LOGIN`, `SUPERADMIN_PASSWORD`, `SUPERADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`); values are placeholders, never real secrets; a comment shows how to generate `JWT_SECRET_KEY` (`python -c "import secrets; print(secrets.token_urlsafe(64))"`).
+  - **Result:** copying the file to `.env` and replacing the placeholders lets the application start.
+  - **After:** —
+
+- [ ] **ID-110 · `.env.example`: optional variables**
+  - **Do:** add to `.env.example` every optional field of `Settings` (database, CORS, token lifetimes, email provider, Mailtrap, Mailjet, sender) with its default value and a one-line comment; optional variables without a default are commented out.
+  - **Result:** every field of `Settings` appears in `.env.example`.
+  - **After:** ID-109
+
+- [ ] **ID-111 · `.env` is ignored by git**
+  - **Do:** list `.env` in `.gitignore`; `.env.example` stays tracked.
+  - **Result:** `git status` does not show a `.env` file created in the repository root, and shows `.env.example`.
   - **After:** —
 
 - [ ] **ID-05 · Add Alembic configuration**
@@ -117,7 +111,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 4. Cleanup of temporary rows
+## 3. Cleanup of temporary rows
 
 - [ ] **ID-06 · Delete expired email registrations**
   - **Do:** add a repository method that deletes expired `EmailRegistration` rows.
@@ -141,7 +135,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 5. Verification codes, Google email and rate limiting
+## 4. Verification codes, Google email and rate limiting
 
 - [x] **ID-07 · Confirm email before creating `EmailIdentity`**
   - **Do:** pending registration table with `register` and `register/confirm` endpoints.
@@ -195,7 +189,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 6. Identity service and locking
+## 5. Identity service and locking
 
 - [x] **ID-14 · Identifier normalization helpers**
   - **Do:** one helper per identifier type (`normalize_email`, `normalize_username`: `strip()` + `casefold()`), used by registration, login, superadmin bootstrap and the dev seed script.
@@ -234,7 +228,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 7. Identity endpoints: permissions, list, Unlink
+## 6. Identity endpoints: permissions, list, Unlink
 
 - [ ] **ID-51 · Identity permissions**
   - **Do:** add `SELF_IDENTITIES_READ` and `SELF_IDENTITIES_WRITE` to `Permission`, grant them to every role that has the other `self.*` permissions, add `require_self_identities_read` and `require_self_identities_write`.
@@ -268,7 +262,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 8. Link
+## 7. Link
 
 - [ ] **ID-17 · Link username**
   - **Do:** `POST /identities/username` with username and password; normalize the username; refuse when the user already has a username identity or the name is taken.
@@ -302,7 +296,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 9. Merge
+## 8. Merge
 
 - [ ] **ID-18 · Identity type conflict detection**
   - **Do:** add `IdentityService` method returning the identity types present on both users.
@@ -356,7 +350,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 10. Split
+## 9. Split
 
 - [ ] **ID-19 · Decide whether Split stays**
   - **Do:** record the decision in both spec versions: keep section 7 and rule 7, or remove them.
@@ -375,7 +369,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 11. Sessions
+## 10. Sessions
 
 - [ ] **ID-20 · Check identity ownership when authenticating a token**
   - **Do:** in `TokenService.authenticate` reject a token whose session identity is not owned by the session's user.
@@ -389,7 +383,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 12. Two-factor: independent of identities
+## 11. Two-factor: independent of identities
 
 - [x] **ID-22 · 2FA applies to every login method**
   - **Do:** call the 2FA check in the username, email and Google login flows.
@@ -463,7 +457,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 13. Access protection
+## 12. Access protection
 
 - [ ] **ID-92 · Require authentication on `POST /api/v1/dev/email/send`**
   - **Do:** add the current-user dependency to the endpoint.
@@ -477,7 +471,7 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 14. Service health
+## 13. Service health
 
 - [ ] **ID-94 · `GET /health`**
   - **Do:** add an endpoint at the application root, outside `API_V1_PREFIX`, without authentication and without database access; it returns `{"status": "ok"}`.
@@ -493,6 +487,47 @@ Existing tests use outdated model fields and request schemas.
   - **Do:** when the database check fails, return 503 with `{"status": "unavailable"}`; the response, logs of the endpoint and headers contain no error details, connection string or credentials.
   - **Result:** with the database stopped or `DATABASE_URL` wrong, `GET /health/ready` returns 503 with `{"status": "unavailable"}` and no other data; `GET /health` still returns 200.
   - **After:** ID-95
+
+---
+
+## 14. Documentation
+
+`README.md` is written in English. Commands are Windows PowerShell, one per line.
+
+- [ ] **ID-102 · README: overview**
+  - **Do:** start the README with the project name, a short description, the list of provided features (username, email and Google sign-in, two-factor authentication, sessions, role-based access control) and the technology stack.
+  - **Result:** `README.md` begins with these four parts.
+  - **After:** —
+
+- [ ] **ID-103 · README: environment setup**
+  - **Do:** add commands that create and activate a virtual environment and install `requirements.txt` and `requirements-dev.txt`.
+  - **Result:** following the section on a clean machine gives a working environment.
+  - **After:** —
+
+- [ ] **ID-104 · README: configuration**
+  - **Do:** add a table of every field of `Settings` in `app/core/config.py`: name, required or default value, meaning; state that values are read from `.env`.
+  - **Result:** every field of `Settings` appears in the table and the required ones are marked.
+  - **After:** —
+
+- [ ] **ID-105 · README: running the application**
+  - **Do:** add the command that starts the application (`python -m uvicorn app.main:app`), the address of Swagger UI (`/docs`) and the note that the initial superadmin is created from the `SUPERADMIN_*` settings on an empty database.
+  - **Result:** following the section starts the application and opens Swagger UI.
+  - **After:** —
+
+- [ ] **ID-106 · README: development users**
+  - **Do:** add the command `python scripts\seed_dev_users.py` and the list of users it creates with their identity types.
+  - **Result:** following the section creates the listed users.
+  - **After:** —
+
+- [ ] **ID-107 · README: running tests**
+  - **Do:** add the command `python -m pytest`.
+  - **Result:** the command from the section runs the test suite and it passes.
+  - **After:** ID-04
+
+- [ ] **ID-108 · README: project documents**
+  - **Do:** add links to `docs/Users_Identity_en.md`, `docs/Users_Identity_ru.md`, `docs/todo_en.md`, `AGENTS.md` and `app/infrastructure/email/README.md`, each with a one-line description.
+  - **Result:** every link opens an existing file.
+  - **After:** —
 
 ---
 
@@ -542,3 +577,49 @@ Existing tests use outdated model fields and request schemas.
   - **Do:** sender implementation for the 2FA sender interface with a provider and a dummy provider.
   - **Result:** a test with the dummy provider shows the code is logged.
   - **After:** ID-75
+
+---
+
+## 16. Tests
+
+Tests live in `tests/`, run with `python -m pytest` and check real backend behavior.
+
+- [ ] **ID-04 · Fix `tests/conftest.py` fixtures**
+  - **Do:** create users with the current models (`User` without `email`, `UsernameIdentity(username=...)`); store the username normalized.
+  - **Result:** `regular_user_token`, `admin_user_token` and `superadmin_user_token` return valid tokens; `GET /api/v1/users/me` with each returns 200.
+  - **After:** —
+
+- [ ] **ID-30 · Tests: repository methods with their own session use the test database**
+  - **Do:** make repository methods that open `session_factory` (attempt counters) use the test database during tests.
+  - **Result:** an invalid code increments `attempts` in the test database for both email registration and 2FA challenges; a test proves it.
+  - **After:** ID-04
+
+- [ ] **ID-31 · Fix `tests/test_authentication.py`**
+  - **Do:** align requests and expectations with the current schemas (registration has no `email`; logout needs a bearer token).
+  - **Result:** the file passes.
+  - **After:** ID-04
+
+- [ ] **ID-32 · Fix `tests/test_user_sessions.py`**
+  - **Do:** replace `login` with `username` in registration payloads; align expectations with current endpoints.
+  - **Result:** the file passes.
+  - **After:** ID-04
+
+- [ ] **ID-33 · Fix `tests/test_user_roles.py`**
+  - **Do:** same alignment as for sessions tests; remove `email` from registration payloads.
+  - **Result:** the file passes.
+  - **After:** ID-04
+
+- [ ] **ID-34 · Tests: email registration API**
+  - **Do:** override `EmailService` with a fake that captures the code; cover register, confirm, wrong code, too many attempts, expired code, already registered email.
+  - **Result:** the tests pass and assert status codes and error codes.
+  - **After:** ID-04, ID-30
+
+- [ ] **ID-35 · Tests: two-factor API**
+  - **Do:** cover enable, login challenge and confirm, disable, wrong code, too many attempts.
+  - **Result:** the tests pass.
+  - **After:** ID-04, ID-30
+
+- [ ] **ID-36 · Tests: Google login callback**
+  - **Do:** mock the functions of `app.infrastructure.google.oauth`; cover new user, existing user, unverified email, invalid / used / expired state.
+  - **Result:** the tests pass without network access.
+  - **After:** ID-04
