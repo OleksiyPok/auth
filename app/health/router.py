@@ -1,4 +1,3 @@
-
 # app/health/router.py
 
 from fastapi import APIRouter

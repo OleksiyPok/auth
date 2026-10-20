@@ -219,12 +219,12 @@
   - **Результат:** тест знаходить username-, email- і Google-identity за id і нічого не повертає для невідомого id.
   - **Після:** ID-13
 
-- [ ] **ID-48 · `IdentityService.delete_identity`**
+- [x] **ID-48 · `IdentityService.delete_identity`**
   - **Що зробити:** додати `delete` до трьох репозиторіїв identity і викликати потрібний за типом identity.
   - **Результат:** тест показує, що identity видалено, а інші identity користувача залишились.
   - **Після:** ID-13
 
-- [ ] **ID-49 · `IdentityService.transfer_identity`**
+- [x] **ID-49 · `IdentityService.transfer_identity`**
   - **Що зробити:** змінювати власника identity; відмовляти, якщо новий власник уже має identity цього типу.
   - **Результат:** тест показує успішне перенесення і відмову при конфлікті типів.
   - **Після:** ID-13

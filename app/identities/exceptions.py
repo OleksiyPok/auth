@@ -13,3 +13,9 @@ class IdentityTypeConflictError(IdentityError):
     status_code = status.HTTP_409_CONFLICT
     code = "IDENTITY_TYPE_CONFLICT"
     message = "The user already has an identity of this type"
+
+
+class IdentityAlreadyOwnedError(IdentityError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "IDENTITY_ALREADY_OWNED"
+    message = "The identity already belongs to this user"

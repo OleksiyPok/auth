@@ -8,7 +8,10 @@ from app.google_auth.models import GoogleIdentity
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
-from app.identities.exceptions import IdentityTypeConflictError
+from app.identities.exceptions import (
+    IdentityAlreadyOwnedError,
+    IdentityTypeConflictError,
+)
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.identities.types import IdentityType
 from app.username_auth.models import UsernameIdentity
@@ -50,8 +53,8 @@ class IdentityService(IdentityServiceInterface):
         return identity.user_id if identity else None
 
     async def list_identities(
-            self,
-            user_id: str,
+        self,
+        user_id: str,
     ) -> list[EmailIdentity | UsernameIdentity | GoogleIdentity]:
         identities: list[EmailIdentity | UsernameIdentity | GoogleIdentity] = []
 
@@ -102,10 +105,18 @@ class IdentityService(IdentityServiceInterface):
         identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
         new_user_id: str,
     ) -> EmailIdentity | UsernameIdentity | GoogleIdentity:
-        """Change the owner of the identity.
+        """Change the owner of the identity."""
 
+        """
         Raises IdentityTypeConflictError when the new owner already has an
         identity of the same type.
+        """
+        if identity.user_id == new_user_id:
+            raise IdentityAlreadyOwnedError()
+
+        """
+         Raises IdentityTypeConflictError when the new owner already has an
+         identity of the same type.
         """
         if isinstance(identity, EmailIdentity):
             if await self._email_repository.get_by_user_id(new_user_id) is not None:
@@ -120,7 +131,10 @@ class IdentityService(IdentityServiceInterface):
             return await self._username_repository.update(identity)
 
         if isinstance(identity, GoogleIdentity):
-            if await self._google_repository.get_identity_by_user_id(new_user_id) is not None:
+            if (
+                await self._google_repository.get_identity_by_user_id(new_user_id)
+                is not None
+            ):
                 raise IdentityTypeConflictError()
             identity.user_id = new_user_id
             return await self._google_repository.update_identity(identity)
