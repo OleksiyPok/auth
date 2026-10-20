@@ -471,12 +471,12 @@ Existing tests use outdated model fields and request schemas.
 
 ## 13. Access protection
 
-- [ ] **ID-92 · Require authentication on `POST /api/v1/dev/email/send`**
+- [x] **ID-92 · Require authentication on `POST /api/v1/dev/email/send`**
   - **Do:** add the current-user dependency to the endpoint.
   - **Result:** a request without a token returns 401; a request with a valid token reaches the endpoint.
   - **After:** —
 
-- [ ] **ID-93 · Restrict `POST /api/v1/dev/email/send` to superadmin**
+- [x] **ID-93 · Restrict `POST /api/v1/dev/email/send` to superadmin**
   - **Do:** require superadmin access on the endpoint, using the checks from `app/auth/rbac/dependencies.py`.
   - **Result:** a request from `user` or `admin` returns 403; a request from `superadmin` returns 204.
   - **After:** ID-92
