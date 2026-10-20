@@ -47,3 +47,23 @@ class IdentityService(IdentityServiceInterface):
             return None
 
         return identity.user_id if identity else None
+
+    async def list_identities(
+            self,
+            user_id: str,
+    ) -> list[EmailIdentity | UsernameIdentity | GoogleIdentity]:
+        identities: list[EmailIdentity | UsernameIdentity | GoogleIdentity] = []
+
+        email_identity = await self._email_repository.get_by_user_id(user_id)
+        if email_identity is not None:
+            identities.append(email_identity)
+
+        username_identity = await self._username_repository.get_by_user_id(user_id)
+        if username_identity is not None:
+            identities.append(username_identity)
+
+        google_identity = await self._google_repository.get_identity_by_user_id(user_id)
+        if google_identity is not None:
+            identities.append(google_identity)
+
+        return identities

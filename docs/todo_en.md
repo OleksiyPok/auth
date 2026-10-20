@@ -209,7 +209,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** `Admin`, `   Admin   ` and `adMin` resolve to the same username.
   - **After:** —
 
-- [ ] **ID-13 · `IdentityService.list_identities`**
+- [x] **ID-13 · `IdentityService.list_identities`**
   - **Do:** add the service, its interface and dependency; add `get_by_user_id` to the Google repository; return the user's identities as the existing model objects.
   - **Result:** a test shows identities of all three types are listed for one user.
   - **After:** —
