@@ -4,7 +4,7 @@ A living backlog for the auth service. Tick `[x]` when an item is done.
 Each item says why it exists (**Why**) and what to do (**Do**).
 Order inside a section is roughly by priority and dependency.
 
-Every item has a permanent ID (`ID-NN`). IDs are never renumbered or reused: a new item takes the next free number, a finished item keeps its own. Refer to items by ID.
+Every item has a permanent ID (`ID-NN`). IDs are never renumbered or reused: a new item takes the next free number, a finished item keeps its own. Refer to items by ID. Recurring work is not a task: it is listed in section 8 with `R-NN` numbers and is never ticked. `ID-02` was moved there (as `R-01`); its number is not reused.
 
 The identity model is described in `docs/Users_Identity_en.md` (and `_ru.md`, kept symmetric).
 Terminology: "email match" (not "collision"); "conflict" means two identities of the same type during Merge.
@@ -18,10 +18,6 @@ Principles for identity operations: Link, Unlink, Split and Merge are personal o
 - [x] **ID-01 · Fix `requirements.txt`**
   - **Why:** an invalid package line breaks `pip install -r`.
   - **Do:** keep only valid, actually needed packages.
-
-- [ ] **ID-02 · Keep both spec versions symmetric**
-  - **Why:** `Users_Identity_en.md` and `Users_Identity_ru.md` must say the same thing.
-  - **Do:** after any spec change, update both and compare section numbers.
 
 - [ ] **ID-03 · Record the identity-operation decisions in the spec**
   - **Why:** the decisions below must live in the spec, not only in chat history.
@@ -57,11 +53,11 @@ Principles for identity operations: Link, Unlink, Split and Merge are personal o
 
 - [x] **ID-10 · Resend verification code**
   - **Why:** the user may not receive or may lose the email.
-  - **Do:** add an endpoint that issues a new code for an existing pending registration with a cooldown; consider the same for 2FA.
+  - **Do:** add an endpoint that issues a new code for an existing pending registration with a cooldown. Done: `POST /auth/email/register/resend` (cooldown `RESEND_COOLDOWN_SECONDS`, attempt counter reset, an expired registration can be renewed). For 2FA no separate endpoint is needed: repeating the request (`/auth/2fa/enable`, `/auth/2fa/disable` or the login) invalidates the old challenge and sends a new code; the pause between sends is covered by ID-11, requesting a code by another method by ID-23.
 
 - [x] **ID-11 · Rate limiting**
   - **Why:** registration, login and code confirmation can be abused (email spam, password and code guessing).
-  - **Do:** limit by IP and by email on `register`, `login`, `confirm` endpoints.
+  - **Do:** limit by IP and by email on `register`, `login`, `confirm` endpoints. Done: in-memory sliding window in `app/core/rate_limit.py`, all rules in one place; by IP on registration, login (including the Google callback), confirm and code-sending endpoints; by normalized email or username on email registration and on both logins; over the limit gives HTTP 429 `RATE_LIMIT_EXCEEDED`. The counters live in the memory of one process (move them to Redis for several workers); behind a reverse proxy the proxy headers must be configured.
 
 - [ ] **ID-12 · Optional: verification link in the email**
   - **Why:** lets the user confirm from another device or after closing the page.
@@ -75,9 +71,9 @@ Principles for identity operations: Link, Unlink, Split and Merge are personal o
   - **Why:** Link, Unlink, Split and Merge all need the same basic actions on identities of all three types.
   - **Do:** small service on top of the three existing repositories, already started in ID-20 (`IdentityService.get_owner_id`, `IdentityType`). Add: list identities of a user; delete one together with revoking its sessions; change its owner. Add repository methods `delete` and Google `get_by_user_id`; changing the owner needs no new method (set `user_id`, call `update`). No unified `identities` table, no adapters.
 
-- [ ] **ID-14 · Single place for identifier normalization**
+- [x] **ID-14 · Single place for identifier normalization**
   - **Why:** email is normalized (`strip` + `casefold`) in several services; username is not normalized at all, so `Admin` and `admin` are different names.
-  - **Do:** one helper per identifier type, used everywhere. Username policy (decided): `strip()` + `casefold()`, so `Admin`, `   Admin   ` and `adMin` are the same name; the name is stored normalized. Apply it in username registration and login, the superadmin bootstrap and `scripts/seed_dev_users.py`. Allowed characters and inner spaces are a separate validation task.
+  - **Do:** one helper per identifier type, used everywhere. Username policy (decided): `strip()` + `casefold()`, so `Admin`, `   Admin   ` and `adMin` are the same name; the name is stored normalized. Apply it in username registration and login, the superadmin bootstrap and `scripts/seed_dev_users.py`. Allowed characters and inner spaces are a separate validation task. Done: `app/core/identifiers.py` (`normalize_email`, `normalize_username`) is used in registration and login, the superadmin bootstrap and `scripts/seed_dev_users.py`.
 
 - [ ] **ID-15 · `UserRepository.get_for_update`**
   - **Why:** Link/Unlink/Merge/Split must not race with each other.
@@ -122,23 +118,22 @@ All of these are personal operations of the signed-in user; `self.*` access is e
   - **Why:** it does not filter by `is_active` and overwrites `revoked_at` of already revoked sessions.
   - **Do:** update only active sessions.
 
-- [ ] **ID-22 · Cover username and Google logins with 2FA**
+- [x] **ID-22 · Cover username and Google logins with 2FA**
   - **Why:** 2FA is enabled only through the email identity, and username and Google logins skip it.
-  - **Do:** decide the rule (2FA is per user, so it should apply to every login method) and apply it to all login flows. Can be done as part of ID-23.
+  - **Do:** decide the rule (2FA is per user, so it should apply to every login method) and apply it to all login flows. Can be done as part of ID-23. Done: email, username and Google logins all go through `TwoFactorService.authenticate_or_challenge`; 2FA is account-level.
 
 ---
 
 ## 6. Independent 2FA resource with several methods
 
 - [ ] **ID-23 · Make 2FA independent of identities**
-  - **Why:** 2FA is currently tied to the email identity (endpoints `/auth/email/2fa/*`, `identity_id` in `TwoFactorChallenge`, the code goes to the email identity). More verification methods are planned (SMS, authenticator app, WhatsApp message), and deleting an email identity must not break 2FA.
+  - **Why:** 2FA is already account-level (one `/auth/2fa/*` resource, applied to every login method), but its only method is the code sent to the account's email identity, so deleting that identity leaves 2FA without a method. More verification methods are planned (SMS, authenticator app, WhatsApp message).
   - **Do:**
     - Add a `TwoFactorMethod` model (`user_id`, type, delivery address or secret, verified flag, default flag). A phone number used for SMS is not an identity and not a `Contact`.
-    - Move the API to one resource `/auth/2fa/*`: list methods, add and confirm a method, remove, enable, disable.
-    - Add a method reference to `TwoFactorChallenge`; keep `identity_id` and `identity_type` for login challenges (the session is created from them after the code is confirmed); change `request_enable`, `request_disable` and `authenticate_or_challenge` accordingly.
+    - Extend the existing `/auth/2fa/*` resource (status, enable, disable and login confirm already exist; the method list returns only the email one): add and confirm a method, remove a method.
+    - Add a method reference to `TwoFactorChallenge` (`identity_id` and `identity_type` stay for login challenges: the session is created from them after the code is confirmed); change `request_enable`, `request_disable` and `authenticate_or_challenge` accordingly. Let the user request a code by another method for an existing challenge (the 2FA part of ID-10).
     - Put delivery behind a common sender interface (email, SMS, WhatsApp). Authenticator app (TOTP) verifies a code against a secret instead of sending one; store the secret encrypted.
     - Add recovery codes for the case of a lost device or phone.
-    - Call the 2FA check from every login flow (email, username, Google).
     - Remove the interim "reset 2FA on email Unlink" rule from ID-16.
 
 ---
@@ -156,3 +151,17 @@ All of these are personal operations of the signed-in user; `self.*` access is e
 - [ ] **ID-26 · `Contact` entity**
   - **Why:** store unverified user information (extra emails, phones) separately from identities.
   - **Do:** contacts are never used for login or linking; define the transfer rule for Merge (ID-18); Unlink and Split do not touch contacts.
+
+---
+
+## 8. Routine (recurring work)
+
+Not tasks: they repeat with every change, are never ticked and use `R-NN` numbers instead of `ID-NN`.
+
+- **R-01 · Keep both spec versions symmetric**
+  - **Why:** `Users_Identity_en.md` and `Users_Identity_ru.md` must say the same thing.
+  - **Do:** after any spec change, update both and compare section numbers.
+
+- **R-02 · Keep the backlog files in sync**
+  - **Why:** `todo_en.md` and `todo_uk.md` must describe the same work, and the backlog must match the code.
+  - **Do:** after each completed task update both files together: tick finished items, correct the text of partly done ones (what is done, what remains), give a new item the next free ID. IDs are never renumbered.
