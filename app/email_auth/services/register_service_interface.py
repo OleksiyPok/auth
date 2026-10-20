@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 from app.email_auth.schemas import (
     EmailRegisterChallengeResponseSchema,
     EmailRegisterConfirmRequestSchema,
-    EmailRegisterResendRequestSchema,
     EmailRegisterRequestSchema,
+    EmailRegisterResendRequestSchema,
     EmailRegisterResponseSchema,
 )
 

@@ -4,8 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.core.rate_limit import CONFIRM_IP, SEND_CODE_IP, limit_by_ip
 from app.auth.dependencies import get_current_user
+from app.core.rate_limit import CONFIRM_IP, SEND_CODE_IP, limit_by_ip
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,

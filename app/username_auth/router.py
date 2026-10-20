@@ -13,7 +13,6 @@ from app.core.rate_limit import (
     limit_by_ip,
     rate_limiter,
 )
-
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.username_auth.dependencies import (
     get_username_login_service,

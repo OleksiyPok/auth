@@ -16,7 +16,6 @@ class AppError(Exception):
         super().__init__(self.message)
 
 
-
 class RateLimitExceededError(AppError):
     status_code = status.HTTP_429_TOO_MANY_REQUESTS
     code = "RATE_LIMIT_EXCEEDED"

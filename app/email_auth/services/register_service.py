@@ -6,8 +6,8 @@ from datetime import datetime, timedelta, timezone
 from app.core.identifiers import normalize_email
 from app.email_auth.exceptions import (
     EmailRegistrationNotFoundError,
-    EmailVerificationResendTooEarlyError,
     EmailVerificationCodeExpiredError,
+    EmailVerificationResendTooEarlyError,
     EmailVerificationTooManyAttemptsError,
     InvalidEmailVerificationCodeError,
 )
@@ -36,6 +36,7 @@ CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES
 MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
 CODE_LENGTH = fa_settings.CODE_LENGTH
 RESEND_COOLDOWN_SECONDS = fa_settings.RESEND_COOLDOWN_SECONDS
+
 
 class EmailRegisterService(EmailRegisterServiceInterface):
 
@@ -184,7 +185,6 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             last_name=user.last_name,
             role=user.role,
         )
-
 
     async def _send_code(self, email: str, code: str) -> None:
         await self._email_service.send(

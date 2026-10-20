@@ -10,4 +10,5 @@ class Settings(BaseSettings):
     CODE_LENGTH: int = 6
     RESEND_COOLDOWN_SECONDS: int = 60
 
+
 settings = Settings()

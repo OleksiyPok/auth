@@ -16,7 +16,6 @@ from app.core.rate_limit import (
     limit_by_ip,
     rate_limiter,
 )
-
 from app.email_auth.dependencies import (
     get_email_login_service,
     get_email_register_service,
@@ -25,8 +24,8 @@ from app.email_auth.schemas import (
     EmailLoginRequestSchema,
     EmailRegisterChallengeResponseSchema,
     EmailRegisterConfirmRequestSchema,
-    EmailRegisterResendRequestSchema,
     EmailRegisterRequestSchema,
+    EmailRegisterResendRequestSchema,
     EmailRegisterResponseSchema,
 )
 from app.email_auth.services.login_service_interface import EmailLoginServiceInterface
@@ -57,6 +56,7 @@ async def register(
     rate_limiter.hit(REGISTER_EMAIL, normalize_email(data.email))
     return await service.register(data)
 
+
 @router.post(
     "/register/resend",
     response_model=EmailRegisterChallengeResponseSchema,
@@ -71,6 +71,7 @@ async def resend_register_code(
     ],
 ):
     return await service.resend(data)
+
 
 @router.post(
     "/register/confirm",

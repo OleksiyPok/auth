@@ -2,9 +2,9 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.identifiers import normalize_email, normalize_username
 from app.auth.rbac.roles import Role
 from app.core.config import settings
+from app.core.identifiers import normalize_email, normalize_username
 from app.email_auth.models import EmailIdentity
 from app.infrastructure.password import hash_password
 from app.username_auth.models import UsernameIdentity
