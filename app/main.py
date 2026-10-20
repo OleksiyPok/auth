@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlalchemy import inspect
 from sqlmodel import SQLModel
 
@@ -92,6 +93,12 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("app/static/favicon.ico")
+
 
 app.add_middleware(
     CORSMiddleware,
