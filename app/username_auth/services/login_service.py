@@ -57,7 +57,7 @@ class UsernameLoginService(UsernameLoginServiceInterface):
         return await self._two_factor_service.authenticate_or_challenge(
             user=user,
             identity_id=identity.id,
-            identity_type=IdentityType.EMAIL,
+            identity_type=IdentityType.USERNAME,
             ip_address=ip_address,
             user_agent=user_agent,
         )
