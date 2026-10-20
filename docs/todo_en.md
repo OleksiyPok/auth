@@ -9,6 +9,7 @@ Backlog for the auth service. Each item is one task with one clear, verifiable r
 - IDs are permanent: never renumbered, never reused. A new task takes the next free number.
 - A finished task stays in the file. The only change is the `[x]` mark next to it; its text is not edited.
 - Every description is a declarative requirement that stays true at any moment, before and after the task is done. No notes about work that was just done and no temporary or interim rules.
+- Tests are postponed until explicitly scheduled. Do not write, fix or run tests while implementing regular tasks. Section 2 (Tests) is deferred and must not be selected as the next task unless explicitly requested.
 
 [//]: # (- Each task is finished only when its **Result** is verifiable and the related tests pass &#40;`python -m pytest`&#41;.)
 - `docs/todo_uk.md` mirrors this file: same IDs, same order. The identity spec `docs/Users_Identity_en.md` and `_ru.md` stay symmetric.
