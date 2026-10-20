@@ -219,12 +219,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test finds username, email and Google identities by id and returns nothing for an unknown id.
   - **After:** ID-13
 
-- [ ] **ID-48 · `IdentityService.delete_identity`**
+- [x] **ID-48 · `IdentityService.delete_identity`**
   - **Do:** add `delete` to the three identity repositories and call the right one by identity type.
   - **Result:** a test shows the identity is gone and other identities of the user remain.
   - **After:** ID-13
 
-- [ ] **ID-49 · `IdentityService.transfer_identity`**
+- [x] **ID-49 · `IdentityService.transfer_identity`**
   - **Do:** change the owner of an identity; refuse when the new owner already has an identity of that type.
   - **Result:** a test shows a successful transfer and a refusal on type conflict.
   - **After:** ID-13

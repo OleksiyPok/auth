@@ -105,19 +105,19 @@ class IdentityService(IdentityServiceInterface):
         identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
         new_user_id: str,
     ) -> EmailIdentity | UsernameIdentity | GoogleIdentity:
-        """Change the owner of the identity."""
+        """Change the owner of the identity.
 
+        Raises IdentityAlreadyOwnedError when the identity already belongs to
+        the new owner, and IdentityTypeConflictError when the new owner already
+        has an identity of the same type.
         """
-        Raises IdentityTypeConflictError when the new owner already has an
-        identity of the same type.
-        """
+        # Transferring to the current owner changes nothing. Callers (Merge,
+        # Split) never do it on purpose, so it is reported as an error instead
+        # of a silent no-op, and it is checked first so that it is not
+        # mistaken for a type conflict with the identity's own owner.
         if identity.user_id == new_user_id:
             raise IdentityAlreadyOwnedError()
 
-        """
-         Raises IdentityTypeConflictError when the new owner already has an
-         identity of the same type.
-        """
         if isinstance(identity, EmailIdentity):
             if await self._email_repository.get_by_user_id(new_user_id) is not None:
                 raise IdentityTypeConflictError()
