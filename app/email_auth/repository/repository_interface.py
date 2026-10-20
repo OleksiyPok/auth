@@ -36,6 +36,11 @@ class EmailIdentityRepositoryInterface(ABC):
     ) -> EmailRegistration | None: ...
 
     @abstractmethod
+    async def update_registration(
+        self, registration: EmailRegistration
+    ) -> EmailRegistration: ...
+
+    @abstractmethod
     async def increment_registration_attempts(self, registration_id: str) -> int: ...
 
     @abstractmethod

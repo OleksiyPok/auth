@@ -64,6 +64,14 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
         )
         return result.scalar_one_or_none()
 
+    async def update_registration(
+        self, registration: EmailRegistration
+    ) -> EmailRegistration:
+        self._session.add(registration)
+        await self._session.flush()
+        await self._session.refresh(registration)
+        return registration
+
     # noinspection PyMethodMayBeStatic
     async def increment_registration_attempts(self, registration_id: str) -> int:
         # Separate transaction: the counter must survive the rollback of the

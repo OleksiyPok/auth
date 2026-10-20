@@ -42,6 +42,11 @@ class EmailRegistration(SQLModel, table=True):
     code_hash: str
     expires_at: datetime = Field(sa_type=UTCDateTime, nullable=False)
     attempts: int = Field(default=0, nullable=False)
+    last_sent_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=UTCDateTime,
+        nullable=False,
+    )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_type=UTCDateTime,

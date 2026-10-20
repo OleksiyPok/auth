@@ -38,6 +38,10 @@ class EmailVerificationCodeExpiredError(EmailAuthError):
     code = "EMAIL_VERIFICATION_CODE_EXPIRED"
     message = "Email verification code expired"
 
+class EmailVerificationResendTooEarlyError(EmailAuthError):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    code = "EMAIL_VERIFICATION_RESEND_TOO_EARLY"
+    message = "Verification code was sent recently, try again later"
 
 class EmailVerificationTooManyAttemptsError(EmailAuthError):
     status_code = status.HTTP_429_TOO_MANY_REQUESTS

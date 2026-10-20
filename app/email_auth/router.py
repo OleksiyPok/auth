@@ -13,6 +13,7 @@ from app.email_auth.schemas import (
     EmailLoginRequestSchema,
     EmailRegisterChallengeResponseSchema,
     EmailRegisterConfirmRequestSchema,
+    EmailRegisterResendRequestSchema,
     EmailRegisterRequestSchema,
     EmailRegisterResponseSchema,
 )
@@ -42,6 +43,19 @@ async def register(
 ):
     return await service.register(data)
 
+@router.post(
+    "/register/resend",
+    response_model=EmailRegisterChallengeResponseSchema,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def resend_register_code(
+    data: EmailRegisterResendRequestSchema,
+    service: Annotated[
+        EmailRegisterServiceInterface,
+        Depends(get_email_register_service),
+    ],
+):
+    return await service.resend(data)
 
 @router.post(
     "/register/confirm",

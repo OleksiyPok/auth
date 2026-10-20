@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from app.core.identifiers import normalize_email
 from app.email_auth.exceptions import (
     EmailRegistrationNotFoundError,
+    EmailVerificationResendTooEarlyError,
     EmailVerificationCodeExpiredError,
     EmailVerificationTooManyAttemptsError,
     InvalidEmailVerificationCodeError,
@@ -18,6 +19,7 @@ from app.email_auth.schemas import (
     EmailRegisterChallengeResponseSchema,
     EmailRegisterConfirmRequestSchema,
     EmailRegisterRequestSchema,
+    EmailRegisterResendRequestSchema,
     EmailRegisterResponseSchema,
 )
 from app.email_auth.services.register_service_interface import (
@@ -33,7 +35,7 @@ from app.users.repository.repository_interface import UserRepositoryInterface
 CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES
 MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
 CODE_LENGTH = fa_settings.CODE_LENGTH
-
+RESEND_COOLDOWN_SECONDS = fa_settings.RESEND_COOLDOWN_SECONDS
 
 class EmailRegisterService(EmailRegisterServiceInterface):
 
@@ -76,14 +78,49 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             )
         )
 
-        await self._email_service.send(
-            to=email,
-            subject="Confirm your email registration",
-            body=(
-                f"Your verification code is: {code}\n\n"
-                f"The code expires in {CHALLENGE_EXPIRE_MINUTES} minutes."
-            ),
+        await self._send_code(email, code)
+
+        return EmailRegisterChallengeResponseSchema(
+            registration_id=registration.id,
+            expires_at=registration.expires_at.isoformat(),
         )
+
+    async def resend(
+        self,
+        data: EmailRegisterResendRequestSchema,
+    ) -> EmailRegisterChallengeResponseSchema:
+        registration = await self._email_identity_repository.get_registration(
+            data.registration_id
+        )
+
+        if not registration:
+            raise EmailRegistrationNotFoundError()
+
+        now = datetime.now(timezone.utc)
+        elapsed = (now - registration.last_sent_at).total_seconds()
+
+        if elapsed < RESEND_COOLDOWN_SECONDS:
+            retry_after = int(RESEND_COOLDOWN_SECONDS - elapsed) + 1
+            raise EmailVerificationResendTooEarlyError(
+                f"Verification code was sent recently, try again in {retry_after} seconds"
+            )
+
+        # The address may have been taken while the registration was pending.
+        if await self._email_identity_repository.get_by_email(registration.email):
+            raise UserAlreadyExistsError()
+
+        # An expired registration can also be renewed: a new code and a new
+        # expiry time are issued, and the attempt counter starts from zero.
+        code = f"{secrets.randbelow(10**CODE_LENGTH):0{CODE_LENGTH}d}"
+        registration.code_hash = hash_password(code)
+        registration.expires_at = now + timedelta(minutes=CHALLENGE_EXPIRE_MINUTES)
+        registration.attempts = 0
+        registration.last_sent_at = now
+        registration = await self._email_identity_repository.update_registration(
+            registration
+        )
+
+        await self._send_code(registration.email, code)
 
         return EmailRegisterChallengeResponseSchema(
             registration_id=registration.id,
@@ -146,4 +183,15 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             first_name=user.first_name,
             last_name=user.last_name,
             role=user.role,
+        )
+
+
+    async def _send_code(self, email: str, code: str) -> None:
+        await self._email_service.send(
+            to=email,
+            subject="Confirm your email registration",
+            body=(
+                f"Your verification code is: {code}\n\n"
+                f"The code expires in {CHALLENGE_EXPIRE_MINUTES} minutes."
+            ),
         )

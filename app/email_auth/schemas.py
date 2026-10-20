@@ -22,6 +22,8 @@ class EmailRegisterConfirmRequestSchema(BaseModel):
     registration_id: str
     code: str
 
+class EmailRegisterResendRequestSchema(BaseModel):
+    registration_id: str
 
 class EmailRegisterResponseSchema(BaseModel):
     id: str

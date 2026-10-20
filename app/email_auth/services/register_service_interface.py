@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from app.email_auth.schemas import (
     EmailRegisterChallengeResponseSchema,
     EmailRegisterConfirmRequestSchema,
+    EmailRegisterResendRequestSchema,
     EmailRegisterRequestSchema,
     EmailRegisterResponseSchema,
 )
@@ -16,6 +17,12 @@ class EmailRegisterServiceInterface(ABC):
     async def register(
         self,
         data: EmailRegisterRequestSchema,
+    ) -> EmailRegisterChallengeResponseSchema: ...
+
+    @abstractmethod
+    async def resend(
+        self,
+        data: EmailRegisterResendRequestSchema,
     ) -> EmailRegisterChallengeResponseSchema: ...
 
     @abstractmethod
