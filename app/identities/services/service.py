@@ -8,6 +8,7 @@ from app.google_auth.models import GoogleIdentity
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
+from app.identities.exceptions import IdentityTypeConflictError
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.identities.types import IdentityType
 from app.username_auth.models import UsernameIdentity
@@ -67,3 +68,61 @@ class IdentityService(IdentityServiceInterface):
             identities.append(google_identity)
 
         return identities
+
+    async def get_identity(
+        self,
+        identity_id: str,
+    ) -> EmailIdentity | UsernameIdentity | GoogleIdentity | None:
+        """Find an identity of any type by its id, or None if it does not exist."""
+        email_identity = await self._email_repository.get_by_id(identity_id)
+        if email_identity is not None:
+            return email_identity
+
+        username_identity = await self._username_repository.get_by_id(identity_id)
+        if username_identity is not None:
+            return username_identity
+
+        return await self._google_repository.get_identity_by_id(identity_id)
+
+    async def delete_identity(
+        self,
+        identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
+    ) -> None:
+        if isinstance(identity, EmailIdentity):
+            await self._email_repository.delete(identity)
+        elif isinstance(identity, UsernameIdentity):
+            await self._username_repository.delete(identity)
+        elif isinstance(identity, GoogleIdentity):
+            await self._google_repository.delete_identity(identity)
+        else:
+            raise TypeError(f"Unsupported identity: {type(identity).__name__}")
+
+    async def transfer_identity(
+        self,
+        identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
+        new_user_id: str,
+    ) -> EmailIdentity | UsernameIdentity | GoogleIdentity:
+        """Change the owner of the identity.
+
+        Raises IdentityTypeConflictError when the new owner already has an
+        identity of the same type.
+        """
+        if isinstance(identity, EmailIdentity):
+            if await self._email_repository.get_by_user_id(new_user_id) is not None:
+                raise IdentityTypeConflictError()
+            identity.user_id = new_user_id
+            return await self._email_repository.update(identity)
+
+        if isinstance(identity, UsernameIdentity):
+            if await self._username_repository.get_by_user_id(new_user_id) is not None:
+                raise IdentityTypeConflictError()
+            identity.user_id = new_user_id
+            return await self._username_repository.update(identity)
+
+        if isinstance(identity, GoogleIdentity):
+            if await self._google_repository.get_identity_by_user_id(new_user_id) is not None:
+                raise IdentityTypeConflictError()
+            identity.user_id = new_user_id
+            return await self._google_repository.update_identity(identity)
+
+        raise TypeError(f"Unsupported identity: {type(identity).__name__}")

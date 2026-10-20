@@ -214,7 +214,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows identities of all three types are listed for one user.
   - **After:** —
 
-- [ ] **ID-47 · `IdentityService.get_identity`**
+- [x] **ID-47 · `IdentityService.get_identity`**
   - **Do:** find an identity of any type by its id.
   - **Result:** a test finds username, email and Google identities by id and returns nothing for an unknown id.
   - **After:** ID-13

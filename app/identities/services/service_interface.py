@@ -20,3 +20,22 @@ class IdentityServiceInterface(ABC):
         identity_type: str,
         identity_id: str,
     ) -> str | None: ...
+
+    @abstractmethod
+    async def get_identity(
+        self,
+        identity_id: str,
+    ) -> EmailIdentity | UsernameIdentity | GoogleIdentity | None: ...
+
+    @abstractmethod
+    async def delete_identity(
+        self,
+        identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
+    ) -> None: ...
+
+    @abstractmethod
+    async def transfer_identity(
+        self,
+        identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
+        new_user_id: str,
+    ) -> EmailIdentity | UsernameIdentity | GoogleIdentity: ...
