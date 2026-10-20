@@ -13,6 +13,7 @@ from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
 from app.db.session import session_factory
+from app.health.router import router as health_router
 from app.router import router
 
 
@@ -104,6 +105,7 @@ app.add_middleware(
 register_exception_handlers(app)
 
 app.include_router(router)
+app.include_router(health_router)
 
 
 if __name__ == "__main__":

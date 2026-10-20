@@ -485,17 +485,17 @@ Existing tests use outdated model fields and request schemas.
 
 ## 14. Service health
 
-- [ ] **ID-94 · `GET /health`**
+- [x] **ID-94 · `GET /health`**
   - **Do:** add an endpoint at the application root, outside `API_V1_PREFIX`, without authentication and without database access; it returns `{"status": "ok"}`.
   - **Result:** `GET /health` without a token returns 200 with `{"status": "ok"}`.
   - **After:** —
 
-- [ ] **ID-95 · `GET /health/ready`: database reachable**
+- [x] **ID-95 · `GET /health/ready`: database reachable**
   - **Do:** add an endpoint at the application root, outside `API_V1_PREFIX`, without authentication; it runs `SELECT 1` through the application engine and returns `{"status": "ok"}`.
   - **Result:** with the database available, `GET /health/ready` without a token returns 200 with `{"status": "ok"}`.
   - **After:** —
 
-- [ ] **ID-96 · `GET /health/ready`: database unreachable**
+- [x] **ID-96 · `GET /health/ready`: database unreachable**
   - **Do:** when the database check fails, return 503 with `{"status": "unavailable"}`; the response, logs of the endpoint and headers contain no error details, connection string or credentials.
   - **Result:** with the database stopped or `DATABASE_URL` wrong, `GET /health/ready` returns 503 with `{"status": "unavailable"}` and no other data; `GET /health` still returns 200.
   - **After:** ID-95
