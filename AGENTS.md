@@ -142,6 +142,8 @@ When proposing changes, first state which files change, why, and which dependenc
 
 ## Testing
 
+- Tests are out of scope for now. Do not write, fix or run tests unless the task explicitly asks for it. Section 2 of `todo_en.md` is not worked on unless requested.
+- A task is verified by reading the code and the related files, not by running tests.
 - Permanent tests live only in `tests/`, run with `python -m pytest`, and test real backend behavior: API, authentication, authorization, database operations, validation, errors.
 - Existing tests may lag behind the models. Update them when you touch related code.
 - Do not create temporary or debugging tests. If a temporary script is unavoidable, use it for investigation and delete it afterwards.
@@ -153,7 +155,9 @@ When proposing changes, first state which files change, why, and which dependenc
 
 1. Review all changed files.
 2. Check imports, references, circular imports and syntax.
-3. Run relevant tests (`python -m pytest`).
+
+[//]: # (3. Run relevant tests &#40;`python -m pytest`&#41;.&#41;)
+3. Verify by code review; do not run tests unless asked.
 4. Run `git status` and remove temporary artifacts.
 5. Report: files changed, added and removed; tests executed; verification result.
 

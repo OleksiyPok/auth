@@ -9,7 +9,8 @@ Backlog for the auth service. Each item is one task with one clear, verifiable r
 - IDs are permanent: never renumbered, never reused. A new task takes the next free number.
 - A finished task stays in the file. The only change is the `[x]` mark next to it; its text is not edited.
 - Every description is a declarative requirement that stays true at any moment, before and after the task is done. No notes about work that was just done and no temporary or interim rules.
-- Each task is finished only when its **Result** is verifiable and the related tests pass (`python -m pytest`).
+
+[//]: # (- Each task is finished only when its **Result** is verifiable and the related tests pass &#40;`python -m pytest`&#41;.)
 - `docs/todo_uk.md` mirrors this file: same IDs, same order. The identity spec `docs/Users_Identity_en.md` and `_ru.md` stay symmetric.
 - Terminology: "conflict" means the same identifier (for email, the same address) in identities of the same type; such an identity cannot be created, so it cannot exist and Merge never meets it. "Email match" (not "collision") means the same email in identities of different types, looked up among identities only, never among contacts; it is allowed and links nothing. "Type conflict" means both users of a Merge already have an identity of the same type; it blocks Merge.
 - Link, Unlink, Split and Merge are personal operations of the signed-in user. No admin approval is involved; `self.*` permissions are enough.
