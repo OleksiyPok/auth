@@ -58,7 +58,32 @@ These operations have different purposes and must not substitute for one another
 | **Link**   | **Identity**        | Link a new **Identity** to an existing **User**                                             |
 | **Unlink** | **Identity**        | Remove a specific **Identity** from a **User** and delete its authentication data           |
 | **Merge**  | **User**            | Merge multiple **Users** into one                                                           |
-| **Split**  | **User**            | Split one **User** into multiple, distributing the existing **Identity** among them          |
+| **Split**  | **User**            | Split one **User** into multiple, distributing the existing **Identity** among them         |
+
+### Business Operations and Identity Ownership
+
+**Link and Unlink**
+
+Link and Unlink operate on individual Identity entities in the context of the authenticated User.
+
+- **Link** associates an external Identity with the authenticated User after ownership of that Identity has been verified.
+- **Unlink** removes the association between an Identity and the authenticated User, subject to the operation's validation rules.
+
+The authenticated User remains the same throughout either operation.
+
+
+**Merge and Split**
+
+Merge and Split operate on User entities by changing the ownership of existing Identity entities.
+
+- **Merge** transfers the Identity entities belonging to the source User to the target User, then removes the source User.
+- **Split** creates a new User and transfers explicitly selected Identity entities from the existing User to the new User.
+
+For Merge, the *source User* is the User whose Identity entities are transferred and whose account is subsequently removed. The *target User* is the User that remains and receives those Identity entities.
+
+For Split, the *existing User* is the User from which selected Identity entities are detached, and the *new User* is the User to which they are assigned.
+
+In Merge and Split, the Identity entities themselves are not recreated. Their ownership association with a User changes.
 
 ## 4. Link
 
