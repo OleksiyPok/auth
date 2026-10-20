@@ -16,6 +16,12 @@ class SessionResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CurrentSessionSchema(BaseModel):
+    """Session and identity the current access token was issued for."""
+    session_id: str
+    identity_id: str
+
+
 class RefreshTokenRequestSchema(BaseModel):
     refresh_token: str
 

@@ -217,3 +217,16 @@ def require_self_sessions_read(user_getter: UserGetter | None = None):
 def require_self_sessions_revoke(user_getter: UserGetter | None = None):
     """Require SELF_SESSIONS_REVOKE permission."""
     return require_permissions(Permission.SELF_SESSIONS_REVOKE, user_getter=user_getter)
+
+
+
+def require_self_identities_read(user_getter: UserGetter | None = None):
+    """Require SELF_IDENTITIES_READ permission."""
+    return require_permissions(Permission.SELF_IDENTITIES_READ, user_getter=user_getter)
+
+
+def require_self_identities_write(user_getter: UserGetter | None = None):
+    """Require SELF_IDENTITIES_WRITE permission."""
+    return require_permissions(
+        Permission.SELF_IDENTITIES_WRITE, user_getter=user_getter
+    )

@@ -34,7 +34,7 @@ One folder per feature inside `app/`:
 ```
 app/
     users/  auth/  sessions/  username_auth/  email_auth/  google_auth/  two_factor/
-    identities/         service over the three identity repositories (no models, no router)
+    identities/         service, schemas and router over the three identity repositories (no models)
     infrastructure/     external integrations: email, google, jwt, password
     core/               settings, base exceptions, exception handlers
     db/                 engine, session, custom column types

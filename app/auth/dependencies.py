@@ -16,7 +16,9 @@ from app.auth.services.token_service import TokenService
 from app.auth.services.token_service_interface import TokenServiceInterface
 from app.identities.dependencies import get_identity_service
 from app.identities.services.service_interface import IdentityServiceInterface
+from app.infrastructure.jwt.security import decode_access_token
 from app.sessions.dependencies import get_sessions_service
+from app.sessions.schemas import CurrentSessionSchema
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.dependencies import get_user_repository
 from app.users.models import User
@@ -82,7 +84,7 @@ def get_token_service(
     )
 
 
-async def get_current_user(
+async def get_access_token(
     credentials: Annotated[
         HTTPAuthorizationCredentials | None,
         Depends(generic_auth_scheme),
@@ -95,11 +97,7 @@ async def get_current_user(
         str | None,
         Depends(email_auth_scheme),
     ],
-    authentication_service: Annotated[
-        TokenServiceInterface,
-        Depends(get_token_service),
-    ],
-) -> User:
+) -> str:
     # All three schemes read the same "Authorization: Bearer ..." header.
     # They are listed so that Swagger sends the token after authorizing
     # with any of them.
@@ -107,7 +105,40 @@ async def get_current_user(
 
     if token is None:
         raise InvalidAccessTokenError()
+    return token
+
+
+async def get_current_user(
+    token: Annotated[
+        str,
+        Depends(get_access_token),
+    ],
+    authentication_service: Annotated[
+        TokenServiceInterface,
+        Depends(get_token_service),
+    ],
+) -> User:
     return await authentication_service.authenticate(token)
+
+
+async def get_current_session(
+    # Listed first: the token is fully validated (signature, session,
+    # identity ownership, active user) before its claims are read below.
+    _current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    token: Annotated[
+        str,
+        Depends(get_access_token),
+    ],
+) -> CurrentSessionSchema:
+    payload = decode_access_token(token)
+
+    return CurrentSessionSchema(
+        session_id=payload["sid"],
+        identity_id=payload["identity_id"],
+    )
 
 
 async def get_current_username_user(

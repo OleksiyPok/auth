@@ -50,6 +50,8 @@ class Permission(StrEnum):
     SELF_DELETE = "self.delete"
     SELF_SESSIONS_READ = "self.sessions.read"
     SELF_SESSIONS_REVOKE = "self.sessions.revoke"
+    SELF_IDENTITIES_READ = "self.identities.read"
+    SELF_IDENTITIES_WRITE = "self.identities.write"
 
     @classmethod
     def validate(cls, value: str) -> bool:

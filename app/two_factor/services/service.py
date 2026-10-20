@@ -4,6 +4,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
+from app.core.identifiers import mask_email
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
 )
@@ -33,11 +34,6 @@ from app.users.models import User
 CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES
 MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
 CODE_LENGTH = fa_settings.CODE_LENGTH
-
-
-def _mask_email(email: str) -> str:
-    local, _, domain = email.partition("@")
-    return f"{local[:1]}***@{domain}"
 
 
 class TwoFactorService(TwoFactorServiceInterface):

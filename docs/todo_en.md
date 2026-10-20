@@ -243,17 +243,17 @@ Existing tests use outdated model fields and request schemas.
 
 ## 7. Identity endpoints: permissions, list, Unlink
 
-- [ ] **ID-51 · Identity permissions**
+- [x] **ID-51 · Identity permissions**
   - **Do:** add `SELF_IDENTITIES_READ` and `SELF_IDENTITIES_WRITE` to `Permission`, grant them to every role that has the other `self.*` permissions, add `require_self_identities_read` and `require_self_identities_write`.
   - **Result:** RBAC validation at import passes; the `user` role has both permissions.
   - **After:** —
 
-- [ ] **ID-53 · Current session dependency**
+- [x] **ID-53 · Current session dependency**
   - **Do:** add a dependency returning the session id and identity id of the current token.
   - **Result:** a test shows the values equal the ones used at login.
   - **After:** —
 
-- [ ] **ID-52 · `GET /identities`**
+- [x] **ID-52 · `GET /identities`**
   - **Do:** return the current user's identities: id, type, a display identifier (username, masked email, none for Google), `created_at`.
   - **Result:** the endpoint returns the user's identities and requires authentication and the read permission.
   - **After:** ID-13, ID-51
