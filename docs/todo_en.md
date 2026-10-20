@@ -384,7 +384,7 @@ Existing tests use outdated model fields and request schemas.
 
 ## 11. Sessions
 
-- [ ] **ID-20 · Check identity ownership when authenticating a token**
+- [x] **ID-20 · Check identity ownership when authenticating a token**
   - **Do:** in `TokenService.authenticate` reject a token whose session identity is not owned by the session's user.
   - **Result:** a test shows a token with a foreign identity id is rejected.
   - **After:** ID-47
