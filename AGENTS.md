@@ -98,7 +98,7 @@ Follow this layout for new features. Do not introduce new top-level layers.
 - An identity is created only after ownership of its identifier is verified. A pending registration is not an identity.
 - A match of email or other attributes never links identities or merges users automatically. Consolidation requires Link from an authenticated session, or an explicit Merge.
 - Email identifiers are normalized with `strip()` + `casefold()`.
-- Terminology: say "email match", not "collision". "Conflict" means two identities of the same type during Merge.
+- Terminology: say "email match", not "collision": the same email in identities of different types, looked up among identities only; it is allowed and links nothing. "Conflict" means the same identifier in identities of the same type; such an identity is never created. "Type conflict" means both users of a Merge have an identity of the same type; it blocks Merge.
 - A `Contact` entity does not exist yet. When it appears, it holds unverified data and is never used for login or linking.
 
 ---

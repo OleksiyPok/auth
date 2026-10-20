@@ -27,6 +27,8 @@ Each **Identity** belongs to exactly one **User**.
 - A single **User** may have at most one **Identity** of each type.
 - The identifier of a particular **Identity** type must be globally unique within that type.
 
+If an identifier is already used by an **Identity** of the same type, this is a **conflict**: a second such **Identity** is never created, neither by registration nor by **Link**. Therefore **Merge** never meets a conflict: two **Identity** of the same type with the same identifier cannot exist in the system.
+
 ### 2.2. Independence of Contact and Identity
 
 **Contact** and **Identity** are different entities.
@@ -88,6 +90,8 @@ A person may sign in through an external provider (for example, Google), and the
 
 The match is checked only among **Identity**. **Contact** data is not used for this.
 
+Such a match between **Identity** of different types is an **email match**. It is allowed whenever an **Identity** is created (registration, **Link**, **Merge**) and by itself links nothing. The same email in **Identity** of the same type is not an email match but a conflict (see 2.1).
+
 In this case the system:
 
 - must not link the new **Identity** to the existing **User** automatically;
@@ -144,7 +148,7 @@ In particular:
 - no source **User** must be left without an **Identity** during an incomplete operation;
 - data associated with the source **Users** must not be lost without an explicitly defined handling rule.
 
-If the target and source **Users** already have **Identity** of the same type, **Merge** is blocked until the conflict is explicitly resolved.
+If the target and source **Users** already have **Identity** of the same type, this is a type conflict and **Merge** is blocked until it is explicitly resolved.
 
 The system must not automatically merge such **Identity**, delete one of them, or transfer authentication data between them.
 
@@ -272,7 +276,7 @@ Instead of a single rule of "at most one **Identity** of each type per **User**"
 
 Consequences of this extension:
 
-- **Merge** conflicts (6.1) would remain only for types with a limit of one. For external providers such conflicts disappear.
+- Type conflicts (6.1) would remain only for types with a limit of one. For external providers such conflicts disappear.
 - The wording of rules 2.1, 2.3, 7.5 and 10.2 would change from "at most one **Identity** of each type" to "at most the number of **Identity** allowed for the type".
 - Global uniqueness of an identifier within its type and the requirement that a **User** has at least one **Identity** remain unchanged.
 - Credentials still belong to a specific **Identity** (section 8). Several EmailIdentity per **User** would require a separate decision, because a password would then more naturally belong to the **User** than to each address.
