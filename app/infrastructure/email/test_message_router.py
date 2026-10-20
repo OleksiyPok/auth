@@ -5,6 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, EmailStr
 
+from app.auth.rbac.dependencies import require_role
+from app.auth.rbac.roles import Role
 from app.infrastructure.email.base import EmailService
 from app.infrastructure.email.manager import EmailManager
 
@@ -29,6 +31,7 @@ async def get_email_service() -> EmailService:
     summary="Send test email",
     description="Development endpoint for testing the configured email service.",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_role(Role.SUPERADMIN, Role.ADMIN))],
 )
 async def send_test_email(
     data: TestEmailRequest,
