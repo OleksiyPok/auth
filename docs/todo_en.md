@@ -40,7 +40,7 @@ Decisions are recorded in both spec versions (`Users_Identity_en.md`, `Users_Ide
   - **Result:** both spec versions contain the subsection; section numbers match.
   - **After:** —
 
-- [ ] **ID-97 · Spec: conflict and email match**
+- [x] **ID-97 · Spec: conflict and email match**
   - **Do:** in section 2.1 state that an identifier already used by an identity of the same type is a conflict: such an identity is never created (registration, Link) and Merge cannot meet one; in section 4.2 state that the same email in identities of different types is an email match, is allowed whenever an identity is created (registration, Link, Merge) and links nothing.
   - **Result:** both spec versions contain the statements; section numbers match.
   - **After:** —
@@ -163,7 +163,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** the counter keeps its value after the request transaction rolls back, so codes cannot be guessed without limit.
   - **After:** —
 
-- [ ] **ID-10 · Resend email registration code**
+- [x] **ID-10 · Resend email registration code**
   - **Do:** `POST /auth/email/register/resend` with `registration_id`; store the send time; refuse inside the cooldown; issue a new code, new expiry and reset attempts.
   - **Result:** a second request inside the cooldown returns 429; after it a new code works and the old one does not.
   - **After:** —
@@ -183,7 +183,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** unit tests show the limit blocks the extra call and resets after the window.
   - **After:** —
 
-- [ ] **ID-44 · Rate limit login endpoints**
+- [x] **ID-44 · Rate limit login endpoints**
   - **Do:** apply the limiter to username login and email login, by IP and by identifier.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11
@@ -193,7 +193,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11
 
-- [ ] **ID-46 · Rate limit code confirmation endpoints**
+- [x] **ID-46 · Rate limit code confirmation endpoints**
   - **Do:** apply the limiter by IP to email registration confirm and 2FA login confirm.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11
@@ -387,7 +387,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows a token with a foreign identity id is rejected.
   - **After:** ID-47
 
-- [ ] **ID-21 · `deactivate_user_sessions` updates only active sessions**
+- [x] **ID-21 · `deactivate_user_sessions` updates only active sessions**
   - **Do:** add the `is_active` filter to the update.
   - **Result:** a test shows `revoked_at` of an already revoked session does not change.
   - **After:** ID-04
