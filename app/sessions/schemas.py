@@ -18,6 +18,7 @@ class SessionResponseSchema(BaseModel):
 
 class CurrentSessionSchema(BaseModel):
     """Session and identity the current access token was issued for."""
+
     session_id: str
     identity_id: str
 
