@@ -15,6 +15,8 @@ Backlog for the auth service. Each item is one task with one clear, verifiable r
 - `docs/todo_uk.md` mirrors this file: same IDs, same order. The identity spec `docs/Users_Identity_en.md` and `_ru.md` stay symmetric.
 - Terminology: "conflict" means the same identifier (for email, the same address) in identities of the same type; such an identity cannot be created, so it cannot exist and Merge never meets it. "Email match" (not "collision") means the same email in identities of different types, looked up among identities only, never among contacts; it is allowed and links nothing. "Type conflict" means both users of a Merge already have an identity of the same type; it blocks Merge.
 - Link, Unlink, Split and Merge are personal operations of the signed-in user. No admin approval is involved; `self.*` permissions are enough.
+- Terminology: "deactivation" sets a status other than `active` and removes no rows; "purge" is the physical removal of a user and everything that references it. The bare word "delete" is not used for users.
+- Every table that references `users.id` is removed by `purge_user`; a task that adds such a table also adds the deletion of its rows to the repository.
 
 ---
 
@@ -44,6 +46,11 @@ Decisions are recorded in both spec versions (`Users_Identity_en.md`, `Users_Ide
 
 - ✅ **ID-97 · Spec: conflict and email match**
   - **Do:** in section 2.1 state that an identifier already used by an identity of the same type is a conflict: such an identity is never created (registration, Link) and Merge cannot meet one; in section 4.2 state that the same email in identities of different types is an email match, is allowed whenever an identity is created (registration, Link, Merge) and links nothing.
+  - **Result:** both spec versions contain the statements; section numbers match.
+  - **After:** —
+
+- ⬜ **ID-105 · Spec: user status, deactivation and purge**
+  - **Do:** record in both spec versions: the user statuses; a deactivated user never becomes active again; Merge sets the source to `deactivated_by_merge`; purge is a separate superadmin operation for non-active users.
   - **Result:** both spec versions contain the statements; section numbers match.
   - **After:** —
 
@@ -120,6 +127,11 @@ Existing tests use outdated model fields and request schemas.
 - ⬜ **ID-39 · Superadmin bootstrap depends only on the users table**
   - **Do:** create the initial superadmin when the users table is empty, regardless of how tables were created.
   - **Result:** a database with tables and no users gets the superadmin at startup; a database with users does not.
+  - **After:** —
+
+- ⬜ **ID-108 · Enforce foreign keys on SQLite**
+  - **Do:** enable `PRAGMA foreign_keys=ON` on every connection of the application engine when the database is SQLite.
+  - **Result:** on SQLite, saving a row with a non-existent `user_id` and deleting a user that still has dependent rows both fail with an integrity error, as on PostgreSQL.
   - **After:** —
 
 ---
@@ -243,7 +255,7 @@ Existing tests use outdated model fields and request schemas.
 
 ## 7. Identity endpoints: permissions, list, Unlink
 
-- ⬜ **ID-51 · Identity permissions**
+- ✅ **ID-51 · Identity permissions**
   - **Do:** add `SELF_IDENTITIES_READ` and `SELF_IDENTITIES_WRITE` to `Permission`, grant them to every role that has the other `self.*` permissions, add `require_self_identities_read` and `require_self_identities_write`.
   - **Result:** RBAC validation at import passes; the `user` role has both permissions.
   - **After:** —
@@ -342,14 +354,14 @@ Existing tests use outdated model fields and request schemas.
   - **After:** ID-64, ID-65
 
 - ⬜ **ID-68 · Merge validation**
-  - **Do:** service method that raises specific errors when a user is inactive, source equals target, or the source is the last active superadmin.
+  - **Do:** service method that raises specific errors when the source or the target is not `active` (the error names the user and its status), source equals target, or the source is the last active superadmin.
   - **Result:** a test per error and one for the valid case.
-  - **After:** —
+  - **After:** ID-98
 
 - ⬜ **ID-69 · Merge execution**
-  - **Do:** in one transaction check type conflicts, transfer the source identities to the target, delete the source user with its sessions, 2FA settings and challenges; the target's role does not change.
-  - **Result:** a test shows the target owns all identities, the source user and its rows are gone, a type conflict aborts with nothing changed.
-  - **After:** ID-18, ID-49, ID-50, ID-68
+  - **Do:** in one transaction check type conflicts, transfer the source identities to the target, delete the source's 2FA settings and challenges, deactivate the source with the status `deactivated_by_merge` (its sessions are revoked); the target's role does not change.
+  - **Result:** a test shows the target owns all identities, the source has the status `deactivated_by_merge` and no identities, sessions or 2FA rows, a type conflict aborts with nothing changed.
+  - **After:** ID-18, ID-49, ID-50, ID-68, ID-99
 
 - ⬜ **ID-70 · `POST /users/me/merge`**
   - **Do:** accept a proof id; check it is valid, unused and bound to the current user; mark it used; run the merge.
@@ -503,7 +515,48 @@ Existing tests use outdated model fields and request schemas.
 
 ---
 
-## 15. Later / ideas
+## 15. User status, deactivation and purge
+
+A user has one status. Deactivation sets a status other than `active` and removes no rows; a deactivated user never becomes active again. Purge is the only operation that physically removes a user.
+
+- ⬜ **ID-98 · `UserStatus` and `User.status`**
+  - **Do:** add the enum `UserStatus` (`active`, `deactivated_by_admin`, `deactivated_by_user`, `deactivated_by_merge`) and the field `User.status` in place of `is_active`; keep `is_active` as a read-only property that is true only for `active`; use `status` in queries, bootstrap and the detailed user response.
+  - **Result:** a new user has the status `active`; `count_active_superadmins` counts only active superadmins; the detailed user response returns `status`.
+  - **After:** —
+
+- ⬜ **ID-99 · `UserService.deactivate_user` with a status**
+  - **Do:** take one of the three `deactivated_*` statuses and set it; revoke all active sessions of the user; refuse an already deactivated user and the last active superadmin.
+  - **Result:** a deactivated user cannot sign in, refresh or use an issued token; the stored status equals the given one; a second deactivation is refused.
+  - **After:** ID-98
+
+- ⬜ **ID-100 · Deactivation endpoints**
+  - **Do:** `POST /users/me/deactivate` sets `deactivated_by_user`; `POST /users/{user_id}/deactivate` sets `deactivated_by_admin`; deactivation through `DELETE` is removed; rename `SELF_DELETE` to `SELF_DEACTIVATE` and `USERS_DELETE` to `USERS_DEACTIVATE` with their `require_*` dependencies, grants per role unchanged.
+  - **Result:** each endpoint sets its status and requires its permission; `USERS_DEACTIVATE` is held only by `superadmin`; RBAC validation at import passes.
+  - **After:** ID-99
+
+- ⬜ **ID-101 · Delete the rows of a user in the repositories**
+  - **Do:** add `delete_by_user_id` to the repositories of the three identity types, sessions and two-factor (settings and challenges).
+  - **Result:** a test shows the rows of the given user are gone and the rows of other users remain.
+  - **After:** —
+
+- ⬜ **ID-102 · `UserService.purge_user`**
+  - **Do:** in one transaction delete every row that references the user, then the user; refuse a user with the status `active`.
+  - **Result:** a test shows no row referencing the user remains, other users are untouched, an active user is refused.
+  - **After:** ID-98, ID-101
+
+- ⬜ **ID-103 · Permission `USERS_PURGE`**
+  - **Do:** add `USERS_PURGE` to `Permission`, grant it only to `superadmin`, add `require_users_purge`.
+  - **Result:** RBAC validation at import passes; only `superadmin` has the permission.
+  - **After:** —
+
+- ⬜ **ID-104 · `DELETE /users/{user_id}` (purge)**
+  - **Do:** protected by `USERS_PURGE`; the query parameter `confirm_user_id` must equal `user_id`; runs `purge_user`; returns 204.
+  - **Result:** a test shows 204 for a deactivated user, 400 for a wrong confirmation, 409 for an active user, 404 for an unknown user, 403 for `user` and `admin`.
+  - **After:** ID-100, ID-102, ID-103
+
+---
+
+## 16. Later / ideas
 
 - ⬜ **ID-24 · Email match flag in Google login**
   - **Do:** when a new Google user's verified email matches an `EmailIdentity`, add a flag to the callback response; create no link.
@@ -533,7 +586,17 @@ Existing tests use outdated model fields and request schemas.
 - ⬜ **ID-91 · Fresh re-authentication before Merge**
   - **Do:** require the active account to re-authenticate within a time window before `POST /users/me/merge`.
   - **Result:** a test shows Merge is refused without recent re-authentication.
-  - **After:** ID-70
+  - **After:** ID-70, ID-106
+
+- ⬜ **ID-106 · Fresh session dependency**
+  - **Do:** add a dependency that refuses a session created earlier than the configured window (`FRESH_SESSION_MINUTES`) with a dedicated error asking to sign in again.
+  - **Result:** a test shows a fresh session passes and an older one is refused.
+  - **After:** ID-53
+
+- ⬜ **ID-107 · Fresh session before purge**
+  - **Do:** require the fresh session on `DELETE /users/{user_id}`.
+  - **Result:** a test shows purge is refused with an old session.
+  - **After:** ID-104, ID-106
 
 - ⬜ **ID-86 · SMS sender**
   - **Do:** sender implementation for the 2FA sender interface with a provider and a dummy provider that logs messages.
