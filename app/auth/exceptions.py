@@ -15,6 +15,12 @@ class InvalidAccessTokenError(AuthError):
     message = "Invalid access token"
 
 
+class FreshSessionRequiredError(AuthError):
+    status_code = status.HTTP_403_FORBIDDEN
+    code = "FRESH_SESSION_REQUIRED"
+    message = "This action requires a recent sign-in. Sign in again."
+
+
 class InsufficientPermissionsError(AuthError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "INSUFFICIENT_PERMISSIONS"

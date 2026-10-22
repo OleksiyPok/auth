@@ -588,12 +588,12 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a test shows Merge is refused without recent re-authentication.
   - **After:** ID-70, ID-106
 
-- ⬜ **ID-106 · Fresh session dependency**
+- ✅ **ID-106 · Fresh session dependency**
   - **Do:** add a dependency that refuses a session created earlier than the configured window (`FRESH_SESSION_MINUTES`) with a dedicated error asking to sign in again.
   - **Result:** a test shows a fresh session passes and an older one is refused.
   - **After:** ID-53
 
-- ⬜ **ID-107 · Fresh session before purge**
+- ✅ **ID-107 · Fresh session before purge**
   - **Do:** require the fresh session on `DELETE /users/{user_id}`.
   - **Result:** a test shows purge is refused with an old session.
   - **After:** ID-104, ID-106

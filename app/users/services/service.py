@@ -2,7 +2,18 @@
 
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import Role
+from app.email_auth.repository.repository_interface import (
+    EmailIdentityRepositoryInterface,
+)
+from app.google_auth.repository.repository_interface import (
+    GoogleAuthRepositoryInterface,
+)
+from app.sessions.repository.repository_interface import SessionRepositoryInterface
 from app.sessions.services.service_interface import SessionServiceInterface
+from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
+from app.username_auth.repository.repository_interface import (
+    UsernameIdentityRepositoryInterface,
+)
 from app.users.exceptions import (
     CannotChangeOwnRoleError,
     CannotPurgeActiveUserError,
@@ -17,31 +28,17 @@ from app.users.services.service_interface import UserServiceInterface
 from app.users.status import UserStatus
 
 
-from app.email_auth.repository.repository_interface import (
-    EmailIdentityRepositoryInterface,
-)
-from app.google_auth.repository.repository_interface import (
-    GoogleAuthRepositoryInterface,
-)
-from app.sessions.repository.repository_interface import SessionRepositoryInterface
-from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
-from app.username_auth.repository.repository_interface import (
-    UsernameIdentityRepositoryInterface,
-)
-
-
-
 class UserService(UserServiceInterface):
 
     def __init__(
-            self,
-            repository: UserRepositoryInterface,
-            session_service: SessionServiceInterface,
-            session_repository: SessionRepositoryInterface,
-            two_factor_repository: TwoFactorRepositoryInterface,
-            username_identity_repository: UsernameIdentityRepositoryInterface,
-            email_identity_repository: EmailIdentityRepositoryInterface,
-            google_auth_repository: GoogleAuthRepositoryInterface,
+        self,
+        repository: UserRepositoryInterface,
+        session_service: SessionServiceInterface,
+        session_repository: SessionRepositoryInterface,
+        two_factor_repository: TwoFactorRepositoryInterface,
+        username_identity_repository: UsernameIdentityRepositoryInterface,
+        email_identity_repository: EmailIdentityRepositoryInterface,
+        google_auth_repository: GoogleAuthRepositoryInterface,
     ):
         self._repository = repository
         self._session_service = session_service

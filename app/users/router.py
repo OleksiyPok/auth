@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_fresh_session
 from app.auth.rbac.dependencies import (
     require_role_management,
     require_self_deactivate,
@@ -210,6 +210,7 @@ async def deactivate_user(
         status=UserStatus.DEACTIVATED_BY_ADMIN,
     )
 
+
 @router.delete(
     "/{user_id}",
     summary="Purge a deactivated user",
@@ -218,7 +219,10 @@ async def deactivate_user(
         "the user. The query parameter confirm_user_id must equal user_id."
     ),
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_users_purge())],
+    dependencies=[
+        Depends(require_users_purge()),
+        Depends(require_fresh_session),
+    ],
 )
 async def purge_user(
     user_id: str,
