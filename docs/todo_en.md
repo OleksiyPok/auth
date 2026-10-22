@@ -289,7 +289,7 @@ Existing tests use outdated model fields and request schemas.
 
 ## 8. Link
 
-- ⬜ **ID-17 · Link username**
+- ✅ **ID-17 · Link username**
   - **Do:** `POST /identities/username` with username and password; normalize the username; refuse when the user already has a username identity or the name is taken.
   - **Result:** a test shows the username can then be used to sign in; refusals return 409.
   - **After:** ID-51

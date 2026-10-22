@@ -13,3 +13,8 @@ class IdentityResponseSchema(BaseModel):
     # Username, masked email, or None for Google.
     display_identifier: str | None
     created_at: datetime
+
+
+class LinkUsernameRequestSchema(BaseModel):
+    username: str
+    password: str

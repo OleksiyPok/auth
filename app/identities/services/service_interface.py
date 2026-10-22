@@ -48,3 +48,11 @@ class IdentityServiceInterface(ABC):
         first_user_id: str,
         second_user_id: str,
     ) -> list[IdentityType]: ...
+
+    @abstractmethod
+    async def link_username(
+        self,
+        user_id: str,
+        username: str,
+        password: str,
+    ) -> UsernameIdentity: ...

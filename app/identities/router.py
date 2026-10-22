@@ -5,12 +5,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
-from app.auth.rbac.dependencies import require_self_identities_read
+from app.auth.rbac.dependencies import (
+    require_self_identities_read,
+    require_self_identities_write,
+)
 from app.core.identifiers import mask_email
 from app.email_auth.models import EmailIdentity
 from app.google_auth.models import GoogleIdentity
 from app.identities.dependencies import get_identity_service
-from app.identities.schemas import IdentityResponseSchema
+from app.identities.schemas import IdentityResponseSchema, LinkUsernameRequestSchema
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.identities.types import IdentityType
 from app.username_auth.models import UsernameIdentity
@@ -70,3 +73,31 @@ async def get_identities(
     identities = await service.list_identities(current_user.id)
 
     return [_to_response(identity) for identity in identities]
+
+
+@router.post(
+    "/username",
+    summary="Link a username",
+    description="Add a username and password sign-in method to the current user.",
+    response_model=IdentityResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_self_identities_write())],
+)
+async def link_username(
+    data: LinkUsernameRequestSchema,
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        IdentityServiceInterface,
+        Depends(get_identity_service),
+    ],
+) -> IdentityResponseSchema:
+    identity = await service.link_username(
+        user_id=current_user.id,
+        username=data.username,
+        password=data.password,
+    )
+
+    return _to_response(identity)

@@ -1,5 +1,6 @@
 # app/identities/services/service.py
 
+from app.core.identifiers import normalize_username
 from app.email_auth.models import EmailIdentity
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
@@ -10,10 +11,12 @@ from app.google_auth.repository.repository_interface import (
 )
 from app.identities.exceptions import (
     IdentityAlreadyOwnedError,
+    IdentityConflictError,
     IdentityTypeConflictError,
 )
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.identities.types import IdentityType
+from app.infrastructure.password import hash_password
 from app.username_auth.models import UsernameIdentity
 from app.username_auth.repository.repository_interface import (
     UsernameIdentityRepositoryInterface,
@@ -172,3 +175,30 @@ class IdentityService(IdentityServiceInterface):
         }
 
         return [t for t in IdentityType if t in first_types and t in second_types]
+
+    async def link_username(
+        self,
+        user_id: str,
+        username: str,
+        password: str,
+    ) -> UsernameIdentity:
+        """Add a username identity to the user.
+
+        Raises IdentityTypeConflictError when the user already has one, and
+        IdentityConflictError when the username belongs to another identity.
+        """
+        normalized = normalize_username(username)
+
+        if await self._username_repository.get_by_user_id(user_id) is not None:
+            raise IdentityTypeConflictError()
+
+        if await self._username_repository.get_by_username(normalized) is not None:
+            raise IdentityConflictError()
+
+        identity = UsernameIdentity(
+            user_id=user_id,
+            username=normalized,
+            password_hash=hash_password(password),
+        )
+
+        return await self._username_repository.create(identity)

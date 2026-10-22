@@ -289,7 +289,7 @@
 
 ## 8. Link
 
-- ⬜ **ID-17 · Link username**
+- ✅ **ID-17 · Link username**
   - **Що зробити:** `POST /identities/username` з username і паролем; нормалізувати username; відмовляти, якщо у користувача вже є username-identity або ім'я зайняте.
   - **Результат:** тест показує, що username потім можна використати для входу; відмови дають 409.
   - **Після:** ID-51
