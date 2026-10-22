@@ -52,3 +52,6 @@ class TwoFactorRepositoryInterface(ABC):
 
     @abstractmethod
     async def increment_challenge_attempts(self, challenge_id: str) -> int: ...
+
+    @abstractmethod
+    async def delete_by_user_id(self, user_id: str) -> None: ...

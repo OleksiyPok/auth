@@ -1,7 +1,8 @@
 # app/username_auth/repository/repository.py
 
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import col, select
 
 from app.username_auth.models import UsernameIdentity
 from app.username_auth.repository.repository_interface import (
@@ -71,3 +72,8 @@ class UsernameIdentityRepository(UsernameIdentityRepositoryInterface):
     ) -> None:
         await self._session.delete(identity)
         await self._session.flush()
+
+    async def delete_by_user_id(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(UsernameIdentity).where(col(UsernameIdentity.user_id) == user_id)
+        )

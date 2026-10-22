@@ -1,7 +1,8 @@
 # app/google_auth/repository/repository.py
 
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import col, select
 
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
 from app.google_auth.repository.repository_interface import (
@@ -108,3 +109,8 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
     ) -> None:
         await self._session.delete(identity)
         await self._session.flush()
+
+    async def delete_by_user_id(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(GoogleIdentity).where(col(GoogleIdentity.user_id) == user_id)
+        )

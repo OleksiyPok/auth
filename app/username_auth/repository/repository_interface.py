@@ -42,3 +42,6 @@ class UsernameIdentityRepositoryInterface(ABC):
         self,
         identity: UsernameIdentity,
     ) -> None: ...
+
+    @abstractmethod
+    async def delete_by_user_id(self, user_id: str) -> None: ...

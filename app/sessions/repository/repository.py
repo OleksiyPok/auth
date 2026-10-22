@@ -3,9 +3,10 @@
 from datetime import datetime, timezone
 from typing import cast
 
-from sqlalchemy import desc, select, update
+from sqlalchemy import delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
+from sqlmodel import col
 
 from app.sessions.models import Session
 from app.sessions.repository.repository_interface import SessionRepositoryInterface
@@ -219,3 +220,8 @@ class SessionRepository(SessionRepositoryInterface):
 
         await self._session.execute(statement)
         await self._session.flush()
+
+    async def delete_by_user_id(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(Session).where(col(Session.user_id) == user_id)
+        )

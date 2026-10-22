@@ -66,3 +66,6 @@ class SessionRepositoryInterface(ABC):
         self,
         session: Session,
     ) -> None: ...
+
+    @abstractmethod
+    async def delete_by_user_id(self, user_id: str) -> None: ...

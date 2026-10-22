@@ -1,6 +1,6 @@
 # app/two_factor/repository/repository.py
 
-from sqlalchemy import update
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -106,3 +106,13 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
                     )
                 )
                 return result.scalar_one()
+
+    async def delete_by_user_id(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(TwoFactorChallenge).where(col(TwoFactorChallenge.user_id) == user_id)
+        )
+        await self._session.execute(
+            delete(UserSecuritySettings).where(
+                col(UserSecuritySettings.user_id) == user_id
+            )
+        )

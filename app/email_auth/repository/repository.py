@@ -98,3 +98,8 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
         await self._session.execute(
             delete(EmailRegistration).where(col(EmailRegistration.email) == email)
         )
+
+    async def delete_by_user_id(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(EmailIdentity).where(col(EmailIdentity.user_id) == user_id)
+        )
