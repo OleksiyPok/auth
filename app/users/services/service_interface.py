@@ -44,8 +44,5 @@ class UserServiceInterface(ABC):
 
     @abstractmethod
     async def deactivate_user(
-        self,
-        current_user: User,
-        target_user: User,
-        status: UserStatus
+        self, current_user: User, target_user: User, status: UserStatus
     ) -> User: ...

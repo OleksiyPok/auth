@@ -31,7 +31,7 @@ class Permission(StrEnum):
     # User management permissions
     USERS_READ = "users.read"
     USERS_WRITE = "users.write"
-    USERS_DEACTIVATE  = "users.deactivate"
+    USERS_DEACTIVATE = "users.deactivate"
     USERS_LIST = "users.list"
 
     # Session management permissions

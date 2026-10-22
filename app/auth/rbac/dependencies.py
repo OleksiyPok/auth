@@ -206,7 +206,7 @@ def require_self_write(user_getter: UserGetter | None = None):
 
 def require_self_deactivate(user_getter: UserGetter | None = None):
     """Require SELF_DEACTIVATE permission."""
-    return require_permissions(Permission.SELF_DEACTIVATE , user_getter=user_getter)
+    return require_permissions(Permission.SELF_DEACTIVATE, user_getter=user_getter)
 
 
 def require_self_sessions_read(user_getter: UserGetter | None = None):

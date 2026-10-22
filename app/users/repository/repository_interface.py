@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from app.users.models import User
 from app.users.status import UserStatus
 
+
 class UserRepositoryInterface(ABC):
 
     @abstractmethod
