@@ -529,7 +529,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a new user has the status `active`; `count_active_superadmins` counts only active superadmins; the detailed user response returns `status`.
   - **After:** —
 
-- ⬜ **ID-99 · `UserService.deactivate_user` with a status**
+- ✅ **ID-99 · `UserService.deactivate_user` with a status**
   - **Do:** take one of the three `deactivated_*` statuses and set it; `POST /users/me/deactivate` passes `deactivated_by_user` and `POST /users/{user_id}/deactivate` passes `deactivated_by_admin`; revoke all active sessions of the user; refuse an already deactivated user and the last active superadmin.
   - **Result:** a deactivated user cannot sign in, refresh or use an issued token; each endpoint stores its own status; a second deactivation is refused.
   - **After:** ID-98, ID-100

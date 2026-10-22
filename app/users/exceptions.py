@@ -33,6 +33,12 @@ class LastSuperadminDeactivationError(UserError):
     message = "Cannot deactivate the last superadmin"
 
 
+class UserAlreadyDeactivatedError(UserError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "USER_ALREADY_DEACTIVATED"
+    message = "User is already deactivated"
+
+
 class InactiveUserError(UserError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "USER_INACTIVE"

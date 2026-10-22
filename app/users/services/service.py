@@ -2,9 +2,11 @@
 
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import Role
+from app.sessions.services.service_interface import SessionServiceInterface
 from app.users.exceptions import (
     CannotChangeOwnRoleError,
     LastSuperadminDeactivationError,
+    UserAlreadyDeactivatedError,
     UserNotFoundError,
 )
 from app.users.models import User
@@ -19,8 +21,10 @@ class UserService(UserServiceInterface):
     def __init__(
         self,
         repository: UserRepositoryInterface,
+        session_service: SessionServiceInterface,
     ):
         self._repository = repository
+        self._session_service = session_service
 
     async def get_user(
         self,
@@ -83,13 +87,23 @@ class UserService(UserServiceInterface):
         target_user: User,
         status: UserStatus,
     ) -> User:
+        if status == UserStatus.ACTIVE:
+            raise ValueError("A deactivated user needs a deactivated_* status")
+
+        if not target_user.is_active:
+            raise UserAlreadyDeactivatedError()
+
         if target_user.role == Role.SUPERADMIN:
             count = await self._repository.count_active_superadmins()
 
             if count == 1:
                 raise LastSuperadminDeactivationError()
 
-        return await self._repository.deactivate(target_user, status)
+        user = await self._repository.deactivate(target_user, status)
+
+        await self._session_service.revoke_all_sessions(user)
+
+        return user
 
     async def _update(
         self,
