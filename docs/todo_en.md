@@ -524,7 +524,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** each endpoint deactivates its target and requires its permission; `USERS_DEACTIVATE` is held only by `superadmin`; RBAC validation at import passes; no `DELETE` endpoint deactivates a user.
   - **After:** —
 
-- ⬜ **ID-98 · `UserStatus` and `User.status`**
+- ✅ **ID-98 · `UserStatus` and `User.status`**
   - **Do:** add the enum `UserStatus` (`active`, `deactivated_by_admin`, `deactivated_by_user`, `deactivated_by_merge`) and the field `User.status` in place of `is_active`; keep `is_active` as a read-only property that is true only for `active`; use `status` in queries, bootstrap, the dev seed script and the detailed user response.
   - **Result:** a new user has the status `active`; `count_active_superadmins` counts only active superadmins; the detailed user response returns `status`.
   - **After:** —

@@ -524,7 +524,7 @@
   - **Результат:** кожен ендпоінт деактивує свою ціль і вимагає свій дозвіл; `USERS_DEACTIVATE` має лише `superadmin`; валідація RBAC під час імпорту проходить; жоден ендпоінт `DELETE` не деактивує користувача.
   - **Після:** —
 
-- ⬜ **ID-98 · `UserStatus` і `User.status`**
+- ✅ **ID-98 · `UserStatus` і `User.status`**
   - **Що зробити:** додати enum `UserStatus` (`active`, `deactivated_by_admin`, `deactivated_by_user`, `deactivated_by_merge`) і поле `User.status` замість `is_active`; залишити `is_active` як властивість лише для читання, істинну тільки для `active`; використовувати `status` у запитах, bootstrap, dev seed-скрипті і детальній відповіді про користувача.
   - **Результат:** новий користувач має статус `active`; `count_active_superadmins` рахує лише активних superadmin; детальна відповідь про користувача повертає `status`.
   - **Після:** —
