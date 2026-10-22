@@ -38,6 +38,10 @@ class UserAlreadyDeactivatedError(UserError):
     code = "USER_ALREADY_DEACTIVATED"
     message = "User is already deactivated"
 
+class CannotPurgeActiveUserError(UserError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "USER_STILL_ACTIVE"
+    message = "An active user cannot be purged; deactivate the user first"
 
 class InactiveUserError(UserError):
     status_code = status.HTTP_403_FORBIDDEN

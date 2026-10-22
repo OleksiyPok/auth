@@ -539,7 +539,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a test shows the rows of the given user are gone and the rows of other users remain.
   - **After:** —
 
-- ⬜ **ID-102 · `UserService.purge_user`**
+- ✅ **ID-102 · `UserService.purge_user`**
   - **Do:** in one transaction delete every row that references the user, then the user; refuse a user with the status `active`.
   - **Result:** a test shows no row referencing the user remains, other users are untouched, an active user is refused.
   - **After:** ID-98, ID-101
