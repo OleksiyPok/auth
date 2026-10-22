@@ -20,6 +20,18 @@ from app.username_auth.repository.repository_interface import (
 )
 
 
+def _identity_type(
+    identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
+) -> IdentityType:
+    if isinstance(identity, EmailIdentity):
+        return IdentityType.EMAIL
+    if isinstance(identity, UsernameIdentity):
+        return IdentityType.USERNAME
+    if isinstance(identity, GoogleIdentity):
+        return IdentityType.GOOGLE
+    raise TypeError(f"Unsupported identity: {type(identity).__name__}")
+
+
 class IdentityService(IdentityServiceInterface):
     """Common actions over the identities of all three types."""
 
@@ -140,3 +152,23 @@ class IdentityService(IdentityServiceInterface):
             return await self._google_repository.update_identity(identity)
 
         raise TypeError(f"Unsupported identity: {type(identity).__name__}")
+
+    async def get_type_conflicts(
+        self,
+        first_user_id: str,
+        second_user_id: str,
+    ) -> list[IdentityType]:
+        """Return the identity types that both users have, in a fixed order.
+
+        A non-empty result is a type conflict and blocks Merge.
+        """
+        first_types = {
+            _identity_type(identity)
+            for identity in await self.list_identities(first_user_id)
+        }
+        second_types = {
+            _identity_type(identity)
+            for identity in await self.list_identities(second_user_id)
+        }
+
+        return [t for t in IdentityType if t in first_types and t in second_types]

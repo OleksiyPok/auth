@@ -51,6 +51,24 @@ class PurgeConfirmationMismatchError(UserError):
     message = "confirm_user_id must equal the user id"
 
 
+class MergeSameUserError(UserError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "MERGE_SAME_USER"
+    message = "The source and the target of a merge must be different users"
+
+
+class MergeUserNotActiveError(UserError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "MERGE_USER_NOT_ACTIVE"
+    message = "A user of the merge is not active"
+
+
+class MergeLastSuperadminError(UserError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "MERGE_LAST_SUPERADMIN"
+    message = "The last active superadmin cannot be merged into another user"
+
+
 class InactiveUserError(UserError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "USER_INACTIVE"

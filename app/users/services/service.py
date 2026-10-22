@@ -18,6 +18,9 @@ from app.users.exceptions import (
     CannotChangeOwnRoleError,
     CannotPurgeActiveUserError,
     LastSuperadminDeactivationError,
+    MergeLastSuperadminError,
+    MergeSameUserError,
+    MergeUserNotActiveError,
     UserAlreadyDeactivatedError,
     UserNotFoundError,
 )
@@ -126,6 +129,26 @@ class UserService(UserServiceInterface):
         await self._session_service.revoke_all_sessions(user)
 
         return user
+
+    async def validate_merge(
+        self,
+        source: User,
+        target: User,
+    ) -> None:
+        if source.id == target.id:
+            raise MergeSameUserError()
+
+        for role, user in (("source", source), ("target", target)):
+            if not user.is_active:
+                raise MergeUserNotActiveError(
+                    f"The {role} user {user.id} is not active (status: {user.status})"
+                )
+
+        if (
+            source.role == Role.SUPERADMIN
+            and await self._repository.count_active_superadmins() == 1
+        ):
+            raise MergeLastSuperadminError()
 
     async def purge_user(
         self,

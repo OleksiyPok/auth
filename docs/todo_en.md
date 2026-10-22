@@ -241,12 +241,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows a successful transfer and a refusal on type conflict.
   - **After:** ID-13
 
-- ⬜ **ID-15 · `UserRepository.get_for_update`**
+- ✅ **ID-15 · `UserRepository.get_for_update`**
   - **Do:** select a user with `FOR UPDATE`.
   - **Result:** the method returns the user; on PostgreSQL the row is locked until the transaction ends (SQLite does not lock rows).
   - **After:** —
 
-- ⬜ **ID-50 · Lock two users in a fixed order**
+- ✅ **ID-50 · Lock two users in a fixed order**
   - **Do:** add a repository method that locks two users ordered by `id`.
   - **Result:** the same pair requested in either order is locked in the same order.
   - **After:** ID-15
@@ -323,7 +323,7 @@ Existing tests use outdated model fields and request schemas.
 
 ## 9. Merge
 
-- ⬜ **ID-18 · Identity type conflict detection**
+- ✅ **ID-18 · Identity type conflict detection**
   - **Do:** add `IdentityService` method returning the identity types present on both users.
   - **Result:** a test shows the correct types for overlapping and non-overlapping users.
   - **After:** ID-13
@@ -353,7 +353,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows no proof without the code and a proof with the correct code.
   - **After:** ID-64, ID-65
 
-- ⬜ **ID-68 · Merge validation**
+- ✅ **ID-68 · Merge validation**
   - **Do:** service method that raises specific errors when the source or the target is not `active` (the error names the user and its status), source equals target, or the source is the last active superadmin.
   - **Result:** a test per error and one for the valid case.
   - **After:** ID-98

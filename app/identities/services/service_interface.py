@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from app.email_auth.models import EmailIdentity
 from app.google_auth.models import GoogleIdentity
+from app.identities.types import IdentityType
 from app.username_auth.models import UsernameIdentity
 
 
@@ -40,3 +41,10 @@ class IdentityServiceInterface(ABC):
         identity: EmailIdentity | UsernameIdentity | GoogleIdentity,
         new_user_id: str,
     ) -> EmailIdentity | UsernameIdentity | GoogleIdentity: ...
+
+    @abstractmethod
+    async def get_type_conflicts(
+        self,
+        first_user_id: str,
+        second_user_id: str,
+    ) -> list[IdentityType]: ...

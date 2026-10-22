@@ -48,6 +48,13 @@ class UserServiceInterface(ABC):
     ) -> User: ...
 
     @abstractmethod
+    async def validate_merge(
+        self,
+        source: User,
+        target: User,
+    ) -> None: ...
+
+    @abstractmethod
     async def purge_user(
         self,
         user: User,

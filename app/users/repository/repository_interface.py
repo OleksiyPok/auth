@@ -28,3 +28,11 @@ class UserRepositoryInterface(ABC):
 
     @abstractmethod
     async def count_active_superadmins(self) -> int | None: ...
+
+    @abstractmethod
+    async def get_for_update(self, user_id: str) -> User | None: ...
+
+    @abstractmethod
+    async def get_pair_for_update(
+        self, first_user_id: str, second_user_id: str
+    ) -> tuple[User | None, User | None]: ...
