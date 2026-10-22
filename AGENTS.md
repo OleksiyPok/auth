@@ -6,7 +6,7 @@ Instructions for AI coding agents working in this repository.
 
 - Stack: Python, FastAPI, SQLModel / SQLAlchemy (async), Pydantic, REST.
 - Developer environment: Windows 11, Windows PowerShell.
-- Identity model specification: `docs/Users_Identity_en.md` and `docs/Users_Identity_ru.md`.
+- Identity model specification: `docs/Users_Identity_en.md` and `docs/Users_Identity_uk.md`.
   Both versions must stay symmetric. The spec is a working hypothesis, not a law: decisions may be revisited when there are good arguments.
 - Backlog of planned work: `todo_en.md`.
 
