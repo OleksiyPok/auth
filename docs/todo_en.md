@@ -12,7 +12,7 @@ Backlog for the auth service. Each item is one task with one clear, verifiable r
 - Tests are postponed until explicitly scheduled. Do not write, fix or run tests while implementing regular tasks. Section 2 (Tests) is deferred and must not be selected as the next task unless explicitly requested.
 
 [//]: # (- Each task is finished only when its **Result** is verifiable and the related tests pass &#40;`python -m pytest`&#41;.)
-- `docs/todo_uk.md` mirrors this file: same IDs, same order. The identity spec `docs/Users_Identity_en.md` and `_ru.md` stay symmetric.
+- `docs/todo_uk.md` mirrors this file: same IDs, same order. The identity spec `docs/Users_Identity_en.md` and `_uk.md` stay symmetric.
 - Terminology: "conflict" means the same identifier (for email, the same address) in identities of the same type; such an identity cannot be created, so it cannot exist and Merge never meets it. "Email match" (not "collision") means the same email in identities of different types, looked up among identities only, never among contacts; it is allowed and links nothing. "Type conflict" means both users of a Merge already have an identity of the same type; it blocks Merge.
 - Link, Unlink, Split and Merge are personal operations of the signed-in user. No admin approval is involved; `self.*` permissions are enough.
 - Terminology: "deactivation" sets a status other than `active` and removes no rows; "purge" is the physical removal of a user and everything that references it. The bare word "delete" is not used for users.
@@ -22,7 +22,7 @@ Backlog for the auth service. Each item is one task with one clear, verifiable r
 
 ## 1. Identity spec
 
-Decisions are recorded in both spec versions (`Users_Identity_en.md`, `Users_Identity_ru.md`).
+Decisions are recorded in both spec versions (`Users_Identity_en.md`, `Users_Identity_uk.md`).
 
 - ⬜ **ID-03 · Spec: identity operations are personal**
   - **Do:** in section 3 state that Link, Unlink, Merge and Split are personal operations of the user and need no admin approval.
@@ -49,7 +49,7 @@ Decisions are recorded in both spec versions (`Users_Identity_en.md`, `Users_Ide
   - **Result:** both spec versions contain the statements; section numbers match.
   - **After:** —
 
-- ⬜ **ID-105 · Spec: user status, deactivation and purge**
+- ✅ **ID-105 · Spec: user status, deactivation and purge**
   - **Do:** record in both spec versions: the user statuses; a deactivated user never becomes active again; Merge sets the source to `deactivated_by_merge`; purge is a separate superadmin operation for non-active users.
   - **Result:** both spec versions contain the statements; section numbers match.
   - **After:** —
@@ -564,7 +564,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **After:** —
 
 - ⬜ **ID-25 · Spec: per-type identity limit**
-  - **Do:** move the per-type limit table from section 11 into the rules in both spec versions, or reject it.
+  - **Do:** move the per-type limit table from section 12 into the rules in both spec versions, or reject it.
   - **Result:** both spec versions reflect the decision.
   - **After:** —
 

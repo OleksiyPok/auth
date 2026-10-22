@@ -4,7 +4,7 @@
 
 The system contains the following entities:
 
-- **User** — a user account in the application and the owner of the user data associated with it.
+- **User** — a user account in the application and the owner of the user data associated with it. A **User** has one status (see 2.4).
 - **Identity** — an identifier of a subject in an external or local system that can be used for authentication.
 - **Contact** — a user's contact data that by itself does not grant sign-in rights.
 - **Session** — the state of active access created after successful authentication.
@@ -23,7 +23,7 @@ Each **Identity** belongs to exactly one **User**.
 
 - An **Identity** cannot simultaneously belong to multiple **Users**.
 - An **Identity** cannot exist without an associated **User**.
-- Each **User** must have at least one **Identity**.
+- Each **User** must have at least one **Identity**, except a **User** with the status `deactivated_by_merge`: all its **Identity** have been transferred to the target **User** (see 6).
 - A single **User** may have at most one **Identity** of each type.
 - The identifier of a particular **Identity** type must be globally unique within that type.
 
@@ -45,20 +45,43 @@ Any operation on a **User** or **Identity** must preserve all model invariants.
 
 An operation must not leave a **User** without an **Identity**, create multiple **Identity** of the same type for a single **User**, or violate the global uniqueness of identifiers.
 
+The only exception is the source **User** of a completed **Merge**, which receives the status `deactivated_by_merge`.
+
+### 2.4. User Status
+
+A **User** has exactly one status:
+
+| Status                 | Meaning                                                                                             |
+|------------------------|-----------------------------------------------------------------------------------------------------|
+| `active`               | The **User** can authenticate and use the system.                                                   |
+| `deactivated_by_admin` | The **User** was deactivated by an administrator.                                                   |
+| `deactivated_by_user`  | The **User** deactivated their own account.                                                         |
+| `deactivated_by_merge` | The **User** was the source of a **Merge**; all its **Identity** now belong to the target **User**. |
+
+Rules:
+
+- The status is flat: the reason of deactivation is the status itself; there are no nested states.
+- Only a **User** with the status `active` can authenticate. A **User** with any other status cannot sign in, refresh tokens or use issued tokens.
+- A deactivated **User** never becomes `active` again.
+- A **User** with the status `deactivated_by_admin` or `deactivated_by_user` keeps its **Identity**, Contacts and data. Its identifiers remain occupied (see 2.1) until **Purge** (see 10.2).
+- A **User** with the status `deactivated_by_merge` has no **Identity**.
+
 ## 3. Operations on Identity and User
 
 The **Link** and **Unlink** operations relate exclusively to **Identity**.
 
-The **Merge** and **Split** operations relate exclusively to **User**.
+The **Merge**, **Split**, **Deactivation** and **Purge** operations relate exclusively to **User**.
 
 These operations have different purposes and must not substitute for one another.
 
-| Operation  | Object of operation | Purpose                                                                                     |
-|------------|---------------------|---------------------------------------------------------------------------------------------|
-| **Link**   | **Identity**        | Link a new **Identity** to an existing **User**                                             |
-| **Unlink** | **Identity**        | Remove a specific **Identity** from a **User** and delete its authentication data           |
-| **Merge**  | **User**            | Merge multiple **Users** into one                                                           |
-| **Split**  | **User**            | Split one **User** into multiple, distributing the existing **Identity** among them         |
+| Operation        | Object of operation | Purpose                                                                             |
+|------------------|---------------------|-------------------------------------------------------------------------------------|
+| **Link**         | **Identity**        | Link a new **Identity** to an existing **User**                                     |
+| **Unlink**       | **Identity**        | Remove a specific **Identity** from a **User** and delete its authentication data   |
+| **Merge**        | **User**            | Merge multiple **Users** into one                                                   |
+| **Split**        | **User**            | Split one **User** into multiple, distributing the existing **Identity** among them |
+| **Deactivation** | **User**            | Make a **User** unable to authenticate, keeping its data; irreversible              |
+| **Purge**        | **User**            | Physically remove a non-active **User** and all data that references it             |
 
 ### Business Operations and Identity Ownership
 
@@ -76,10 +99,10 @@ The authenticated User remains the same throughout either operation.
 
 Merge and Split operate on User entities by changing the ownership of existing Identity entities.
 
-- **Merge** transfers the Identity entities belonging to the source User to the target User, then removes the source User.
+- **Merge** transfers the Identity entities belonging to the source User to the target User, then deactivates the source User with the status `deactivated_by_merge`.
 - **Split** creates a new User and transfers explicitly selected Identity entities from the existing User to the new User.
 
-For Merge, the *source User* is the User whose Identity entities are transferred and whose account is subsequently removed. The *target User* is the User that remains and receives those Identity entities.
+For Merge, the *source User* is the User whose Identity entities are transferred and whose account is subsequently deactivated. The *target User* is the User that remains and receives those Identity entities.
 
 For Split, the *existing User* is the User from which selected Identity entities are detached, and the *new User* is the User to which they are assigned.
 
@@ -158,7 +181,7 @@ As a result of a successful **Merge**:
 
 1. All **Identity** of the source **Users** are transferred to the target **User**.
 2. Associated user data is handled according to the rules of the relevant domain.
-3. The source **Users** are removed from the active **Users** after all **Identity** have been successfully transferred.
+3. The source **Users** receive the status `deactivated_by_merge` after all **Identity** have been successfully transferred, and their **Session** are revoked.
 4. The target **User** retains its identifier.
 5. The **Identity** themselves and their authentication data remain independent entities.
 
@@ -268,28 +291,66 @@ For each active **Session**, one of the following conditions must hold:
 
 When an **Identity** is deleted, its associated sessions must be terminated or revoked. **Session** of other **Identity** must not be automatically terminated without a corresponding rule.
 
+When a **User** is deactivated, all its **Session** are revoked (see 10.1).
+
 **Session** and tokens are not part of the **User** or **Identity** entity and are managed by separate authentication logic.
 
-## 10. Final Rules
+## 10. Deactivation and Purge
+
+**Deactivation** and **Purge** are the operations that take a **User** out of use. They have different purposes and are not substitutes for **Unlink**, **Merge** or **Split**.
+
+### 10.1. Deactivation
+
+**Deactivation** changes the status of an `active` **User** to one of the deactivated statuses (see 2.4). The status records who initiated the operation:
+
+- `deactivated_by_admin` — an administrator deactivates the **User**;
+- `deactivated_by_user` — the **User** deactivates their own account;
+- `deactivated_by_merge` — set by **Merge** on the source **User** (see 6).
+
+On successful execution:
+
+- the **User** can no longer authenticate;
+- all **Session** of the **User** are revoked;
+- the **User** and its data are not removed; **Identity** and Contacts are kept, except the **Identity** that **Merge** transferred to the target **User**.
+
+Rules:
+
+- Only a **User** with the status `active` can be deactivated.
+- **Deactivation** is irreversible: a deactivated **User** never becomes `active` again.
+- **Deactivation** does not free the identifiers of the **User**'s **Identity**; they remain occupied until **Purge**.
+
+### 10.2. Purge
+
+**Purge** is the physical removal of a **User** and all data that references it, including its **Identity** with their authentication data, its **Session** and its Contacts.
+
+- **Purge** is a separate operation. **Deactivation** and **Merge** never perform it.
+- **Purge** is allowed only for a **User** whose status is not `active`; an active **User** must be deactivated first.
+- **Purge** is performed only by a superadmin through a dedicated operation with its own permission.
+- After **Purge** the identifiers of the removed **Identity** are free again.
+- **Purge** is irreversible.
+
+## 11. Final Rules
 
 1. **User** is the account and the owner of user data.
-2. An **Identity** belongs to exactly one **User**. Each **User** must have at least one **Identity** and at most one **Identity** of each type.
+2. An **Identity** belongs to exactly one **User**. Each **User** (except one with the status `deactivated_by_merge`) must have at least one **Identity** and at most one **Identity** of each type.
 3. **Contact** is a separate entity. **Contact** data does not automatically become an **Identity**.
 4. **Link** links a new **Identity** to an existing **User**. If the **Identity** belongs to another **User**, **Merge** is applied.
 5. **Unlink** removes a specific **Identity** from a **User** along with its authentication data. The last **Identity** cannot be removed.
-6. **Merge** consolidates **Users** by transferring their **Identity** to the target **User**. **Identity** type conflicts must be resolved explicitly.
+6. **Merge** consolidates **Users** by transferring their **Identity** to the target **User** and deactivating the source **User** (`deactivated_by_merge`). **Identity** type conflicts must be resolved explicitly.
 7. **Split** separates a **User** by transferring selected **Identity** to new **Users**. Each resulting **User** must have at least one **Identity**.
 8. Authentication verifies ownership of an **Identity**, and a **Session** records the result of successful authentication.
 9. **Merge** and **Split** do not merge the **Identity** themselves or their credentials.
 10. All operations must preserve the integrity of the model and the consistency of **Session** with the current ownership of **Identity**.
 11. An **Identity** is created only after ownership of its identifier has been verified. A pending registration is not an **Identity**.
 12. A match of email or other attributes does not link an **Identity** or merge **Users** automatically. Consolidation requires **Link** after authentication, or an explicit **Merge**.
+13. A **User** has one status: `active`, `deactivated_by_admin`, `deactivated_by_user` or `deactivated_by_merge`. Only an `active` **User** can authenticate. **Deactivation** revokes all **Session** of the **User** and is irreversible.
+14. **Purge** is a separate operation of a superadmin that physically removes a **User** that is not `active` together with all data that references it. **Deactivation** and **Merge** never perform it.
 
-## 11. Possible Extensions
+## 12. Possible Extensions
 
-The rules in sections 1–10 are fixed for the current version of the model. The extensions below are not part of it and are recorded only as a direction for future development.
+The rules in sections 1–11 are fixed for the current version of the model. The extensions below are not part of it and are recorded only as a direction for future development.
 
-### 11.1. Per-Type Limit on Identity
+### 12.1. Per-Type Limit on Identity
 
 Instead of a single rule of "at most one **Identity** of each type per **User**", the maximum number of **Identity** may be defined separately for each type:
 
@@ -302,6 +363,6 @@ Instead of a single rule of "at most one **Identity** of each type per **User**"
 Consequences of this extension:
 
 - Type conflicts (6.1) would remain only for types with a limit of one. For external providers such conflicts disappear.
-- The wording of rules 2.1, 2.3, 7.5 and 10.2 would change from "at most one **Identity** of each type" to "at most the number of **Identity** allowed for the type".
+- The wording of rules 2.1, 2.3, 7.5 and 11.2 would change from "at most one **Identity** of each type" to "at most the number of **Identity** allowed for the type".
 - Global uniqueness of an identifier within its type and the requirement that a **User** has at least one **Identity** remain unchanged.
 - Credentials still belong to a specific **Identity** (section 8). Several EmailIdentity per **User** would require a separate decision, because a password would then more naturally belong to the **User** than to each address.
