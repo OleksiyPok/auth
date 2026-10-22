@@ -89,6 +89,7 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         Permission.USERS_READ,
         Permission.USERS_WRITE,
         Permission.USERS_DEACTIVATE,
+        Permission.USERS_PURGE,
         Permission.USERS_LIST,
         # Session management
         Permission.SESSIONS_READ,

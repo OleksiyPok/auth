@@ -174,6 +174,11 @@ def require_users_deactivate(user_getter: UserGetter | None = None):
     return require_permissions(Permission.USERS_DEACTIVATE, user_getter=user_getter)
 
 
+def require_users_purge(user_getter: UserGetter | None = None):
+    """Require USERS_PURGE permission."""
+    return require_permissions(Permission.USERS_PURGE, user_getter=user_getter)
+
+
 def require_users_list(user_getter: UserGetter | None = None):
     """Require USERS_LIST permission."""
     return require_permissions(Permission.USERS_LIST, user_getter=user_getter)

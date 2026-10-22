@@ -32,6 +32,7 @@ class Permission(StrEnum):
     USERS_READ = "users.read"
     USERS_WRITE = "users.write"
     USERS_DEACTIVATE = "users.deactivate"
+    USERS_PURGE = "users.purge"
     USERS_LIST = "users.list"
 
     # Session management permissions

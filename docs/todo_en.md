@@ -129,7 +129,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a database with tables and no users gets the superadmin at startup; a database with users does not.
   - **After:** —
 
-- ✅ **ID-108 · Enforce foreign keys on SQLite**
+- ⬜ **ID-108 · Enforce foreign keys on SQLite**
   - **Do:** enable `PRAGMA foreign_keys=ON` on every connection of the application engine when the database is SQLite.
   - **Result:** on SQLite, saving a row with a non-existent `user_id` and deleting a user that still has dependent rows both fail with an integrity error, as on PostgreSQL.
   - **After:** —
@@ -534,7 +534,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a deactivated user cannot sign in, refresh or use an issued token; each endpoint stores its own status; a second deactivation is refused.
   - **After:** ID-98, ID-100
 
-- ✅ **ID-101 · Delete the rows of a user in the repositories**
+- ⬜ **ID-101 · Delete the rows of a user in the repositories**
   - **Do:** add `delete_by_user_id` to the repositories of the three identity types, sessions and two-factor (settings and challenges).
   - **Result:** a test shows the rows of the given user are gone and the rows of other users remain.
   - **After:** —
@@ -544,7 +544,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a test shows no row referencing the user remains, other users are untouched, an active user is refused.
   - **After:** ID-98, ID-101
 
-- ⬜ **ID-103 · Permission `USERS_PURGE`**
+- ✅ **ID-103 · Permission `USERS_PURGE`**
   - **Do:** add `USERS_PURGE` to `Permission`, grant it only to `superadmin`, add `require_users_purge`.
   - **Result:** RBAC validation at import passes; only `superadmin` has the permission.
   - **After:** —
