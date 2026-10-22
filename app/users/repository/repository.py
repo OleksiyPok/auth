@@ -6,6 +6,7 @@ from sqlmodel import func, select
 from app.auth.rbac.roles import Role
 from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
+from app.users.status import UserStatus
 
 
 class UserRepository(UserRepositoryInterface):
@@ -42,8 +43,8 @@ class UserRepository(UserRepositoryInterface):
         await self._session.refresh(user)
         return user
 
-    async def deactivate(self, user: User) -> User:
-        user.is_active = False
+    async def deactivate(self, user: User, status: UserStatus) -> User:
+        user.status = status
         await self._session.flush()
         await self._session.refresh(user)
         return user
@@ -59,7 +60,7 @@ class UserRepository(UserRepositoryInterface):
     async def count_active_superadmins(self) -> int:
         stmt = select(func.count()).where(
             User.role == Role.SUPERADMIN,
-            User.is_active == True,
+            User.status == UserStatus.ACTIVE,
         )
 
         result = await self._session.execute(stmt)

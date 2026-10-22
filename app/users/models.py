@@ -11,6 +11,7 @@ from uuid_extensions import (
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import DEFAULT_ROLE
 from app.db.types import UTCDateTime
+from app.users.status import UserStatus
 
 
 class User(SQLModel, table=True):
@@ -22,7 +23,7 @@ class User(SQLModel, table=True):
     last_name: str
     role: str = Field(default=DEFAULT_ROLE, nullable=False)
 
-    is_active: bool = Field(default=True, nullable=False)
+    status: str = Field(default=UserStatus.ACTIVE, nullable=False)
 
     created_at: datetime = Field(
         sa_column=Column(
@@ -40,6 +41,11 @@ class User(SQLModel, table=True):
         ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
+
+    @property
+    def is_active(self) -> bool:
+        """True only for an active user."""
+        return self.status == UserStatus.ACTIVE
 
     def __init__(self, **data):
         if "role" in data:

@@ -11,6 +11,7 @@ from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
 from app.users.services.service_interface import UserServiceInterface
+from app.users.status import UserStatus
 
 
 class UserService(UserServiceInterface):
@@ -80,6 +81,7 @@ class UserService(UserServiceInterface):
         self,
         current_user: User,
         target_user: User,
+        status: UserStatus,
     ) -> User:
         if target_user.role == Role.SUPERADMIN:
             count = await self._repository.count_active_superadmins()
@@ -87,7 +89,7 @@ class UserService(UserServiceInterface):
             if count == 1:
                 raise LastSuperadminDeactivationError()
 
-        return await self._repository.deactivate(target_user)
+        return await self._repository.deactivate(target_user, status)
 
     async def _update(
         self,

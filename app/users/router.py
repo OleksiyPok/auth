@@ -22,6 +22,7 @@ from app.users.schemas import (
     UserUpdateRequestSchema,
 )
 from app.users.services.service_interface import UserServiceInterface
+from app.users.status import UserStatus
 
 router = APIRouter(
     prefix="/users",
@@ -97,7 +98,7 @@ async def get_by_id(
         first_name=user.first_name,
         last_name=user.last_name,
         role=user.role,
-        is_active=user.is_active,
+        status=user.status,
         created_at=user.created_at,
         updated_at=user.updated_at,
     )
@@ -177,6 +178,7 @@ async def deactivate_me(
     await service.deactivate_user(
         current_user=current_user,
         target_user=current_user,
+        status=UserStatus.DEACTIVATED_BY_USER,
     )
 
 
@@ -203,4 +205,5 @@ async def deactivate_user(
     await service.deactivate_user(
         current_user=current_user,
         target_user=target_user,
+        status=UserStatus.DEACTIVATED_BY_ADMIN,
     )

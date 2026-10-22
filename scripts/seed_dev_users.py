@@ -69,7 +69,6 @@ async def seed_dev_users() -> None:
                     first_name=username_data["first_name"],
                     last_name=username_data["last_name"],
                     role=Role.USER,
-                    is_active=True,
                 )
 
                 session.add(user)
@@ -111,7 +110,6 @@ async def seed_dev_users() -> None:
                     first_name=email_data["first_name"],
                     last_name=email_data["last_name"],
                     role=Role.USER,
-                    is_active=True,
                 )
 
                 session.add(user)
@@ -153,7 +151,6 @@ async def seed_dev_users() -> None:
                     first_name=google_data["first_name"],
                     last_name=google_data["last_name"],
                     role=Role.USER,
-                    is_active=True,
                 )
 
                 session.add(user)

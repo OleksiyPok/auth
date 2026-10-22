@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from app.users.models import User
 from app.users.schemas import UserRoleAssignRequestSchema, UserUpdateRequestSchema
+from app.users.status import UserStatus
 
 
 class UserServiceInterface(ABC):
@@ -46,4 +47,5 @@ class UserServiceInterface(ABC):
         self,
         current_user: User,
         target_user: User,
+        status: UserStatus
     ) -> User: ...

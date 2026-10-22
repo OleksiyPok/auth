@@ -17,7 +17,6 @@ async def create_initial_superadmin(session: AsyncSession) -> None:
         first_name=settings.SUPERADMIN_FIRST_NAME,
         last_name=settings.SUPERADMIN_LAST_NAME,
         role=Role.SUPERADMIN,
-        is_active=True,
     )
 
     session.add(superadmin)

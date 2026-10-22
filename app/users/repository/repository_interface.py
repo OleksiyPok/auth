@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 from app.users.models import User
-
+from app.users.status import UserStatus
 
 class UserRepositoryInterface(ABC):
 
@@ -20,7 +20,7 @@ class UserRepositoryInterface(ABC):
     async def update(self, user: User) -> User: ...
 
     @abstractmethod
-    async def deactivate(self, user: User) -> User: ...
+    async def deactivate(self, user: User, status: UserStatus) -> User: ...
 
     @abstractmethod
     async def delete(self, user: User) -> User | None: ...

@@ -4,6 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.users.status import UserStatus
 
 class UserUpdateRequestSchema(BaseModel):
     first_name: str | None = None
@@ -22,6 +23,6 @@ class UserResponseSchema(BaseModel):
 
 
 class UserDetailedResponseSchema(UserResponseSchema):
-    is_active: bool
+    status: UserStatus
     created_at: datetime
     updated_at: datetime
