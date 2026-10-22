@@ -16,7 +16,7 @@ class Permission(StrEnum):
 
     Naming convention: RESOURCE_ACTION
     - RESOURCE: plural noun (users, sessions, roles, admin, self)
-    - ACTION: read, write, delete, manage, revoke, access
+    - ACTION: read, write, delete, deactivate, manage, revoke, access
 
     Use Permission.validate() to check if a string is a valid permission.
     """
@@ -31,7 +31,7 @@ class Permission(StrEnum):
     # User management permissions
     USERS_READ = "users.read"
     USERS_WRITE = "users.write"
-    USERS_DELETE = "users.delete"
+    USERS_DEACTIVATE  = "users.deactivate"
     USERS_LIST = "users.list"
 
     # Session management permissions
@@ -47,7 +47,7 @@ class Permission(StrEnum):
     # Self permissions (for users acting on their own resources)
     SELF_READ = "self.read"
     SELF_WRITE = "self.write"
-    SELF_DELETE = "self.delete"
+    SELF_DEACTIVATE = "self.deactivate"
     SELF_SESSIONS_READ = "self.sessions.read"
     SELF_SESSIONS_REVOKE = "self.sessions.revoke"
     SELF_IDENTITIES_READ = "self.identities.read"

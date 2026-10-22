@@ -519,20 +519,20 @@ Existing tests use outdated model fields and request schemas.
 
 A user has one status. Deactivation sets a status other than `active` and removes no rows; a deactivated user never becomes active again. Purge is the only operation that physically removes a user.
 
+- ✅ **ID-100 · Deactivation endpoints**
+  - **Do:** `POST /users/me/deactivate` and `POST /users/{user_id}/deactivate` deactivate the user and return 204; deactivation through `DELETE` is removed; rename `SELF_DELETE` to `SELF_DEACTIVATE` and `USERS_DELETE` to `USERS_DEACTIVATE` with their `require_*` dependencies, grants per role unchanged.
+  - **Result:** each endpoint deactivates its target and requires its permission; `USERS_DEACTIVATE` is held only by `superadmin`; RBAC validation at import passes; no `DELETE` endpoint deactivates a user.
+  - **After:** —
+
 - ⬜ **ID-98 · `UserStatus` and `User.status`**
-  - **Do:** add the enum `UserStatus` (`active`, `deactivated_by_admin`, `deactivated_by_user`, `deactivated_by_merge`) and the field `User.status` in place of `is_active`; keep `is_active` as a read-only property that is true only for `active`; use `status` in queries, bootstrap and the detailed user response.
+  - **Do:** add the enum `UserStatus` (`active`, `deactivated_by_admin`, `deactivated_by_user`, `deactivated_by_merge`) and the field `User.status` in place of `is_active`; keep `is_active` as a read-only property that is true only for `active`; use `status` in queries, bootstrap, the dev seed script and the detailed user response.
   - **Result:** a new user has the status `active`; `count_active_superadmins` counts only active superadmins; the detailed user response returns `status`.
   - **After:** —
 
 - ⬜ **ID-99 · `UserService.deactivate_user` with a status**
-  - **Do:** take one of the three `deactivated_*` statuses and set it; revoke all active sessions of the user; refuse an already deactivated user and the last active superadmin.
-  - **Result:** a deactivated user cannot sign in, refresh or use an issued token; the stored status equals the given one; a second deactivation is refused.
-  - **After:** ID-98
-
-- ⬜ **ID-100 · Deactivation endpoints**
-  - **Do:** `POST /users/me/deactivate` sets `deactivated_by_user`; `POST /users/{user_id}/deactivate` sets `deactivated_by_admin`; deactivation through `DELETE` is removed; rename `SELF_DELETE` to `SELF_DEACTIVATE` and `USERS_DELETE` to `USERS_DEACTIVATE` with their `require_*` dependencies, grants per role unchanged.
-  - **Result:** each endpoint sets its status and requires its permission; `USERS_DEACTIVATE` is held only by `superadmin`; RBAC validation at import passes.
-  - **After:** ID-99
+  - **Do:** take one of the three `deactivated_*` statuses and set it; `POST /users/me/deactivate` passes `deactivated_by_user` and `POST /users/{user_id}/deactivate` passes `deactivated_by_admin`; revoke all active sessions of the user; refuse an already deactivated user and the last active superadmin.
+  - **Result:** a deactivated user cannot sign in, refresh or use an issued token; each endpoint stores its own status; a second deactivation is refused.
+  - **After:** ID-98, ID-100
 
 - ⬜ **ID-101 · Delete the rows of a user in the repositories**
   - **Do:** add `delete_by_user_id` to the repositories of the three identity types, sessions and two-factor (settings and challenges).

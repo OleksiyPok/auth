@@ -169,9 +169,9 @@ def require_users_write(user_getter: UserGetter | None = None):
     return require_permissions(Permission.USERS_WRITE, user_getter=user_getter)
 
 
-def require_users_delete(user_getter: UserGetter | None = None):
-    """Require USERS_DELETE permission."""
-    return require_permissions(Permission.USERS_DELETE, user_getter=user_getter)
+def require_users_deactivate(user_getter: UserGetter | None = None):
+    """Require USERS_DEACTIVATE  permission."""
+    return require_permissions(Permission.USERS_DEACTIVATE, user_getter=user_getter)
 
 
 def require_users_list(user_getter: UserGetter | None = None):
@@ -204,9 +204,9 @@ def require_self_write(user_getter: UserGetter | None = None):
     return require_permissions(Permission.SELF_WRITE, user_getter=user_getter)
 
 
-def require_self_delete(user_getter: UserGetter | None = None):
-    """Require SELF_DELETE permission."""
-    return require_permissions(Permission.SELF_DELETE, user_getter=user_getter)
+def require_self_deactivate(user_getter: UserGetter | None = None):
+    """Require SELF_DEACTIVATE permission."""
+    return require_permissions(Permission.SELF_DEACTIVATE , user_getter=user_getter)
 
 
 def require_self_sessions_read(user_getter: UserGetter | None = None):

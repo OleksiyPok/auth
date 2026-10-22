@@ -32,7 +32,7 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         # Self permissions
         Permission.SELF_READ,
         Permission.SELF_WRITE,
-        Permission.SELF_DELETE,
+        Permission.SELF_DEACTIVATE,
         Permission.SELF_SESSIONS_READ,
         Permission.SELF_SESSIONS_REVOKE,
         Permission.SELF_IDENTITIES_READ,
@@ -42,7 +42,7 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         # All user permissions
         Permission.SELF_READ,
         Permission.SELF_WRITE,
-        Permission.SELF_DELETE,
+        Permission.SELF_DEACTIVATE,
         Permission.SELF_SESSIONS_READ,
         Permission.SELF_SESSIONS_REVOKE,
         Permission.SELF_IDENTITIES_READ,
@@ -59,7 +59,7 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         # All user permissions
         Permission.SELF_READ,
         Permission.SELF_WRITE,
-        Permission.SELF_DELETE,
+        Permission.SELF_DEACTIVATE,
         Permission.SELF_SESSIONS_READ,
         Permission.SELF_SESSIONS_REVOKE,
         Permission.SELF_IDENTITIES_READ,
@@ -80,7 +80,7 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         # All user permissions
         Permission.SELF_READ,
         Permission.SELF_WRITE,
-        Permission.SELF_DELETE,
+        Permission.SELF_DEACTIVATE,
         Permission.SELF_SESSIONS_READ,
         Permission.SELF_SESSIONS_REVOKE,
         Permission.SELF_IDENTITIES_READ,
@@ -88,7 +88,7 @@ ROLE_PERMISSIONS: Final[dict[str, set[str]]] = {
         # User management
         Permission.USERS_READ,
         Permission.USERS_WRITE,
-        Permission.USERS_DELETE,
+        Permission.USERS_DEACTIVATE,
         Permission.USERS_LIST,
         # Session management
         Permission.SESSIONS_READ,

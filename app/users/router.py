@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, status
 from app.auth.dependencies import get_current_user
 from app.auth.rbac.dependencies import (
     require_role_management,
-    require_self_delete,
+    require_self_deactivate,
     require_self_read,
     require_self_write,
-    require_users_delete,
+    require_users_deactivate,
     require_users_read,
 )
 from app.users.dependencies import get_user_service
@@ -163,23 +163,29 @@ async def assign_role(
     )
 
 
-@router.delete(
-    "/me",
-    dependencies=[Depends(require_self_delete())],
+@router.post(
+    "/me/deactivate",
+    summary="Deactivate current user",
+    description="Deactivate the account of the current user.",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_self_deactivate())],
 )
 async def deactivate_me(
     service: Annotated[UserServiceInterface, Depends(get_user_service)],
     current_user: Annotated[User, Depends(get_current_user)],
-):
-    return await service.deactivate_user(
+) -> None:
+    await service.deactivate_user(
         current_user=current_user,
         target_user=current_user,
     )
 
 
-@router.delete(
-    "/{user_id}",
-    dependencies=[Depends(require_users_delete())],
+@router.post(
+    "/{user_id}/deactivate",
+    summary="Deactivate a user",
+    description="Deactivate another user. Requires the permission to deactivate users.",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_users_deactivate())],
 )
 async def deactivate_user(
     user_id: str,
@@ -191,10 +197,10 @@ async def deactivate_user(
         User,
         Depends(get_current_user),
     ],
-):
+) -> None:
     target_user = await service.get_user(user_id)
 
-    return await service.deactivate_user(
+    await service.deactivate_user(
         current_user=current_user,
         target_user=target_user,
     )
