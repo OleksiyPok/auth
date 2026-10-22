@@ -11,9 +11,11 @@ from app.auth.rbac.dependencies import (
     require_self_read,
     require_self_write,
     require_users_deactivate,
+    require_users_purge,
     require_users_read,
 )
 from app.users.dependencies import get_user_service
+from app.users.exceptions import PurgeConfirmationMismatchError
 from app.users.models import User
 from app.users.schemas import (
     UserDetailedResponseSchema,
@@ -207,3 +209,25 @@ async def deactivate_user(
         target_user=target_user,
         status=UserStatus.DEACTIVATED_BY_ADMIN,
     )
+
+@router.delete(
+    "/{user_id}",
+    summary="Purge a deactivated user",
+    description=(
+        "Permanently remove a deactivated user and all rows that reference "
+        "the user. The query parameter confirm_user_id must equal user_id."
+    ),
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_users_purge())],
+)
+async def purge_user(
+    user_id: str,
+    confirm_user_id: str,
+    service: Annotated[UserServiceInterface, Depends(get_user_service)],
+) -> None:
+    if confirm_user_id != user_id:
+        raise PurgeConfirmationMismatchError()
+
+    user = await service.get_user(user_id)
+
+    await service.purge_user(user)

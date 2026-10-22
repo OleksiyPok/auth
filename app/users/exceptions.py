@@ -43,6 +43,11 @@ class CannotPurgeActiveUserError(UserError):
     code = "USER_STILL_ACTIVE"
     message = "An active user cannot be purged; deactivate the user first"
 
+class PurgeConfirmationMismatchError(UserError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "PURGE_CONFIRMATION_MISMATCH"
+    message = "confirm_user_id must equal the user id"
+
 class InactiveUserError(UserError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "USER_INACTIVE"
