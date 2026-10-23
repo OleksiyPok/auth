@@ -304,7 +304,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows a correct code creates the identity and a wrong code does not; attempts are limited.
   - **After:** ID-58
 
-- ⬜ **ID-60 · `GoogleOAuthState` purpose and user**
+- ✅ **ID-60 · `GoogleOAuthState` purpose and user**
   - **Do:** add `purpose` (default `login`) and nullable `user_id` to the model; the service saves them.
   - **Result:** login states keep working with the default purpose; the fields are stored when set.
   - **After:** —

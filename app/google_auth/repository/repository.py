@@ -112,5 +112,8 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
 
     async def delete_by_user_id(self, user_id: str) -> None:
         await self._session.execute(
+            delete(GoogleOAuthState).where(col(GoogleOAuthState.user_id) == user_id)
+        )
+        await self._session.execute(
             delete(GoogleIdentity).where(col(GoogleIdentity.user_id) == user_id)
         )

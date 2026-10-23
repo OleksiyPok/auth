@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 from uuid_extensions import uuid7
 
 from app.db.types import UTCDateTime
+from app.google_auth.purpose import GoogleOAuthPurpose
 
 
 class GoogleIdentity(SQLModel, table=True):
@@ -56,6 +57,19 @@ class GoogleOAuthState(SQLModel, table=True):
 
     code_verifier: str = Field(
         nullable=False,
+    )
+
+    purpose: str = Field(
+        default=GoogleOAuthPurpose.LOGIN,
+        nullable=False,
+        max_length=16,
+    )
+
+    # The user who links a Google account; empty for login states.
+    user_id: str | None = Field(
+        default=None,
+        foreign_key="users.id",
+        index=True,
     )
 
     expires_at: datetime = Field(

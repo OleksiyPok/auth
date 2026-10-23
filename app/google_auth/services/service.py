@@ -7,6 +7,7 @@ from app.google_auth.exceptions import (
     GoogleOAuthStateError,
 )
 from app.google_auth.models import GoogleIdentity, GoogleOAuthState
+from app.google_auth.purpose import GoogleOAuthPurpose
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
@@ -38,12 +39,18 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         self._user_repository = user_repository
         self._two_factor_service = two_factor_service
 
-    async def create_authorization_url(self) -> str:
+    async def create_authorization_url(
+        self,
+        purpose: GoogleOAuthPurpose = GoogleOAuthPurpose.LOGIN,
+        user_id: str | None = None,
+    ) -> str:
         authorization_url, state, code_verifier = get_google_authorization_url()
 
         oauth_state = GoogleOAuthState(
             state=state,
             code_verifier=code_verifier,
+            purpose=purpose,
+            user_id=user_id,
             expires_at=(
                 datetime.now(timezone.utc)
                 + timedelta(minutes=OAUTH_STATE_EXPIRE_MINUTES)
