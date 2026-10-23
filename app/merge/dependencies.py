@@ -15,7 +15,9 @@ from app.merge.services.merge_service import MergeService
 from app.merge.services.merge_service_interface import MergeServiceInterface
 from app.merge.services.proof_service import MergeProofService
 from app.merge.services.proof_service_interface import MergeProofServiceInterface
+from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.repository.repository import TwoFactorRepository
+from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.username_auth.repository.repository import UsernameIdentityRepository
 from app.users.dependencies import get_user_repository, get_user_service
 from app.users.repository.repository_interface import UserRepositoryInterface
@@ -42,6 +44,10 @@ async def get_merge_proof_service(
         UserServiceInterface,
         Depends(get_user_service),
     ],
+    two_factor_service: Annotated[
+        TwoFactorServiceInterface,
+        Depends(get_two_factor_service),
+    ],
 ) -> MergeProofServiceInterface:
     return MergeProofService(
         merge_proof_repository,
@@ -49,6 +55,7 @@ async def get_merge_proof_service(
         user_service,
         UsernameIdentityRepository(session),
         EmailIdentityRepository(session),
+        two_factor_service,
     )
 
 

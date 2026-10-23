@@ -65,7 +65,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         return [
             TwoFactorMethodSchema(
                 type="email",
-                destination=_mask_email(identity.email),
+                destination=mask_email(identity.email),
             )
         ]
 
@@ -104,6 +104,8 @@ class TwoFactorService(TwoFactorServiceInterface):
             subject = "Enable two-factor authentication"
         elif purpose == "disable":
             subject = "Disable two-factor authentication"
+        elif purpose == "merge":
+            subject = "Confirm the merge of accounts"
 
         await self._email_service.send(
             to=email,
@@ -323,3 +325,27 @@ class TwoFactorService(TwoFactorServiceInterface):
             subject=subject,
             body=body,
         )
+
+    async def request_merge_challenge(
+        self,
+        user: User,
+    ) -> TwoFactorChallengeResponseSchema:
+        return await self._send_challenge(
+            user=user,
+            purpose="merge",
+        )
+
+    async def confirm_merge_challenge(
+        self,
+        user_id: str,
+        challenge_id: str,
+        code: str,
+    ) -> None:
+        challenge = await self._verify_challenge(
+            challenge_id,
+            code,
+            "merge",
+        )
+
+        if challenge.user_id != user_id:
+            raise TwoFactorChallengeNotFoundError()

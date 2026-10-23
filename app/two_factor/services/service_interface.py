@@ -68,3 +68,17 @@ class TwoFactorServiceInterface(ABC):
         challenge_id: str,
         code: str,
     ) -> None: ...
+
+    @abstractmethod
+    async def request_merge_challenge(
+        self,
+        user: User,
+    ) -> TwoFactorChallengeResponseSchema: ...
+
+    @abstractmethod
+    async def confirm_merge_challenge(
+        self,
+        user_id: str,
+        challenge_id: str,
+        code: str,
+    ) -> None: ...

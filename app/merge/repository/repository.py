@@ -25,6 +25,13 @@ class MergeProofRepository(MergeProofRepositoryInterface):
         )
         return result.scalar_one_or_none()
 
+    async def mark_confirmed(self, proof: MergeProof) -> MergeProof:
+        proof.confirmed = True
+        self._session.add(proof)
+        await self._session.flush()
+        await self._session.refresh(proof)
+        return proof
+
     async def mark_used(self, proof: MergeProof) -> MergeProof:
         proof.used = True
         self._session.add(proof)

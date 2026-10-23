@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 
 from app.merge.schemas import (
+    MergeProofConfirmRequestSchema,
     MergeProofEmailRequestSchema,
     MergeProofResponseSchema,
     MergeProofUsernameRequestSchema,
@@ -31,4 +32,11 @@ class MergeProofServiceInterface(ABC):
         self,
         target_user: User,
         source_user_id: str,
+    ) -> MergeProofResponseSchema: ...
+
+    @abstractmethod
+    async def confirm(
+        self,
+        target_user: User,
+        data: MergeProofConfirmRequestSchema,
     ) -> MergeProofResponseSchema: ...

@@ -14,6 +14,9 @@ class MergeProofRepositoryInterface(ABC):
     async def get_by_id(self, proof_id: str) -> MergeProof | None: ...
 
     @abstractmethod
+    async def mark_confirmed(self, proof: MergeProof) -> MergeProof: ...
+
+    @abstractmethod
     async def mark_used(self, proof: MergeProof) -> MergeProof: ...
 
     @abstractmethod

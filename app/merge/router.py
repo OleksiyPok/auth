@@ -6,13 +6,14 @@ from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import get_current_user
 from app.auth.rbac.dependencies import require_self_identities_write
-from app.core.rate_limit import LOGIN_IP, limit_by_ip
+from app.core.rate_limit import CONFIRM_IP, LOGIN_IP, limit_by_ip
 from app.google_auth.dependencies import get_google_auth_service
 from app.google_auth.purpose import GoogleOAuthPurpose
 from app.google_auth.schemas import GoogleAuthorizationResponseSchema
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.merge.dependencies import get_merge_proof_service
 from app.merge.schemas import (
+    MergeProofConfirmRequestSchema,
     MergeProofEmailRequestSchema,
     MergeProofResponseSchema,
     MergeProofUsernameRequestSchema,
@@ -97,3 +98,25 @@ async def start_merge_proof_by_google(
     return GoogleAuthorizationResponseSchema(
         authorization_url=authorization_url,
     )
+
+
+@router.post(
+    "/proofs/confirm",
+    summary="Confirm a merge proof with the two-factor code",
+    description=(
+        "When the proven account has two-factor authentication, enter the code "
+        "that was sent to it to make the proof usable."
+    ),
+    response_model=MergeProofResponseSchema,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(require_self_identities_write()),
+        Depends(limit_by_ip(CONFIRM_IP)),
+    ],
+)
+async def confirm_merge_proof(
+    data: MergeProofConfirmRequestSchema,
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[MergeProofServiceInterface, Depends(get_merge_proof_service)],
+) -> MergeProofResponseSchema:
+    return await service.confirm(current_user, data)

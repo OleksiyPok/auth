@@ -21,6 +21,10 @@ class MergeProof(SQLModel, table=True):
     target_user_id: str = Field(foreign_key="users.id", index=True)
     source_user_id: str = Field(foreign_key="users.id", index=True)
     expires_at: datetime = Field(sa_type=UTCDateTime, nullable=False)
+    # A proof of an account with two-factor authentication stays unconfirmed
+    # until the code sent to that account is entered (challenge_id).
+    confirmed: bool = Field(default=False, nullable=False)
+    challenge_id: str | None = Field(default=None)
     used: bool = Field(default=False, nullable=False)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),

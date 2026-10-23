@@ -348,7 +348,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test with mocked Google shows the proof is created.
   - **After:** ID-60, ID-63
 
-- ⬜ **ID-67 · 2FA step for merge proof**
+- ✅ **ID-67 · 2FA step for merge proof**
   - **Do:** when the source user has 2FA enabled, the proof is created only after a confirmed challenge.
   - **Result:** a test shows no proof without the code and a proof with the correct code.
   - **After:** ID-64, ID-65, ID-66
