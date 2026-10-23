@@ -8,10 +8,9 @@ from app.core.rate_limit import LOGIN_IP, limit_by_ip
 from app.google_auth.dependencies import get_google_auth_service
 from app.google_auth.schemas import (
     GoogleAuthorizationResponseSchema,
-    GoogleLinkResponseSchema,
+    GoogleCallbackResponse,
 )
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
-from app.sessions.schemas import AuthenticationResponseSchema
 
 router = APIRouter(
     prefix="/google/auth",
@@ -38,7 +37,7 @@ async def google_login(
 
 @router.get(
     "/callback",
-    response_model=AuthenticationResponseSchema | GoogleLinkResponseSchema,
+    response_model=GoogleCallbackResponse,
     dependencies=[Depends(limit_by_ip(LOGIN_IP))],
 )
 async def google_callback(

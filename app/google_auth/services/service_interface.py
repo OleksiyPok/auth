@@ -3,8 +3,7 @@
 from abc import ABC, abstractmethod
 
 from app.google_auth.purpose import GoogleOAuthPurpose
-from app.google_auth.schemas import GoogleLinkResponseSchema
-from app.sessions.schemas import AuthenticationResponseSchema
+from app.google_auth.schemas import GoogleCallbackResponse
 
 
 class GoogleAuthServiceInterface(ABC):
@@ -23,4 +22,4 @@ class GoogleAuthServiceInterface(ABC):
         state: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> AuthenticationResponseSchema | GoogleLinkResponseSchema: ...
+    ) -> GoogleCallbackResponse: ...

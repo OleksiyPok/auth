@@ -11,7 +11,7 @@ from app.google_auth.purpose import GoogleOAuthPurpose
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
-from app.google_auth.schemas import GoogleLinkResponseSchema
+from app.google_auth.schemas import GoogleCallbackResponse, GoogleLinkResponseSchema
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.identities.exceptions import IdentityConflictError, IdentityTypeConflictError
 from app.identities.types import IdentityType
@@ -20,7 +20,9 @@ from app.infrastructure.google.oauth import (
     get_google_authorization_url,
     get_google_user_info,
 )
-from app.sessions.schemas import AuthenticationResponseSchema
+from app.merge.exceptions import MergeAccountNotFoundError
+from app.merge.schemas import MergeProofResponseSchema
+from app.merge.services.proof_service_interface import MergeProofServiceInterface
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.exceptions import InactiveUserError
 from app.users.models import User
@@ -34,12 +36,14 @@ class GoogleAuthService(GoogleAuthServiceInterface):
     def __init__(
         self,
         repository: GoogleAuthRepositoryInterface,
+        merge_proof_service: MergeProofServiceInterface,
         user_repository: UserRepositoryInterface,
         two_factor_service: TwoFactorServiceInterface,
     ):
         self._repository = repository
         self._user_repository = user_repository
         self._two_factor_service = two_factor_service
+        self._merge_proof_service = merge_proof_service
 
     async def create_authorization_url(
         self,
@@ -69,7 +73,7 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         state: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> AuthenticationResponseSchema | GoogleLinkResponseSchema:
+    ) -> GoogleCallbackResponse:
         oauth_state = await self._repository.get_oauth_state(state)
 
         if oauth_state is None:
@@ -98,6 +102,9 @@ class GoogleAuthService(GoogleAuthServiceInterface):
 
         if oauth_state.purpose == GoogleOAuthPurpose.LINK:
             return await self._link_google(oauth_state, google_user_id)
+
+        if oauth_state.purpose == GoogleOAuthPurpose.MERGE:
+            return await self._create_merge_proof(oauth_state, google_user_id)
 
         identity = await self._repository.get_identity_by_google_user_id(
             google_user_id,
@@ -173,3 +180,33 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         )
 
         return GoogleLinkResponseSchema(identity_id=identity.id)
+
+    async def _create_merge_proof(
+        self,
+        oauth_state: GoogleOAuthState,
+        google_user_id: str,
+    ) -> MergeProofResponseSchema:
+        """Prove the Google account of another user for a merge.
+
+        The user who started the flow is the target of the merge; the owner of
+        the Google account is the source. No tokens are issued.
+        """
+        if oauth_state.user_id is None:
+            raise GoogleOAuthStateError()
+
+        target_user = await self._user_repository.get_by_id(oauth_state.user_id)
+
+        if target_user is None:
+            raise GoogleOAuthStateError("Google user not found")
+
+        identity = await self._repository.get_identity_by_google_user_id(
+            google_user_id,
+        )
+
+        if identity is None:
+            raise MergeAccountNotFoundError()
+
+        return await self._merge_proof_service.create_for_source(
+            target_user,
+            identity.user_id,
+        )

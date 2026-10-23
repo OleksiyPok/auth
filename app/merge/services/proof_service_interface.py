@@ -25,3 +25,10 @@ class MergeProofServiceInterface(ABC):
         target_user: User,
         data: MergeProofEmailRequestSchema,
     ) -> MergeProofResponseSchema: ...
+
+    @abstractmethod
+    async def create_for_source(
+        self,
+        target_user: User,
+        source_user_id: str,
+    ) -> MergeProofResponseSchema: ...

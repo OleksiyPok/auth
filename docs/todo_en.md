@@ -343,7 +343,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows a proof is created for correct credentials and refused for wrong ones.
   - **After:** ID-63
 
-- ⬜ **ID-66 · Merge proof by Google**
+- ✅ **ID-66 · Merge proof by Google**
   - **Do:** OAuth flow with purpose `merge`; the callback creates a proof bound to the state's user and the Google account's user.
   - **Result:** a test with mocked Google shows the proof is created.
   - **After:** ID-60, ID-63
@@ -351,7 +351,7 @@ Existing tests use outdated model fields and request schemas.
 - ⬜ **ID-67 · 2FA step for merge proof**
   - **Do:** when the source user has 2FA enabled, the proof is created only after a confirmed challenge.
   - **Result:** a test shows no proof without the code and a proof with the correct code.
-  - **After:** ID-64, ID-65
+  - **After:** ID-64, ID-65, ID-66
 
 - ✅ **ID-68 · Merge validation**
   - **Do:** service method that raises specific errors when the source or the target is not `active` (the error names the user and its status), source equals target, or the source is the last active superadmin.

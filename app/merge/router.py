@@ -7,6 +7,10 @@ from fastapi import APIRouter, Depends, status
 from app.auth.dependencies import get_current_user
 from app.auth.rbac.dependencies import require_self_identities_write
 from app.core.rate_limit import LOGIN_IP, limit_by_ip
+from app.google_auth.dependencies import get_google_auth_service
+from app.google_auth.purpose import GoogleOAuthPurpose
+from app.google_auth.schemas import GoogleAuthorizationResponseSchema
+from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.merge.dependencies import get_merge_proof_service
 from app.merge.schemas import (
     MergeProofEmailRequestSchema,
@@ -64,3 +68,32 @@ async def create_proof_by_email(
     service: Annotated[MergeProofServiceInterface, Depends(get_merge_proof_service)],
 ) -> MergeProofResponseSchema:
     return await service.create_by_email(current_user, data)
+
+
+@router.post(
+    "/proofs/google",
+    summary="Prove an account by Google: start",
+    description=(
+        "Get the Google authorization URL. After the sign-in at Google, the "
+        "callback returns a short-lived single-use proof for the account that "
+        "owns that Google account."
+    ),
+    response_model=GoogleAuthorizationResponseSchema,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(require_self_identities_write()),
+        Depends(limit_by_ip(LOGIN_IP)),
+    ],
+)
+async def start_merge_proof_by_google(
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[GoogleAuthServiceInterface, Depends(get_google_auth_service)],
+) -> GoogleAuthorizationResponseSchema:
+    authorization_url = await service.create_authorization_url(
+        purpose=GoogleOAuthPurpose.MERGE,
+        user_id=current_user.id,
+    )
+
+    return GoogleAuthorizationResponseSchema(
+        authorization_url=authorization_url,
+    )

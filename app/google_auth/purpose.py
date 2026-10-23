@@ -8,3 +8,4 @@ class GoogleOAuthPurpose(StrEnum):
 
     LOGIN = "login"
     LINK = "link"
+    MERGE = "merge"

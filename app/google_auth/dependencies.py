@@ -12,6 +12,8 @@ from app.google_auth.repository.repository_interface import (
 )
 from app.google_auth.services.service import GoogleAuthService
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
+from app.merge.dependencies import get_merge_proof_service
+from app.merge.services.proof_service_interface import MergeProofServiceInterface
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.dependencies import get_user_repository
@@ -40,9 +42,14 @@ async def get_google_auth_service(
         TwoFactorServiceInterface,
         Depends(get_two_factor_service),
     ],
+    merge_proof_service: Annotated[
+        MergeProofServiceInterface,
+        Depends(get_merge_proof_service),
+    ],
 ) -> GoogleAuthServiceInterface:
     return GoogleAuthService(
         repository,
         user_repository,
         two_factor_service,
+        merge_proof_service,
     )

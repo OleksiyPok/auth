@@ -56,7 +56,7 @@ class MergeProofService(MergeProofServiceInterface):
         ):
             raise InvalidMergeCredentialsError()
 
-        return await self._create_proof(target_user, identity.user_id)
+        return await self.create_for_source(target_user, identity.user_id)
 
     async def create_by_email(
         self,
@@ -72,9 +72,9 @@ class MergeProofService(MergeProofServiceInterface):
         ):
             raise InvalidMergeCredentialsError()
 
-        return await self._create_proof(target_user, identity.user_id)
+        return await self.create_for_source(target_user, identity.user_id)
 
-    async def _create_proof(
+    async def create_for_source(
         self,
         target_user: User,
         source_user_id: str,
