@@ -36,9 +36,9 @@ class GoogleAuthService(GoogleAuthServiceInterface):
     def __init__(
         self,
         repository: GoogleAuthRepositoryInterface,
-        merge_proof_service: MergeProofServiceInterface,
         user_repository: UserRepositoryInterface,
         two_factor_service: TwoFactorServiceInterface,
+        merge_proof_service: MergeProofServiceInterface,
     ):
         self._repository = repository
         self._user_repository = user_repository

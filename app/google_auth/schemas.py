@@ -1,5 +1,7 @@
 # app/google_auth/schemas.py
 
+from typing import TypeAlias
+
 from pydantic import BaseModel
 
 from app.merge.schemas import MergeProofResponseSchema
@@ -17,6 +19,6 @@ class GoogleLinkResponseSchema(BaseModel):
 
 # What the callback returns, depending on the purpose of the OAuth state:
 # login, link or merge.
-GoogleCallbackResponse = (
+GoogleCallbackResponse: TypeAlias = (
     AuthenticationResponseSchema | GoogleLinkResponseSchema | MergeProofResponseSchema
 )
