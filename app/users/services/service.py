@@ -8,6 +8,7 @@ from app.email_auth.repository.repository_interface import (
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
+from app.merge.repository.repository_interface import MergeProofRepositoryInterface
 from app.sessions.repository.repository_interface import SessionRepositoryInterface
 from app.sessions.services.service_interface import SessionServiceInterface
 from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
@@ -42,6 +43,7 @@ class UserService(UserServiceInterface):
         username_identity_repository: UsernameIdentityRepositoryInterface,
         email_identity_repository: EmailIdentityRepositoryInterface,
         google_auth_repository: GoogleAuthRepositoryInterface,
+        merge_proof_repository: MergeProofRepositoryInterface,
     ):
         self._repository = repository
         self._session_service = session_service
@@ -50,6 +52,7 @@ class UserService(UserServiceInterface):
         self._username_identity_repository = username_identity_repository
         self._email_identity_repository = email_identity_repository
         self._google_auth_repository = google_auth_repository
+        self._merge_proof_repository = merge_proof_repository
 
     async def get_user(
         self,
@@ -157,6 +160,7 @@ class UserService(UserServiceInterface):
         if user.is_active:
             raise CannotPurgeActiveUserError()
 
+        await self._merge_proof_repository.delete_by_user_id(user.id)
         await self._session_repository.delete_by_user_id(user.id)
         await self._two_factor_repository.delete_by_user_id(user.id)
         await self._username_identity_repository.delete_by_user_id(user.id)

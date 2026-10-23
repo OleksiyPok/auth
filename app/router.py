@@ -8,6 +8,7 @@ from app.email_auth.router import router as email_auth_router
 from app.google_auth.router import router as google_auth_router
 from app.identities.router import router as identities_router
 from app.infrastructure.email.test_message_router import router as test_message_router
+from app.merge.router import router as merge_router
 from app.sessions.router import router as sessions_router
 from app.two_factor.router import router as two_factor_router
 from app.username_auth.router import router as username_auth_router
@@ -23,6 +24,7 @@ router.include_router(email_auth_router)
 router.include_router(google_auth_router)
 router.include_router(two_factor_router)
 router.include_router(identities_router)
+router.include_router(merge_router)
 router.include_router(sessions_router)
 router.include_router(users_router)
 

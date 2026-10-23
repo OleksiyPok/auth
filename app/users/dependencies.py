@@ -12,6 +12,8 @@ from app.google_auth.repository.repository import GoogleAuthRepository
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
+from app.merge.repository.repository import MergeProofRepository
+from app.merge.repository.repository_interface import MergeProofRepositoryInterface
 from app.sessions.dependencies import get_session_repository, get_sessions_service
 from app.sessions.repository.repository_interface import SessionRepositoryInterface
 from app.sessions.services.service_interface import SessionServiceInterface
@@ -59,6 +61,12 @@ async def get_user_google_auth_repository(
     return GoogleAuthRepository(session)
 
 
+async def get_user_merge_proof_repository(
+    session: AsyncSession = Depends(get_session),
+) -> MergeProofRepositoryInterface:
+    return MergeProofRepository(session)
+
+
 async def get_user_service(
     repository: UserRepositoryInterface = Depends(get_user_repository),
     session_service: SessionServiceInterface = Depends(get_sessions_service),
@@ -75,6 +83,9 @@ async def get_user_service(
     google_auth_repository: GoogleAuthRepositoryInterface = Depends(
         get_user_google_auth_repository
     ),
+    merge_proof_repository: MergeProofRepositoryInterface = Depends(
+        get_user_merge_proof_repository
+    ),
 ) -> UserServiceInterface:
     return UserService(
         repository,
@@ -84,4 +95,5 @@ async def get_user_service(
         username_identity_repository,
         email_identity_repository,
         google_auth_repository,
+        merge_proof_repository,
     )

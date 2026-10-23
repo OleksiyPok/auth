@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     # A session older than this must sign in again before sensitive actions.
     FRESH_SESSION_MINUTES: int = 15
+    # How long a merge proof can be used after it was created.
+    MERGE_PROOF_EXPIRE_MINUTES: int = 5
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # Email

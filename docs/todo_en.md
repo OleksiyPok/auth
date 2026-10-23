@@ -328,17 +328,17 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows the correct types for overlapping and non-overlapping users.
   - **After:** ID-13
 
-- ⬜ **ID-63 · `MergeProof` model and repository**
+- ✅ **ID-63 · `MergeProof` model and repository**
   - **Do:** model with active user id, source user id, expiry, used flag; repository to create, get, mark used.
   - **Result:** repository test passes.
   - **After:** —
 
-- ⬜ **ID-64 · Merge proof by username and password**
+- ✅ **ID-64 · Merge proof by username and password**
   - **Do:** authenticated endpoint accepting the source username and password; create a short-lived single-use proof bound to both users; refuse an inactive source.
   - **Result:** a test shows a proof is created for correct credentials and refused for wrong ones.
   - **After:** ID-63
 
-- ⬜ **ID-65 · Merge proof by email and password**
+- ✅ **ID-65 · Merge proof by email and password**
   - **Do:** same as ID-64 using email identity credentials.
   - **Result:** a test shows a proof is created for correct credentials and refused for wrong ones.
   - **After:** ID-63
