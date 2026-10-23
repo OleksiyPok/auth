@@ -10,6 +10,8 @@ from app.email_auth.repository.repository import EmailIdentityRepository
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
 )
+from app.email_auth.services.link_service import EmailLinkService
+from app.email_auth.services.link_service_interface import EmailLinkServiceInterface
 from app.email_auth.services.login_service import EmailLoginService
 from app.email_auth.services.login_service_interface import EmailLoginServiceInterface
 from app.email_auth.services.register_service import EmailRegisterService
@@ -56,4 +58,16 @@ async def get_email_login_service(
         email_identity_repository,
         user_repository,
         two_factor_service,
+    )
+
+
+async def get_email_link_service(
+    email_identity_repository: Annotated[
+        EmailIdentityRepositoryInterface, Depends(get_email_identity_repository)
+    ],
+    email_service: Annotated[EmailService, Depends(get_email_service)],
+) -> EmailLinkServiceInterface:
+    return EmailLinkService(
+        email_identity_repository,
+        email_service,
     )

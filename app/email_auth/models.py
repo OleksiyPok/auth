@@ -52,3 +52,27 @@ class EmailRegistration(SQLModel, table=True):
         sa_type=UTCDateTime,
         nullable=False,
     )
+
+
+class EmailLinkRequest(SQLModel, table=True):
+    """A pending request to add an email identity to an existing user."""
+
+    __tablename__ = "email_link_requests"
+
+    id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
+    email: str = Field(index=True)
+    password_hash: str
+    code_hash: str
+    expires_at: datetime = Field(sa_type=UTCDateTime, nullable=False)
+    attempts: int = Field(default=0, nullable=False)
+    last_sent_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=UTCDateTime,
+        nullable=False,
+    )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=UTCDateTime,
+        nullable=False,
+    )

@@ -10,7 +10,13 @@ from app.auth.rbac.dependencies import (
     require_self_identities_write,
 )
 from app.core.identifiers import mask_email
+from app.email_auth.dependencies import get_email_link_service
 from app.email_auth.models import EmailIdentity
+from app.email_auth.schemas import (
+    EmailLinkChallengeResponseSchema,
+    EmailLinkRequestSchema,
+)
+from app.email_auth.services.link_service_interface import EmailLinkServiceInterface
 from app.google_auth.models import GoogleIdentity
 from app.identities.dependencies import get_identity_service
 from app.identities.schemas import IdentityResponseSchema, LinkUsernameRequestSchema
@@ -101,3 +107,29 @@ async def link_username(
     )
 
     return _to_response(identity)
+
+
+
+@router.post(
+    "/email",
+    summary="Link an email: request",
+    description=(
+        "Start adding an email and password sign-in method to the current user. "
+        "A verification code is sent to the address."
+    ),
+    response_model=EmailLinkChallengeResponseSchema,
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(require_self_identities_write())],
+)
+async def request_email_link(
+    data: EmailLinkRequestSchema,
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        EmailLinkServiceInterface,
+        Depends(get_email_link_service),
+    ],
+) -> EmailLinkChallengeResponseSchema:
+    return await service.request_link(current_user.id, data)

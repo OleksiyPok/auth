@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from app.email_auth.models import EmailIdentity, EmailRegistration
+from app.email_auth.models import EmailIdentity, EmailLinkRequest, EmailRegistration
 
 
 class EmailIdentityRepositoryInterface(ABC):
@@ -51,3 +51,11 @@ class EmailIdentityRepositoryInterface(ABC):
 
     @abstractmethod
     async def delete_registrations_by_email(self, email: str) -> None: ...
+
+    @abstractmethod
+    async def create_link_request(
+        self, link_request: EmailLinkRequest
+    ) -> EmailLinkRequest: ...
+
+    @abstractmethod
+    async def delete_link_requests_by_user_id(self, user_id: str) -> None: ...

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
 from app.db.session import session_factory
-from app.email_auth.models import EmailIdentity, EmailRegistration
+from app.email_auth.models import EmailIdentity, EmailLinkRequest, EmailRegistration
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
 )
@@ -101,5 +101,21 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
 
     async def delete_by_user_id(self, user_id: str) -> None:
         await self._session.execute(
+            delete(EmailLinkRequest).where(col(EmailLinkRequest.user_id) == user_id)
+        )
+        await self._session.execute(
             delete(EmailIdentity).where(col(EmailIdentity.user_id) == user_id)
+        )
+
+    async def create_link_request(
+        self, link_request: EmailLinkRequest
+    ) -> EmailLinkRequest:
+        self._session.add(link_request)
+        await self._session.flush()
+        await self._session.refresh(link_request)
+        return link_request
+
+    async def delete_link_requests_by_user_id(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(EmailLinkRequest).where(col(EmailLinkRequest.user_id) == user_id)
         )

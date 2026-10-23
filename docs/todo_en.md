@@ -294,7 +294,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows the username can then be used to sign in; refusals return 409.
   - **After:** ID-51
 
-- ⬜ **ID-58 · Link email: request**
+- ✅ **ID-58 · Link email: request**
   - **Do:** `POST /identities/email` with email and password; store a pending link request (new table, separate from registrations); send a code; refuse when the user already has an email identity or the address is taken.
   - **Result:** the request returns a challenge id and the code is sent; no identity exists yet.
   - **After:** ID-51
