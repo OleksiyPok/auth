@@ -18,7 +18,11 @@ from app.email_auth.schemas import (
     EmailLinkRequestSchema,
 )
 from app.email_auth.services.link_service_interface import EmailLinkServiceInterface
+from app.google_auth.dependencies import get_google_auth_service
 from app.google_auth.models import GoogleIdentity
+from app.google_auth.purpose import GoogleOAuthPurpose
+from app.google_auth.schemas import GoogleAuthorizationResponseSchema
+from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.identities.dependencies import get_identity_service
 from app.identities.schemas import IdentityResponseSchema, LinkUsernameRequestSchema
 from app.identities.services.service_interface import IdentityServiceInterface
@@ -159,3 +163,34 @@ async def confirm_email_link(
     identity = await service.confirm_link(current_user.id, data)
 
     return _to_response(identity)
+
+
+@router.post(
+    "/google",
+    summary="Link a Google account: start",
+    description=(
+        "Get the Google authorization URL. After the sign-in at Google, the "
+        "callback adds the Google account to the current user."
+    ),
+    response_model=GoogleAuthorizationResponseSchema,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_self_identities_write())],
+)
+async def start_google_link(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        GoogleAuthServiceInterface,
+        Depends(get_google_auth_service),
+    ],
+) -> GoogleAuthorizationResponseSchema:
+    authorization_url = await service.create_authorization_url(
+        purpose=GoogleOAuthPurpose.LINK,
+        user_id=current_user.id,
+    )
+
+    return GoogleAuthorizationResponseSchema(
+        authorization_url=authorization_url,
+    )

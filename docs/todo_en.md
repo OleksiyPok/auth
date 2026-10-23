@@ -309,7 +309,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** login states keep working with the default purpose; the fields are stored when set.
   - **After:** —
 
-- ⬜ **ID-61 · Link Google: start**
+- ✅ **ID-61 · Link Google: start**
   - **Do:** `POST /identities/google`, authenticated; create a state with purpose `link` and the user id; return the authorization URL.
   - **Result:** a test shows the saved state has the purpose and the user id.
   - **After:** ID-51, ID-60
