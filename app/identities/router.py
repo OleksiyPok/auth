@@ -14,6 +14,7 @@ from app.email_auth.dependencies import get_email_link_service
 from app.email_auth.models import EmailIdentity
 from app.email_auth.schemas import (
     EmailLinkChallengeResponseSchema,
+    EmailLinkConfirmRequestSchema,
     EmailLinkRequestSchema,
 )
 from app.email_auth.services.link_service_interface import EmailLinkServiceInterface
@@ -109,7 +110,6 @@ async def link_username(
     return _to_response(identity)
 
 
-
 @router.post(
     "/email",
     summary="Link an email: request",
@@ -133,3 +133,29 @@ async def request_email_link(
     ],
 ) -> EmailLinkChallengeResponseSchema:
     return await service.request_link(current_user.id, data)
+
+
+@router.post(
+    "/email/confirm",
+    summary="Link an email: confirm",
+    description=(
+        "Confirm the code and add the email sign-in method to the current user."
+    ),
+    response_model=IdentityResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_self_identities_write())],
+)
+async def confirm_email_link(
+    data: EmailLinkConfirmRequestSchema,
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        EmailLinkServiceInterface,
+        Depends(get_email_link_service),
+    ],
+) -> IdentityResponseSchema:
+    identity = await service.confirm_link(current_user.id, data)
+
+    return _to_response(identity)

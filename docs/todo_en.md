@@ -299,7 +299,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** the request returns a challenge id and the code is sent; no identity exists yet.
   - **After:** ID-51
 
-- ⬜ **ID-59 · Link email: confirm**
+- ✅ **ID-59 · Link email: confirm**
   - **Do:** `POST /identities/email/confirm` with the challenge id and code; count failed attempts in a separate transaction; create `EmailIdentity` for the current user and delete the request.
   - **Result:** a test shows a correct code creates the identity and a wrong code does not; attempts are limited.
   - **After:** ID-58

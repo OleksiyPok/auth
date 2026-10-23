@@ -119,3 +119,31 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
         await self._session.execute(
             delete(EmailLinkRequest).where(col(EmailLinkRequest.user_id) == user_id)
         )
+
+    async def get_link_request(self, link_request_id: str) -> EmailLinkRequest | None:
+        result = await self._session.execute(
+            select(EmailLinkRequest).where(EmailLinkRequest.id == link_request_id)
+        )
+        return result.scalar_one_or_none()
+
+    # noinspection PyMethodMayBeStatic
+    async def increment_link_request_attempts(self, link_request_id: str) -> int:
+        # Separate transaction: the counter must survive the rollback of the
+        # request transaction that happens when the service raises an error.
+        async with session_factory() as session:
+            async with session.begin():
+                await session.execute(
+                    update(EmailLinkRequest)
+                    .where(col(EmailLinkRequest.id) == link_request_id)
+                    .values(attempts=EmailLinkRequest.attempts + 1)
+                )
+                result = await session.execute(
+                    select(EmailLinkRequest.attempts).where(
+                        EmailLinkRequest.id == link_request_id
+                    )
+                )
+                return result.scalar_one()
+
+    async def delete_link_request(self, link_request: EmailLinkRequest) -> None:
+        await self._session.delete(link_request)
+        await self._session.flush()

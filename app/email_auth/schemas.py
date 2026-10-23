@@ -51,6 +51,11 @@ class EmailLinkChallengeResponseSchema(BaseModel):
     message: str = "Verification code sent to your email"
 
 
+class EmailLinkConfirmRequestSchema(BaseModel):
+    challenge_id: str
+    code: str
+
+
 # AuthenticationResponseSchema is returned by login and can either contain
 # tokens or a two-factor challenge.
 AuthenticationResponse = AuthenticationResponseSchema

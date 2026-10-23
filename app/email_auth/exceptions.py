@@ -27,6 +27,12 @@ class EmailRegistrationNotFoundError(EmailAuthError):
     message = "Email registration not found"
 
 
+class EmailLinkRequestNotFoundError(EmailAuthError):
+    status_code = status.HTTP_404_NOT_FOUND
+    code = "EMAIL_LINK_REQUEST_NOT_FOUND"
+    message = "Email link request not found"
+
+
 class InvalidEmailVerificationCodeError(EmailAuthError):
     status_code = status.HTTP_401_UNAUTHORIZED
     code = "INVALID_EMAIL_VERIFICATION_CODE"

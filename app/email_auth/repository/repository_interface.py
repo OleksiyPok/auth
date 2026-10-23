@@ -59,3 +59,14 @@ class EmailIdentityRepositoryInterface(ABC):
 
     @abstractmethod
     async def delete_link_requests_by_user_id(self, user_id: str) -> None: ...
+
+    @abstractmethod
+    async def get_link_request(
+        self, link_request_id: str
+    ) -> EmailLinkRequest | None: ...
+
+    @abstractmethod
+    async def increment_link_request_attempts(self, link_request_id: str) -> int: ...
+
+    @abstractmethod
+    async def delete_link_request(self, link_request: EmailLinkRequest) -> None: ...
