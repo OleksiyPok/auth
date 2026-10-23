@@ -11,13 +11,15 @@ from app.google_auth.dependencies import get_google_auth_service
 from app.google_auth.purpose import GoogleOAuthPurpose
 from app.google_auth.schemas import GoogleAuthorizationResponseSchema
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
-from app.merge.dependencies import get_merge_proof_service
+from app.merge.dependencies import get_merge_proof_service, get_merge_service
 from app.merge.schemas import (
     MergeProofConfirmRequestSchema,
     MergeProofEmailRequestSchema,
     MergeProofResponseSchema,
     MergeProofUsernameRequestSchema,
+    MergeRequestSchema,
 )
+from app.merge.services.merge_service_interface import MergeServiceInterface
 from app.merge.services.proof_service_interface import MergeProofServiceInterface
 from app.users.models import User
 
@@ -120,3 +122,21 @@ async def confirm_merge_proof(
     service: Annotated[MergeProofServiceInterface, Depends(get_merge_proof_service)],
 ) -> MergeProofResponseSchema:
     return await service.confirm(current_user, data)
+
+
+@router.post(
+    "",
+    summary="Merge another account into the current one",
+    description=(
+        "Move the sign-in methods of the proven account to the current user and "
+        "deactivate that account. Needs a confirmed, unused, unexpired proof."
+    ),
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_self_identities_write())],
+)
+async def merge_accounts(
+    data: MergeRequestSchema,
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[MergeServiceInterface, Depends(get_merge_service)],
+) -> None:
+    await service.merge_by_proof(current_user, data.proof_id)

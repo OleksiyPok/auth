@@ -22,6 +22,10 @@ class MergeProofResponseSchema(BaseModel):
     challenge_id: str | None = None
 
 
+class MergeRequestSchema(BaseModel):
+    proof_id: str
+
+
 class MergeProofConfirmRequestSchema(BaseModel):
     proof_id: str
     code: str

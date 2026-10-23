@@ -33,6 +33,18 @@ class MergeProofExpiredError(MergeError):
     message = "Merge proof expired"
 
 
+class MergeProofUsedError(MergeError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "MERGE_PROOF_USED"
+    message = "Merge proof has already been used"
+
+
+class MergeProofNotConfirmedError(MergeError):
+    status_code = status.HTTP_403_FORBIDDEN
+    code = "MERGE_PROOF_NOT_CONFIRMED"
+    message = "Merge proof is not confirmed with the two-factor code yet"
+
+
 class MergeProofConfirmationNotRequiredError(MergeError):
     status_code = status.HTTP_409_CONFLICT
     code = "MERGE_PROOF_CONFIRMATION_NOT_REQUIRED"

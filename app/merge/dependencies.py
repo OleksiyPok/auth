@@ -73,10 +73,15 @@ async def get_merge_service(
         IdentityServiceInterface,
         Depends(get_identity_service),
     ],
+    merge_proof_repository: Annotated[
+        MergeProofRepositoryInterface,
+        Depends(get_merge_proof_repository),
+    ],
 ) -> MergeServiceInterface:
     return MergeService(
         user_repository,
         user_service,
         identity_service,
         TwoFactorRepository(session),
+        merge_proof_repository,
     )

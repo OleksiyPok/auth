@@ -363,7 +363,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows the target owns all identities, the source has the status `deactivated_by_merge` and no identities, sessions or 2FA rows, a type conflict aborts with nothing changed.
   - **After:** ID-18, ID-49, ID-50, ID-68, ID-99
 
-- ⬜ **ID-70 · `POST /users/me/merge`**
+- ✅ **ID-70 · `POST /users/me/merge`**
   - **Do:** accept a proof id; check it is valid, unused and bound to the current user; mark it used; run the merge.
   - **Result:** a test shows a full merge through the endpoint and refusal for a used, expired or foreign proof.
   - **After:** ID-69, and ID-64 or ID-65 or ID-66
