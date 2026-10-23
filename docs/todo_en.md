@@ -314,7 +314,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows the saved state has the purpose and the user id.
   - **After:** ID-51, ID-60
 
-- ⬜ **ID-62 · Link Google: callback**
+- ✅ **ID-62 · Link Google: callback**
   - **Do:** for states with purpose `link` create `GoogleIdentity` for the state's user without issuing tokens; refuse when the Google account belongs to another user or the user already has a Google identity.
   - **Result:** a test with mocked Google shows the identity is created for the right user; refusals return errors; login states still behave as before.
   - **After:** ID-60, ID-61

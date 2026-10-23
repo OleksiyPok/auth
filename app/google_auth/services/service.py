@@ -11,7 +11,9 @@ from app.google_auth.purpose import GoogleOAuthPurpose
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
+from app.google_auth.schemas import GoogleLinkResponseSchema
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
+from app.identities.exceptions import IdentityConflictError, IdentityTypeConflictError
 from app.identities.types import IdentityType
 from app.infrastructure.google.oauth import (
     exchange_google_code,
@@ -67,7 +69,7 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         state: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> AuthenticationResponseSchema:
+    ) -> AuthenticationResponseSchema | GoogleLinkResponseSchema:
         oauth_state = await self._repository.get_oauth_state(state)
 
         if oauth_state is None:
@@ -93,6 +95,9 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         await self._repository.mark_oauth_state_used(oauth_state)
 
         google_user_id = google_user["google_user_id"]
+
+        if oauth_state.purpose == GoogleOAuthPurpose.LINK:
+            return await self._link_google(oauth_state, google_user_id)
 
         identity = await self._repository.get_identity_by_google_user_id(
             google_user_id,
@@ -130,3 +135,41 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             ip_address=ip_address,
             user_agent=user_agent,
         )
+
+    async def _link_google(
+        self,
+        oauth_state: GoogleOAuthState,
+        google_user_id: str,
+    ) -> GoogleLinkResponseSchema:
+        """Add the Google account to the user who started the link.
+
+        No tokens are issued: the user is already signed in.
+        """
+        if oauth_state.user_id is None:
+            raise GoogleOAuthStateError()
+
+        user = await self._user_repository.get_by_id(oauth_state.user_id)
+
+        if user is None:
+            raise GoogleOAuthStateError("Google user not found")
+
+        if not user.is_active:
+            raise InactiveUserError()
+
+        if await self._repository.get_identity_by_user_id(user.id) is not None:
+            raise IdentityTypeConflictError()
+
+        if (
+            await self._repository.get_identity_by_google_user_id(google_user_id)
+            is not None
+        ):
+            raise IdentityConflictError()
+
+        identity = await self._repository.create_identity(
+            GoogleIdentity(
+                user_id=user.id,
+                google_user_id=google_user_id,
+            )
+        )
+
+        return GoogleLinkResponseSchema(identity_id=identity.id)
