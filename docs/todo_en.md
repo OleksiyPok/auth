@@ -358,7 +358,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test per error and one for the valid case.
   - **After:** ID-98
 
-- ⬜ **ID-69 · Merge execution**
+- ✅ **ID-69 · Merge execution**
   - **Do:** in one transaction check type conflicts, transfer the source identities to the target, delete the source's 2FA settings and challenges, deactivate the source with the status `deactivated_by_merge` (its sessions are revoked); the target's role does not change.
   - **Result:** a test shows the target owns all identities, the source has the status `deactivated_by_merge` and no identities, sessions or 2FA rows, a type conflict aborts with nothing changed.
   - **After:** ID-18, ID-49, ID-50, ID-68, ID-99

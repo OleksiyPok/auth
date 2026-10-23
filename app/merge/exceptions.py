@@ -15,6 +15,12 @@ class MergeAccountNotFoundError(MergeError):
     message = "No account found for this sign-in method"
 
 
+class MergeTypeConflictError(MergeError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "MERGE_TYPE_CONFLICT"
+    message = "Both accounts have a sign-in method of the same type"
+
+
 class InvalidMergeCredentialsError(MergeError):
     status_code = status.HTTP_403_FORBIDDEN
     code = "MERGE_INVALID_CREDENTIALS"
