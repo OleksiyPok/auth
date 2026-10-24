@@ -2,7 +2,11 @@
 
 from abc import ABC, abstractmethod
 
-from app.two_factor.models import TwoFactorChallenge, UserSecuritySettings
+from app.two_factor.models import (
+    TwoFactorChallenge,
+    TwoFactorMethod,
+    UserSecuritySettings,
+)
 
 
 class TwoFactorRepositoryInterface(ABC):
@@ -52,6 +56,22 @@ class TwoFactorRepositoryInterface(ABC):
 
     @abstractmethod
     async def increment_challenge_attempts(self, challenge_id: str) -> int: ...
+
+    @abstractmethod
+    async def create_method(self, method: TwoFactorMethod) -> TwoFactorMethod: ...
+
+    @abstractmethod
+    async def list_methods(self, user_id: str) -> list[TwoFactorMethod]: ...
+
+    @abstractmethod
+    async def get_method(
+        self,
+        user_id: str,
+        method_id: str,
+    ) -> TwoFactorMethod | None: ...
+
+    @abstractmethod
+    async def delete_method(self, method: TwoFactorMethod) -> None: ...
 
     @abstractmethod
     async def delete_by_user_id(self, user_id: str) -> None: ...

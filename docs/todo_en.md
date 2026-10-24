@@ -415,7 +415,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a user with 2FA enabled gets a challenge instead of tokens on any login method.
   - **After:** —
 
-- ⬜ **ID-23 · `TwoFactorMethod` model and repository**
+- ✅ **ID-23 · `TwoFactorMethod` model and repository**
   - **Do:** fields: user id, type, delivery address or secret, verified flag, default flag; repository to create, list, get, delete.
   - **Result:** repository test passes.
   - **After:** —

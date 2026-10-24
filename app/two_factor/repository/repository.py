@@ -5,7 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
 from app.db.session import session_factory
-from app.two_factor.models import TwoFactorChallenge, UserSecuritySettings
+from app.two_factor.models import (
+    TwoFactorChallenge,
+    TwoFactorMethod,
+    UserSecuritySettings,
+)
 from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
 
 
@@ -107,9 +111,43 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
                 )
                 return result.scalar_one()
 
+    async def create_method(self, method: TwoFactorMethod) -> TwoFactorMethod:
+        self._session.add(method)
+        await self._session.flush()
+        await self._session.refresh(method)
+        return method
+
+    async def list_methods(self, user_id: str) -> list[TwoFactorMethod]:
+        result = await self._session.execute(
+            select(TwoFactorMethod)
+            .where(TwoFactorMethod.user_id == user_id)
+            .order_by(col(TwoFactorMethod.created_at))
+        )
+        return list(result.scalars().all())
+
+    async def get_method(
+        self,
+        user_id: str,
+        method_id: str,
+    ) -> TwoFactorMethod | None:
+        result = await self._session.execute(
+            select(TwoFactorMethod).where(
+                TwoFactorMethod.user_id == user_id,
+                TwoFactorMethod.id == method_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def delete_method(self, method: TwoFactorMethod) -> None:
+        await self._session.delete(method)
+        await self._session.flush()
+
     async def delete_by_user_id(self, user_id: str) -> None:
         await self._session.execute(
             delete(TwoFactorChallenge).where(col(TwoFactorChallenge.user_id) == user_id)
+        )
+        await self._session.execute(
+            delete(TwoFactorMethod).where(col(TwoFactorMethod.user_id) == user_id)
         )
         await self._session.execute(
             delete(UserSecuritySettings).where(
