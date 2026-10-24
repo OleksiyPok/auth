@@ -77,6 +77,14 @@ class TwoFactorServiceInterface(ABC):
     ) -> TwoFactorChallengeResponseSchema: ...
 
     @abstractmethod
+    async def confirm_add_email_method(
+        self,
+        user: User,
+        challenge_id: str,
+        code: str,
+    ) -> None: ...
+
+    @abstractmethod
     async def request_merge_challenge(
         self,
         user: User,

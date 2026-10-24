@@ -25,8 +25,10 @@ class TwoFactorLoginConfirmResponseSchema(AuthenticationResponseSchema):
 
 
 class TwoFactorMethodSchema(BaseModel):
+    id: str
     type: str
     destination: str
+    is_default: bool
 
 
 class TwoFactorStatusResponseSchema(BaseModel):

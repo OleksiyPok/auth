@@ -48,6 +48,23 @@ async def add_email_method(
 
 
 @router.post(
+    "/methods/email/confirm",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
+)
+async def confirm_add_email_method(
+    data: TwoFactorConfirmRequestSchema,
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
+):
+    await service.confirm_add_email_method(
+        current_user,
+        data.challenge_id,
+        data.code,
+    )
+
+
+@router.post(
     "/login/confirm",
     response_model=TwoFactorLoginConfirmResponseSchema,
     dependencies=[Depends(limit_by_ip(CONFIRM_IP))],

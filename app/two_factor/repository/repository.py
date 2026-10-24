@@ -138,6 +138,12 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         )
         return result.scalar_one_or_none()
 
+    async def update_method(self, method: TwoFactorMethod) -> TwoFactorMethod:
+        self._session.add(method)
+        await self._session.flush()
+        await self._session.refresh(method)
+        return method
+
     async def delete_method(self, method: TwoFactorMethod) -> None:
         await self._session.delete(method)
         await self._session.flush()

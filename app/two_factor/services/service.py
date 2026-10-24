@@ -64,14 +64,22 @@ class TwoFactorService(TwoFactorServiceInterface):
         return identity.email
 
     async def get_methods(self, user_id: str) -> list[TwoFactorMethodSchema]:
-        identity = await self._email_identity_repository.get_by_user_id(user_id)
-        if not identity:
-            return []
+        # identity = await self._email_identity_repository.get_by_user_id(user_id)
+        # if not identity:
+        #     return []
         return [
             TwoFactorMethodSchema(
-                type="email",
-                destination=mask_email(identity.email),
+                id=method.id,
+                type=method.type,
+                destination=(
+                    mask_email(method.value)
+                    if method.type == TwoFactorMethodType.EMAIL
+                    else "***"
+                ),
+                is_default=method.is_default,
             )
+            for method in await self._repository.list_methods(user_id)
+            if method.verified
         ]
 
     async def _send_challenge(
@@ -369,6 +377,35 @@ class TwoFactorService(TwoFactorServiceInterface):
             purpose="add_method",
             method=method,
         )
+
+    async def confirm_add_email_method(
+        self,
+        user: User,
+        challenge_id: str,
+        code: str,
+    ) -> None:
+        challenge = await self._verify_challenge(
+            challenge_id,
+            code,
+            "add_method",
+        )
+
+        if challenge.user_id != user.id or challenge.method_id is None:
+            raise TwoFactorChallengeNotFoundError()
+
+        method = await self._repository.get_method(user.id, challenge.method_id)
+        if method is None:
+            raise TwoFactorChallengeNotFoundError()
+
+        # The first verified method becomes the default one.
+        methods = await self._repository.list_methods(user.id)
+        has_default = any(
+            m.id != method.id and m.verified and m.is_default for m in methods
+        )
+
+        method.verified = True
+        method.is_default = not has_default
+        await self._repository.update_method(method)
 
     async def request_merge_challenge(
         self,

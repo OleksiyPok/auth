@@ -435,12 +435,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** the response contains a challenge id; the method exists as unverified.
   - **After:** ID-23, ID-74, ID-75
 
-- ⬜ **ID-77 · Add email method: confirm**
+- ✅ **ID-77 · Add email method: confirm**
   - **Do:** `POST /auth/2fa/methods/email/confirm`; a correct code marks the method verified.
   - **Result:** a test shows the method becomes verified only with the correct code.
   - **After:** ID-76
 
-- ⬜ **ID-78 · Status lists methods from `TwoFactorMethod`**
+- ✅ **ID-78 · Status lists methods from `TwoFactorMethod`**
   - **Do:** `GET /auth/2fa/status` returns the user's verified methods.
   - **Result:** a test shows the list matches stored methods.
   - **After:** ID-23
