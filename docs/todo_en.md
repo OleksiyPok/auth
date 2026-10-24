@@ -420,7 +420,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** repository test passes.
   - **After:** —
 
-- ⬜ **ID-74 · `method_id` in `TwoFactorChallenge`**
+- ✅ **ID-74 · `method_id` in `TwoFactorChallenge`**
   - **Do:** add a nullable reference to the method; `identity_id` stays as the sign-in identity of a login challenge.
   - **Result:** challenges can be saved with and without a method.
   - **After:** ID-23

@@ -55,6 +55,11 @@ class TwoFactorChallenge(SQLModel, table=True):
     user_id: str = Field(foreign_key="users.id", index=True)
     identity_id: str | None = Field(default=None, index=True)
     identity_type: str | None = Field(default=None, max_length=16)
+    method_id: str | None = Field(
+        default=None,
+        foreign_key="two_factor_methods.id",
+        index=True,
+    )
     purpose: str = Field(max_length=32, index=True)
     code_hash: str
     ip_address: str | None = Field(default=None, max_length=45)
