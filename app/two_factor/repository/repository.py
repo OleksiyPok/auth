@@ -144,6 +144,13 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         await self._session.refresh(method)
         return method
 
+    async def delete_challenges_by_method_id(self, method_id: str) -> None:
+        await self._session.execute(
+            delete(TwoFactorChallenge).where(
+                col(TwoFactorChallenge.method_id) == method_id
+            )
+        )
+
     async def delete_method(self, method: TwoFactorMethod) -> None:
         await self._session.delete(method)
         await self._session.flush()

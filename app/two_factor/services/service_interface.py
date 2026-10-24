@@ -85,6 +85,13 @@ class TwoFactorServiceInterface(ABC):
     ) -> None: ...
 
     @abstractmethod
+    async def remove_method(
+        self,
+        user: User,
+        method_id: str,
+    ) -> None: ...
+
+    @abstractmethod
     async def request_merge_challenge(
         self,
         user: User,

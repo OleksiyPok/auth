@@ -74,6 +74,9 @@ class TwoFactorRepositoryInterface(ABC):
     async def update_method(self, method: TwoFactorMethod) -> TwoFactorMethod: ...
 
     @abstractmethod
+    async def delete_challenges_by_method_id(self, method_id: str) -> None: ...
+
+    @abstractmethod
     async def delete_method(self, method: TwoFactorMethod) -> None: ...
 
     @abstractmethod

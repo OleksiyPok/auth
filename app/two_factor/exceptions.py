@@ -51,6 +51,18 @@ class TwoFactorMethodAlreadyExistsError(TwoFactorError):
     message = "This two-factor method is already added"
 
 
+class TwoFactorMethodNotFoundError(TwoFactorError):
+    status_code = status.HTTP_404_NOT_FOUND
+    code = "TWO_FACTOR_METHOD_NOT_FOUND"
+    message = "Two-factor method not found"
+
+
+class TwoFactorLastMethodError(TwoFactorError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "TWO_FACTOR_LAST_METHOD"
+    message = "The last verified method cannot be removed while two-factor authentication is enabled"
+
+
 class TwoFactorMethodNotAvailableError(TwoFactorError):
     status_code = status.HTTP_409_CONFLICT
     code = "TWO_FACTOR_METHOD_NOT_AVAILABLE"

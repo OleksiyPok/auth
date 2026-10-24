@@ -450,7 +450,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a user without an email identity can enable and use 2FA; removing an email identity does not affect 2FA.
   - **After:** ID-23, ID-74, ID-75, ID-77
 
-- ⬜ **ID-80 · Remove a method**
+- ✅ **ID-80 · Remove a method**
   - **Do:** `DELETE /auth/2fa/methods/{method_id}`; refuse removing the last verified method while 2FA is enabled.
   - **Result:** a test shows removal and the refusal.
   - **After:** ID-23

@@ -19,8 +19,10 @@ from app.two_factor.exceptions import (
     TwoFactorAlreadyEnabledError,
     TwoFactorChallengeNotFoundError,
     TwoFactorCodeExpiredError,
+    TwoFactorLastMethodError,
     TwoFactorMethodAlreadyExistsError,
     TwoFactorMethodNotAvailableError,
+    TwoFactorMethodNotFoundError,
     TwoFactorTooManyAttemptsError,
 )
 from app.two_factor.method_type import TwoFactorMethodType
@@ -430,6 +432,37 @@ class TwoFactorService(TwoFactorServiceInterface):
         method.verified = True
         method.is_default = not has_default
         await self._repository.update_method(method)
+
+    async def remove_method(
+        self,
+        user: User,
+        method_id: str,
+    ) -> None:
+        method = await self._repository.get_method(user.id, method_id)
+        if method is None:
+            raise TwoFactorMethodNotFoundError()
+
+        others = [
+            m
+            for m in await self._repository.list_methods(user.id)
+            if m.id != method.id and m.verified
+        ]
+
+        if method.verified:
+            settings = await self._repository.get_or_create_settings(user.id)
+            if settings.two_factor_enabled and not others:
+                raise TwoFactorLastMethodError()
+
+        was_default = method.is_default
+
+        # Challenges refer to the method, so they are removed with it.
+        await self._repository.delete_challenges_by_method_id(method.id)
+        await self._repository.delete_method(method)
+
+        # If the default method is removed, another verified one takes its place.
+        if was_default and others:
+            others[0].is_default = True
+            await self._repository.update_method(others[0])
 
     async def request_merge_challenge(
         self,

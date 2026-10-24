@@ -64,6 +64,18 @@ async def confirm_add_email_method(
     )
 
 
+@router.delete(
+    "/methods/{method_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def remove_method(
+    method_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
+):
+    await service.remove_method(current_user, method_id)
+
+
 @router.post(
     "/login/confirm",
     response_model=TwoFactorLoginConfirmResponseSchema,
