@@ -8,6 +8,7 @@ from app.auth.dependencies import get_current_user
 from app.core.rate_limit import CONFIRM_IP, SEND_CODE_IP, limit_by_ip
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.schemas import (
+    TwoFactorAddEmailMethodRequestSchema,
     TwoFactorChallengeResponseSchema,
     TwoFactorConfirmRequestSchema,
     TwoFactorLoginConfirmResponseSchema,
@@ -31,6 +32,19 @@ async def get_status(
         enabled=await service.is_enabled(current_user.id),
         methods=await service.get_methods(current_user.id),
     )
+
+
+@router.post(
+    "/methods/email",
+    response_model=TwoFactorChallengeResponseSchema,
+    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+)
+async def add_email_method(
+    data: TwoFactorAddEmailMethodRequestSchema,
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
+):
+    return await service.request_add_email_method(current_user, data.email)
 
 
 @router.post(

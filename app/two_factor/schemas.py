@@ -11,6 +11,10 @@ class TwoFactorChallengeResponseSchema(BaseModel):
     message: str = "Verification code sent to your email"
 
 
+class TwoFactorAddEmailMethodRequestSchema(BaseModel):
+    email: str
+
+
 class TwoFactorConfirmRequestSchema(BaseModel):
     challenge_id: str
     code: str

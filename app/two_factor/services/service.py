@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from app.auth.services.auth_session_service_interface import AuthSessionServiceInterface
-from app.core.identifiers import mask_email
+from app.core.identifiers import mask_email, normalize_email
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
 )
@@ -19,15 +19,18 @@ from app.two_factor.exceptions import (
     TwoFactorAlreadyEnabledError,
     TwoFactorChallengeNotFoundError,
     TwoFactorCodeExpiredError,
+    TwoFactorMethodAlreadyExistsError,
     TwoFactorMethodNotAvailableError,
     TwoFactorTooManyAttemptsError,
 )
-from app.two_factor.models import TwoFactorChallenge
+from app.two_factor.method_type import TwoFactorMethodType
+from app.two_factor.models import TwoFactorChallenge, TwoFactorMethod
 from app.two_factor.repository.repository_interface import TwoFactorRepositoryInterface
 from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,
     TwoFactorMethodSchema,
 )
+from app.two_factor.senders.sender_interface import TwoFactorSenderInterface
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.models import User
 
@@ -44,11 +47,13 @@ class TwoFactorService(TwoFactorServiceInterface):
         email_identity_repository: EmailIdentityRepositoryInterface,
         auth_session_service: AuthSessionServiceInterface,
         email_service: EmailService,
+        sender: TwoFactorSenderInterface,
     ):
         self._repository = repository
         self._email_identity_repository = email_identity_repository
         self._auth_session_service = auth_session_service
         self._email_service = email_service
+        self._sender = sender
 
     async def _get_email(self, user_id: str) -> str:
         # The confirmation address is taken from the account, not from the
@@ -77,9 +82,8 @@ class TwoFactorService(TwoFactorServiceInterface):
         identity_type: str | None = None,
         ip_address: str | None = None,
         user_agent: str | None = None,
+        method: TwoFactorMethod | None = None,
     ) -> TwoFactorChallengeResponseSchema:
-        email = await self._get_email(user.id)
-
         await self._repository.invalidate_active_challenges(user.id, purpose)
 
         code = f"{secrets.randbelow(1_000_000):0{CODE_LENGTH}d}"
@@ -87,6 +91,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             user_id=user.id,
             purpose=purpose,
             identity_id=identity_id,
+            method_id=method.id if method else None,
             identity_type=identity_type,
             code_hash=hash_password(code),
             ip_address=ip_address,
@@ -106,15 +111,26 @@ class TwoFactorService(TwoFactorServiceInterface):
             subject = "Disable two-factor authentication"
         elif purpose == "merge":
             subject = "Confirm the merge of accounts"
+        elif purpose == "add_method":
+            subject = "Confirm the new two-factor method"
 
-        await self._email_service.send(
-            to=email,
-            subject=subject,
-            body=(
-                f"Your verification code is: {code}\n\n"
-                f"The code expires in {CHALLENGE_EXPIRE_MINUTES} minutes."
-            ),
-        )
+        if method is not None:
+            await self._sender.send_code(
+                method=method,
+                subject=subject,
+                code=code,
+                expires_in_minutes=CHALLENGE_EXPIRE_MINUTES,
+            )
+        else:
+            # Without a method the code goes to the account email.
+            await self._email_service.send(
+                to=await self._get_email(user.id),
+                subject=subject,
+                body=(
+                    f"Your verification code is: {code}\n\n"
+                    f"The code expires in {CHALLENGE_EXPIRE_MINUTES} minutes."
+                ),
+            )
 
         return TwoFactorChallengeResponseSchema(
             challenge_id=challenge.id,
@@ -321,6 +337,37 @@ class TwoFactorService(TwoFactorServiceInterface):
             to=email,
             subject=subject,
             body=body,
+        )
+
+    async def request_add_email_method(
+        self,
+        user: User,
+        email: str,
+    ) -> TwoFactorChallengeResponseSchema:
+        value = normalize_email(email)
+
+        method: TwoFactorMethod | None = None
+        for existing in await self._repository.list_methods(user.id):
+            if existing.type == TwoFactorMethodType.EMAIL and existing.value == value:
+                if existing.verified:
+                    raise TwoFactorMethodAlreadyExistsError()
+                # An unconfirmed method is reused: a new code is sent to it.
+                method = existing
+                break
+
+        if method is None:
+            method = await self._repository.create_method(
+                TwoFactorMethod(
+                    user_id=user.id,
+                    type=TwoFactorMethodType.EMAIL,
+                    value=value,
+                )
+            )
+
+        return await self._send_challenge(
+            user=user,
+            purpose="add_method",
+            method=method,
         )
 
     async def request_merge_challenge(

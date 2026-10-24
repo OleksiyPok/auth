@@ -45,6 +45,12 @@ class TwoFactorTooManyAttemptsError(TwoFactorError):
     message = "Too many invalid two-factor code attempts"
 
 
+class TwoFactorMethodAlreadyExistsError(TwoFactorError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "TWO_FACTOR_METHOD_ALREADY_EXISTS"
+    message = "This two-factor method is already added"
+
+
 class TwoFactorMethodNotAvailableError(TwoFactorError):
     status_code = status.HTTP_409_CONFLICT
     code = "TWO_FACTOR_METHOD_NOT_AVAILABLE"

@@ -425,12 +425,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** challenges can be saved with and without a method.
   - **After:** ID-23
 
-- ⬜ **ID-75 · 2FA sender interface**
+- ✅ **ID-75 · 2FA sender interface**
   - **Do:** interface that delivers a code to a method; email implementation on top of `EmailService`.
   - **Result:** a test with a fake email service shows the code is delivered to the method's address.
   - **After:** ID-23
 
-- ⬜ **ID-76 · Add email method: request**
+- ✅ **ID-76 · Add email method: request**
   - **Do:** `POST /auth/2fa/methods/email` with an address; create an unverified method and send a code.
   - **Result:** the response contains a challenge id; the method exists as unverified.
   - **After:** ID-23, ID-74, ID-75
