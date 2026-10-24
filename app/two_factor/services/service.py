@@ -9,7 +9,7 @@ from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
 )
 from app.infrastructure.email.base import EmailService
-from app.infrastructure.email.templates import TEMPLATE_REGISTRY
+from app.infrastructure.email.templates import render_template
 from app.infrastructure.password import hash_password, verify_password
 from app.sessions.schemas import AuthenticationResponseSchema
 from app.two_factor.config import settings as fa_settings
@@ -316,10 +316,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             "enable": "TWO_FACTOR_ENABLED",
             "disable": "TWO_FACTOR_DISABLED",
         }[action]
-        template = TEMPLATE_REGISTRY[template_name]
-        rendered = template.substitute()
-        subject, body = rendered.split("\n\n", 1)
-        subject = subject.removeprefix("Subject: ")
+        subject, body = render_template(template_name)
         await self._email_service.send(
             to=email,
             subject=subject,

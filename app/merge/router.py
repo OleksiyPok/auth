@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_fresh_session
 from app.auth.rbac.dependencies import require_self_identities_write
 from app.core.rate_limit import CONFIRM_IP, LOGIN_IP, limit_by_ip
 from app.google_auth.dependencies import get_google_auth_service
@@ -132,7 +132,10 @@ async def confirm_merge_proof(
         "deactivate that account. Needs a confirmed, unused, unexpired proof."
     ),
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_self_identities_write())],
+    dependencies=[
+        Depends(require_self_identities_write()),
+        Depends(require_fresh_session),
+    ],
 )
 async def merge_accounts(
     data: MergeRequestSchema,

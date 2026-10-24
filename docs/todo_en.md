@@ -368,7 +368,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows a full merge through the endpoint and refusal for a used, expired or foreign proof.
   - **After:** ID-69, and ID-64 or ID-65 or ID-66
 
-- ⬜ **ID-71 · Merge security notification**
+- ✅ **ID-71 · Merge security notification**
   - **Do:** add an email template and send it to the email identities of both accounts after a merge; accounts without an email identity are skipped.
   - **Result:** a test with a fake email service shows the messages sent.
   - **After:** ID-70
@@ -583,7 +583,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a test shows contacts belong to the target after Merge.
   - **After:** ID-26, ID-69
 
-- ⬜ **ID-91 · Fresh re-authentication before Merge**
+- ✅ **ID-91 · Fresh re-authentication before Merge**
   - **Do:** require the active account to re-authenticate within a time window before `POST /users/me/merge`.
   - **Result:** a test shows Merge is refused without recent re-authentication.
   - **After:** ID-70, ID-106

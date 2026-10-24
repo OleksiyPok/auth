@@ -2,7 +2,10 @@
 
 from datetime import datetime, timezone
 
+from app.email_auth.models import EmailIdentity
 from app.identities.services.service_interface import IdentityServiceInterface
+from app.infrastructure.email.base import EmailService
+from app.infrastructure.email.templates import render_template
 from app.merge.exceptions import (
     MergeProofExpiredError,
     MergeProofNotConfirmedError,
@@ -34,12 +37,14 @@ class MergeService(MergeServiceInterface):
         identity_service: IdentityServiceInterface,
         two_factor_repository: TwoFactorRepositoryInterface,
         merge_proof_repository: MergeProofRepositoryInterface,
+        email_service: EmailService,
     ):
         self._user_repository = user_repository
         self._user_service = user_service
         self._identity_service = identity_service
         self._two_factor_repository = two_factor_repository
         self._merge_proof_repository = merge_proof_repository
+        self._email_service = email_service
 
     async def merge(
         self,
@@ -82,6 +87,26 @@ class MergeService(MergeServiceInterface):
             target_user=source,
             status=UserStatus.DEACTIVATED_BY_MERGE,
         )
+
+        await self._notify(target.id)
+
+    async def _notify(self, target_user_id: str) -> None:
+        """Tell the owner by email that accounts were merged.
+
+        There is at most one email identity in the two accounts together (two
+        email identities are a type conflict), and after the transfer it
+        belongs to the target. Without an email identity nobody is notified.
+        If sending fails, the whole merge is rolled back.
+        """
+        subject, body = render_template("MERGE_COMPLETED")
+
+        for identity in await self._identity_service.list_identities(target_user_id):
+            if isinstance(identity, EmailIdentity):
+                await self._email_service.send(
+                    to=identity.email,
+                    subject=subject,
+                    body=body,
+                )
 
     async def merge_by_proof(
         self,
