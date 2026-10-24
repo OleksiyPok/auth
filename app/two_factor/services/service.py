@@ -63,10 +63,25 @@ class TwoFactorService(TwoFactorServiceInterface):
             raise TwoFactorMethodNotAvailableError()
         return identity.email
 
+    async def _get_default_method(self, user_id: str) -> TwoFactorMethod | None:
+        verified = [
+            method
+            for method in await self._repository.list_methods(user_id)
+            if method.verified
+        ]
+        for method in verified:
+            if method.is_default:
+                return method
+        return verified[0] if verified else None
+
+    async def _get_notification_email(self, user_id: str) -> str | None:
+        method = await self._get_default_method(user_id)
+        if method is not None and method.type == TwoFactorMethodType.EMAIL:
+            return method.value
+        identity = await self._email_identity_repository.get_by_user_id(user_id)
+        return identity.email if identity else None
+
     async def get_methods(self, user_id: str) -> list[TwoFactorMethodSchema]:
-        # identity = await self._email_identity_repository.get_by_user_id(user_id)
-        # if not identity:
-        #     return []
         return [
             TwoFactorMethodSchema(
                 id=method.id,
@@ -92,6 +107,10 @@ class TwoFactorService(TwoFactorServiceInterface):
         user_agent: str | None = None,
         method: TwoFactorMethod | None = None,
     ) -> TwoFactorChallengeResponseSchema:
+        # The code goes to the given method, otherwise to the default verified
+        # method, otherwise (accounts from before methods existed) to the
+        # account email.
+        method = method or await self._get_default_method(user.id)
         await self._repository.invalidate_active_challenges(user.id, purpose)
 
         code = f"{secrets.randbelow(1_000_000):0{CODE_LENGTH}d}"
@@ -130,7 +149,6 @@ class TwoFactorService(TwoFactorServiceInterface):
                 expires_in_minutes=CHALLENGE_EXPIRE_MINUTES,
             )
         else:
-            # Without a method the code goes to the account email.
             await self._email_service.send(
                 to=await self._get_email(user.id),
                 subject=subject,
@@ -256,6 +274,10 @@ class TwoFactorService(TwoFactorServiceInterface):
         if settings.two_factor_enabled:
             raise TwoFactorAlreadyEnabledError()
 
+        # Enabling requires at least one verified method.
+        if await self._get_default_method(user.id) is None:
+            raise TwoFactorMethodNotAvailableError()
+
         return await self._send_challenge(
             user=user,
             purpose="enable",
@@ -284,7 +306,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         await self._repository.update_settings(settings)
 
         await self._send_action_notification(
-            await self._get_email(user.id),
+            await self._get_notification_email(user.id),
             "enable",
         )
 
@@ -327,15 +349,17 @@ class TwoFactorService(TwoFactorServiceInterface):
         await self._repository.update_settings(settings)
 
         await self._send_action_notification(
-            await self._get_email(user.id),
+            await self._get_notification_email(user.id),
             "disable",
         )
 
     async def _send_action_notification(
         self,
-        email: str,
+        email: str | None,
         action: str,
     ) -> None:
+        if email is None:
+            return
         template_name = {
             "enable": "TWO_FACTOR_ENABLED",
             "disable": "TWO_FACTOR_DISABLED",

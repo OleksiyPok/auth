@@ -445,7 +445,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows the list matches stored methods.
   - **After:** ID-23
 
-- ⬜ **ID-79 · Deliver codes through the default method**
+- ✅ **ID-79 · Deliver codes through the default method**
   - **Do:** login, enable and disable challenges go to the user's default verified method; enabling requires one; the sign-in identity of a login challenge is unchanged; update the affected tests.
   - **Result:** a user without an email identity can enable and use 2FA; removing an email identity does not affect 2FA.
   - **After:** ID-23, ID-74, ID-75, ID-77
