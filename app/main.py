@@ -1,6 +1,7 @@
 # app/main.py
 
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 
 import uvicorn
 from fastapi import FastAPI
@@ -17,6 +18,7 @@ from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
 from app.db.session import session_factory
 from app.health.router import router as health_router
+from app.maintenance.cleanup import run_cleanup_loop
 from app.router import router
 
 
@@ -30,9 +32,17 @@ async def lifespan(app: FastAPI):
     async with session_factory() as session:
         await create_initial_superadmin_if_no_users(session)
 
+    cleanup_task = asyncio.create_task(
+        run_cleanup_loop(settings.CLEANUP_INTERVAL_SECONDS)
+    )
+
     yield
 
     print("App shutting down...")
+
+    cleanup_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await cleanup_task
 
     await engine.dispose()
 

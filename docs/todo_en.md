@@ -138,7 +138,7 @@ Existing tests use outdated model fields and request schemas.
 
 ## 4. Cleanup of temporary rows
 
-- ⬜ **ID-06 · Delete expired email registrations**
+- ✅ **ID-06 · Delete expired email registrations**
   - **Do:** add a repository method that deletes expired `EmailRegistration` rows.
   - **Result:** a test shows expired rows are removed and valid ones stay.
   - **After:** —
@@ -153,7 +153,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows expired and used rows are removed and valid ones stay.
   - **After:** —
 
-- ⬜ **ID-42 · Periodic cleanup job**
+- ✅ **ID-42 · Periodic cleanup job**
   - **Do:** run the three cleanup methods from a background task started in the application lifespan, with the interval in settings.
   - **Result:** expired rows disappear without any request; the task stops on shutdown.
   - **After:** ID-06, ID-40, ID-41

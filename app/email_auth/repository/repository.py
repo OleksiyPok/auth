@@ -1,5 +1,7 @@
 # app/email_auth/repository/repository.py
 
+from datetime import datetime, timezone
+
 from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
@@ -97,6 +99,13 @@ class EmailIdentityRepository(EmailIdentityRepositoryInterface):
     async def delete_registrations_by_email(self, email: str) -> None:
         await self._session.execute(
             delete(EmailRegistration).where(col(EmailRegistration.email) == email)
+        )
+
+    async def delete_expired_registrations(self) -> None:
+        await self._session.execute(
+            delete(EmailRegistration).where(
+                col(EmailRegistration.expires_at) <= datetime.now(timezone.utc)
+            )
         )
 
     async def delete_by_user_id(self, user_id: str) -> None:

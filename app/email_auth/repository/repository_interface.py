@@ -53,6 +53,9 @@ class EmailIdentityRepositoryInterface(ABC):
     async def delete_registrations_by_email(self, email: str) -> None: ...
 
     @abstractmethod
+    async def delete_expired_registrations(self) -> None: ...
+
+    @abstractmethod
     async def create_link_request(
         self, link_request: EmailLinkRequest
     ) -> EmailLinkRequest: ...
