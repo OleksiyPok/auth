@@ -192,7 +192,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** the registration email contains the link built from the setting.
   - **After:** —
 
-- ⬜ **ID-11 · Rate limiter component**
+- ✅ **ID-11 · Rate limiter component**
   - **Do:** add a limiter interface in `infrastructure` with an in-memory implementation: key, limit, window; raises an `AppError` with status 429.
   - **Result:** unit tests show the limit blocks the extra call and resets after the window.
   - **After:** —
@@ -202,7 +202,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11
 
-- ⬜ **ID-45 · Rate limit registration endpoints**
+- ✅ **ID-45 · Rate limit registration endpoints**
   - **Do:** apply the limiter to username register and email register, by IP and by identifier.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11

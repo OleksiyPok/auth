@@ -39,6 +39,7 @@ SEND_CODE_IP = Rule("send_code_ip", 10, 10 * MINUTE)
 
 # Per identifier (normalized email or username), whatever the IP is.
 REGISTER_EMAIL = Rule("register_email", 3, HOUR)
+REGISTER_USERNAME = Rule("register_username", 3, HOUR)
 LOGIN_EMAIL = Rule("login_email", 10, 15 * MINUTE)
 LOGIN_USERNAME = Rule("login_username", 10, 15 * MINUTE)
 

@@ -10,6 +10,7 @@ from app.core.rate_limit import (
     LOGIN_IP,
     LOGIN_USERNAME,
     REGISTER_IP,
+    REGISTER_USERNAME,
     limit_by_ip,
     rate_limiter,
 )
@@ -51,6 +52,7 @@ async def register(
         Depends(get_username_register_service),
     ],
 ):
+    rate_limiter.hit(REGISTER_USERNAME, normalize_username(data.username))
     return await service.register(data)
 
 
