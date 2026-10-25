@@ -48,6 +48,12 @@ class TwoFactorServiceInterface(ABC):
     ) -> TwoFactorChallengeResponseSchema: ...
 
     @abstractmethod
+    async def resend_login_code(
+        self,
+        challenge_id: str,
+    ) -> TwoFactorChallengeResponseSchema: ...
+
+    @abstractmethod
     async def confirm_enable(
         self,
         user: User,

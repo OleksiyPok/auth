@@ -12,6 +12,7 @@ from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,
     TwoFactorConfirmRequestSchema,
     TwoFactorLoginConfirmResponseSchema,
+    TwoFactorResendRequestSchema,
     TwoFactorStatusResponseSchema,
 )
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
@@ -89,6 +90,18 @@ async def confirm_login(
         challenge_id=data.challenge_id,
         code=data.code,
     )
+
+
+@router.post(
+    "/login/resend",
+    response_model=TwoFactorChallengeResponseSchema,
+    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+)
+async def resend_login_code(
+    data: TwoFactorResendRequestSchema,
+    service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
+):
+    return await service.resend_login_code(data.challenge_id)
 
 
 @router.post(

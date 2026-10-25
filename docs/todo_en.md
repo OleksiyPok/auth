@@ -182,7 +182,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a second request inside the cooldown returns 429; after it a new code works and the old one does not.
   - **After:** —
 
-- ⬜ **ID-43 · Resend 2FA login code**
+- ✅ **ID-43 · Resend 2FA login code**
   - **Do:** `POST /auth/2fa/login/resend` with `challenge_id`; same cooldown rule; the new code replaces the old one.
   - **Result:** a request inside the cooldown returns 429; after it only the new code works.
   - **After:** —

@@ -39,6 +39,12 @@ class TwoFactorAlreadyDisabledError(TwoFactorError):
     message = "Two-factor authentication is already disabled"
 
 
+class TwoFactorResendTooEarlyError(TwoFactorError):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    code = "TWO_FACTOR_RESEND_TOO_EARLY"
+    message = "Verification code was sent recently, try again later"
+
+
 class TwoFactorTooManyAttemptsError(TwoFactorError):
     status_code = status.HTTP_429_TOO_MANY_REQUESTS
     code = "TWO_FACTOR_TOO_MANY_ATTEMPTS"

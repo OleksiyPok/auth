@@ -23,6 +23,7 @@ from app.two_factor.exceptions import (
     TwoFactorMethodAlreadyExistsError,
     TwoFactorMethodNotAvailableError,
     TwoFactorMethodNotFoundError,
+    TwoFactorResendTooEarlyError,
     TwoFactorTooManyAttemptsError,
 )
 from app.two_factor.method_type import TwoFactorMethodType
@@ -39,6 +40,7 @@ from app.users.models import User
 CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES
 MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
 CODE_LENGTH = fa_settings.CODE_LENGTH
+RESEND_COOLDOWN_SECONDS = fa_settings.RESEND_COOLDOWN_SECONDS
 
 
 class TwoFactorService(TwoFactorServiceInterface):
@@ -101,7 +103,7 @@ class TwoFactorService(TwoFactorServiceInterface):
 
     async def _send_challenge(
         self,
-        user: User,
+        user_id: str,
         purpose: str,
         identity_id: str | None = None,
         identity_type: str | None = None,
@@ -112,12 +114,12 @@ class TwoFactorService(TwoFactorServiceInterface):
         # The code goes to the given method, otherwise to the default verified
         # method, otherwise (accounts from before methods existed) to the
         # account email.
-        method = method or await self._get_default_method(user.id)
-        await self._repository.invalidate_active_challenges(user.id, purpose)
+        method = method or await self._get_default_method(user_id)
+        await self._repository.invalidate_active_challenges(user_id, purpose)
 
         code = f"{secrets.randbelow(1_000_000):0{CODE_LENGTH}d}"
         challenge = TwoFactorChallenge(
-            user_id=user.id,
+            user_id=user_id,
             purpose=purpose,
             identity_id=identity_id,
             method_id=method.id if method else None,
@@ -152,7 +154,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             )
         else:
             await self._email_service.send(
-                to=await self._get_email(user.id),
+                to=await self._get_email(user_id),
                 subject=subject,
                 body=(
                     f"Your verification code is: {code}\n\n"
@@ -225,7 +227,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             )
 
         challenge = await self._send_challenge(
-            user=user,
+            user_id=user.id,
             purpose="login",
             identity_id=identity_id,
             identity_type=identity_type,
@@ -268,6 +270,41 @@ class TwoFactorService(TwoFactorServiceInterface):
             requires_two_factor=False,
         )
 
+    async def resend_login_code(
+        self,
+        challenge_id: str,
+    ) -> TwoFactorChallengeResponseSchema:
+        challenge = await self._repository.get_challenge(challenge_id)
+
+        if (
+            not challenge
+            or challenge.purpose != "login"
+            or challenge.used
+            or challenge.identity_id is None
+            or challenge.identity_type is None
+        ):
+            raise TwoFactorChallengeNotFoundError()
+
+        if challenge.attempts >= MAX_ATTEMPTS:
+            raise TwoFactorTooManyAttemptsError()
+
+        elapsed = (datetime.now(timezone.utc) - challenge.created_at).total_seconds()
+        if elapsed < RESEND_COOLDOWN_SECONDS:
+            retry_after = int(RESEND_COOLDOWN_SECONDS - elapsed) + 1
+            raise TwoFactorResendTooEarlyError(
+                f"Verification code was sent recently, try again in {retry_after} seconds"
+            )
+
+        # The previous code is invalidated: only the new one works.
+        return await self._send_challenge(
+            user_id=challenge.user_id,
+            purpose="login",
+            identity_id=challenge.identity_id,
+            identity_type=challenge.identity_type,
+            ip_address=challenge.ip_address,
+            user_agent=challenge.user_agent,
+        )
+
     async def request_enable(self, user: User) -> TwoFactorChallengeResponseSchema:
         settings = await self._repository.get_or_create_settings(
             user.id,
@@ -281,7 +318,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             raise TwoFactorMethodNotAvailableError()
 
         return await self._send_challenge(
-            user=user,
+            user_id=user.id,
             purpose="enable",
         )
 
@@ -324,7 +361,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             raise TwoFactorAlreadyDisabledError()
 
         return await self._send_challenge(
-            user=user,
+            user_id=user.id,
             purpose="disable",
         )
 
@@ -399,7 +436,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             )
 
         return await self._send_challenge(
-            user=user,
+            user_id=user.id,
             purpose="add_method",
             method=method,
         )
@@ -469,7 +506,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         user: User,
     ) -> TwoFactorChallengeResponseSchema:
         return await self._send_challenge(
-            user=user,
+            user_id=user.id,
             purpose="merge",
         )
 
