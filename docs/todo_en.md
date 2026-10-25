@@ -187,7 +187,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a request inside the cooldown returns 429; after it only the new code works.
   - **After:** —
 
-- ⬜ **ID-12 · Verification link in the registration email**
+- ✅ **ID-12 · Verification link in the registration email**
   - **Do:** add a client base URL setting; put a link containing `registration_id` into the email body; the code is still entered by the user.
   - **Result:** the registration email contains the link built from the setting.
   - **After:** —
@@ -558,7 +558,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
 
 ## 16. Later / ideas
 
-- ✅ **ID-24 · Email match flag in Google login**
+- ⬜ **ID-24 · Email match flag in Google login**
   - **Do:** when a new Google user's verified email matches an `EmailIdentity`, add a flag to the callback response; create no link.
   - **Result:** a test shows the flag is set on a match and unset otherwise.
   - **After:** —
