@@ -1,6 +1,8 @@
 # app/google_auth/repository/repository.py
 
-from sqlalchemy import delete
+from datetime import datetime, timezone
+
+from sqlalchemy import delete, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -109,6 +111,16 @@ class GoogleAuthRepository(GoogleAuthRepositoryInterface):
     ) -> None:
         await self._session.delete(identity)
         await self._session.flush()
+
+    async def delete_expired_or_used_oauth_states(self) -> None:
+        await self._session.execute(
+            delete(GoogleOAuthState).where(
+                or_(
+                    col(GoogleOAuthState.used).is_(True),
+                    col(GoogleOAuthState.expires_at) <= datetime.now(timezone.utc),
+                )
+            )
+        )
 
     async def delete_by_user_id(self, user_id: str) -> None:
         await self._session.execute(

@@ -124,7 +124,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** with the setting off, startup creates no tables.
   - **After:** ID-37
 
-- ⬜ **ID-39 · Superadmin bootstrap depends only on the users table**
+- ✅ **ID-39 · Superadmin bootstrap depends only on the users table**
   - **Do:** create the initial superadmin when the users table is empty, regardless of how tables were created.
   - **Result:** a database with tables and no users gets the superadmin at startup; a database with users does not.
   - **After:** —
@@ -143,12 +143,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows expired rows are removed and valid ones stay.
   - **After:** —
 
-- ⬜ **ID-40 · Delete expired or used OAuth states**
+- ✅ **ID-40 · Delete expired or used OAuth states**
   - **Do:** add a repository method that deletes expired or used `GoogleOAuthState` rows.
   - **Result:** a test shows expired and used rows are removed and valid ones stay.
   - **After:** —
 
-- ⬜ **ID-41 · Delete expired or used 2FA challenges**
+- ✅ **ID-41 · Delete expired or used 2FA challenges**
   - **Do:** add a repository method that deletes expired or used `TwoFactorChallenge` rows.
   - **Result:** a test shows expired and used rows are removed and valid ones stay.
   - **After:** —

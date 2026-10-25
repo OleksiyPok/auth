@@ -1,6 +1,7 @@
 # app/bootstrap/superadmin.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from app.auth.rbac.roles import Role
 from app.core.config import settings
@@ -11,8 +12,20 @@ from app.username_auth.models import UsernameIdentity
 from app.users.models import User
 
 
+async def create_initial_superadmin_if_no_users(session: AsyncSession) -> None:
+    """Create the initial SUPERADMIN when the users table is empty.
+
+    Only the users table decides, not how the tables were created.
+    """
+    result = await session.execute(select(User.id).limit(1))
+    if result.first() is not None:
+        return
+
+    await create_initial_superadmin(session)
+
+
 async def create_initial_superadmin(session: AsyncSession) -> None:
-    """Create the initial SUPERADMIN for a brand-new database."""
+    """Create the initial SUPERADMIN."""
     superadmin = User(
         first_name=settings.SUPERADMIN_FIRST_NAME,
         last_name=settings.SUPERADMIN_LAST_NAME,

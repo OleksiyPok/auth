@@ -1,6 +1,8 @@
 # app/two_factor/repository/repository.py
 
-from sqlalchemy import delete, update
+from datetime import datetime, timezone
+
+from sqlalchemy import delete, or_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -154,6 +156,16 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
     async def delete_method(self, method: TwoFactorMethod) -> None:
         await self._session.delete(method)
         await self._session.flush()
+
+    async def delete_expired_or_used_challenges(self) -> None:
+        await self._session.execute(
+            delete(TwoFactorChallenge).where(
+                or_(
+                    col(TwoFactorChallenge.used).is_(True),
+                    col(TwoFactorChallenge.expires_at) <= datetime.now(timezone.utc),
+                )
+            )
+        )
 
     async def delete_by_user_id(self, user_id: str) -> None:
         await self._session.execute(

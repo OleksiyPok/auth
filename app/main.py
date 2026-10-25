@@ -6,10 +6,12 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from sqlalchemy import inspect
 from sqlmodel import SQLModel
 
-from app.bootstrap.superadmin import create_initial_superadmin
+from app.bootstrap.superadmin import (
+    create_initial_superadmin,
+    create_initial_superadmin_if_no_users,
+)
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine
@@ -23,14 +25,10 @@ async def lifespan(app: FastAPI):
     print("App starting...")
 
     async with engine.begin() as conn:
-        database_is_new = await conn.run_sync(
-            lambda sync_conn: len(inspect(sync_conn).get_table_names()) == 0
-        )
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    if database_is_new:
-        async with session_factory() as session:
-            await create_initial_superadmin(session)
+    async with session_factory() as session:
+        await create_initial_superadmin_if_no_users(session)
 
     yield
 
