@@ -3,6 +3,7 @@
 import secrets
 from datetime import datetime, timedelta, timezone
 
+from app.core.config import settings
 from app.core.identifiers import normalize_email
 from app.email_auth.exceptions import (
     EmailRegistrationNotFoundError,
@@ -79,7 +80,7 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             )
         )
 
-        await self._send_code(email, code)
+        await self._send_code(email, code, registration.id)
 
         return EmailRegisterChallengeResponseSchema(
             registration_id=registration.id,
@@ -121,7 +122,7 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             registration
         )
 
-        await self._send_code(registration.email, code)
+        await self._send_code(registration.email, code, registration.id)
 
         return EmailRegisterChallengeResponseSchema(
             registration_id=registration.id,
@@ -186,12 +187,22 @@ class EmailRegisterService(EmailRegisterServiceInterface):
             role=user.role,
         )
 
-    async def _send_code(self, email: str, code: str) -> None:
+    async def _send_code(
+        self,
+        email: str,
+        code: str,
+        registration_id: str,
+    ) -> None:
+        link = (
+            f"{settings.CLIENT_BASE_URL.rstrip('/')}"
+            f"/register/confirm?registration_id={registration_id}"
+        )
         await self._email_service.send(
             to=email,
             subject="Confirm your email registration",
             body=(
                 f"Your verification code is: {code}\n\n"
+                f"Open this link and enter the code: {link}\n\n"
                 f"The code expires in {CHALLENGE_EXPIRE_MINUTES} minutes."
             ),
         )

@@ -558,7 +558,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
 
 ## 16. Later / ideas
 
-- ⬜ **ID-24 · Email match flag in Google login**
+- ✅ **ID-24 · Email match flag in Google login**
   - **Do:** when a new Google user's verified email matches an `EmailIdentity`, add a flag to the callback response; create no link.
   - **Result:** a test shows the flag is set on a match and unset otherwise.
   - **After:** —
