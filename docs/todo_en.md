@@ -212,6 +212,16 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11
 
+- ⬜ **ID-112 · Rate limit Link endpoints**
+  - **Do:** apply the limiter by IP to `POST /identities/username`, `POST /identities/email`, `POST /identities/email/confirm` and `POST /identities/google`, and by normalized address to `POST /identities/email`.
+  - **Result:** exceeding the limit returns 429 on each of the four endpoints.
+  - **After:** ID-11, ID-17, ID-58, ID-59, ID-61
+
+- ⬜ **ID-113 · Rate limit Unlink and 2FA method removal**
+  - **Do:** apply the limiter by IP to `DELETE /identities/{identity_id}` and `DELETE /auth/2fa/methods/{method_id}`.
+  - **Result:** exceeding the limit returns 429 on both endpoints.
+  - **After:** ID-11, ID-16, ID-80
+
 ---
 
 ## 6. Identity service and locking
@@ -494,6 +504,21 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a request from `user` or `admin` returns 403; a request from `superadmin` returns 204.
   - **After:** ID-92
 
+- ⬜ **ID-109 · Fresh session before Unlink**
+  - **Do:** require the fresh session (`FRESH_SESSION_MINUTES`) on `DELETE /identities/{identity_id}`.
+  - **Result:** a request with an older session is refused with `FRESH_SESSION_REQUIRED`; a request with a fresh session proceeds.
+  - **After:** ID-16, ID-106
+
+- ⬜ **ID-110 · Fresh session before Link**
+  - **Do:** require the fresh session on `POST /identities/username`, `POST /identities/email`, `POST /identities/email/confirm` and `POST /identities/google`.
+  - **Result:** a request with an older session is refused with `FRESH_SESSION_REQUIRED` on each of the four endpoints; a request with a fresh session proceeds.
+  - **After:** ID-17, ID-58, ID-59, ID-61, ID-106
+
+- ⬜ **ID-111 · Fresh session before 2FA changes**
+  - **Do:** require the fresh session on `POST /auth/2fa/methods/email`, `DELETE /auth/2fa/methods/{method_id}` and `POST /auth/2fa/disable`.
+  - **Result:** a request with an older session is refused with `FRESH_SESSION_REQUIRED` on each of the three endpoints; a request with a fresh session proceeds.
+  - **After:** ID-76, ID-80, ID-106
+
 ---
 
 ## 14. Service health
@@ -612,3 +637,62 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Do:** sender implementation for the 2FA sender interface with a provider and a dummy provider.
   - **Result:** a test with the dummy provider shows the code is logged.
   - **After:** ID-75
+
+---
+
+## 17. Passwords and security notifications
+
+- ⬜ **ID-114 · Security notification service**
+  - **Do:** a service that sends a security-event email to the address of the user's default verified 2FA method, otherwise to the address of the user's email identity, and sends nothing when neither exists; each event has a template in the template registry.
+  - **Result:** an event for a user with a default email method goes to that address; for a user with only an email identity it goes to that identity's address; for a user with neither no email is sent.
+  - **After:** ID-79
+
+- ⬜ **ID-115 · Notify on Link**
+  - **Do:** send a security notification after a username, an email or a Google account is linked to the user.
+  - **Result:** each of the three Link operations sends one notification to the user.
+  - **After:** ID-114, ID-17, ID-59, ID-62
+
+- ⬜ **ID-116 · Notify on Unlink**
+  - **Do:** send a security notification after a sign-in method of the user is removed.
+  - **Result:** a successful Unlink sends one notification to the user; a refused Unlink sends none.
+  - **After:** ID-114, ID-16
+
+- ⬜ **ID-117 · Notify on 2FA method change**
+  - **Do:** send a security notification after a 2FA method is added (confirmed) and after it is removed.
+  - **Result:** adding and removing a method each send one notification to the user.
+  - **After:** ID-114, ID-77, ID-80
+
+- ⬜ **ID-118 · Change password**
+  - **Do:** `POST /identities/{identity_id}/password` with the current and the new password; allowed only for a username or an email identity of the current user, requires the fresh session, and refuses a wrong current password and a Google identity.
+  - **Result:** the new password signs in and the old one does not; a wrong current password, a foreign identity and a Google identity are refused.
+  - **After:** ID-47, ID-106
+
+- ⬜ **ID-119 · Password change revokes the other sessions**
+  - **Do:** after a password change, revoke the active sessions created through that identity except the current session.
+  - **Result:** the other sessions of that identity cannot be used; the current session and the sessions of other identities stay active.
+  - **After:** ID-118
+
+- ⬜ **ID-120 · Password reset: request**
+  - **Do:** `POST /auth/password/reset` with an email address; when an email identity with that address exists, store a single-use reset token (hashed, with an expiry in settings) in a new table and email a link built from the client base URL; the response is the same whether the address exists or not; the table references `users.id` and `purge_user` removes its rows.
+  - **Result:** an existing address receives the link and a stored token; an unknown address receives nothing; both responses are identical.
+  - **After:** ID-12
+
+- ⬜ **ID-121 · Password reset: confirm**
+  - **Do:** `POST /auth/password/reset/confirm` with the token and a new password; set the password of the email identity and mark the token used; refuse an unknown, used or expired token.
+  - **Result:** the new password signs in by email and the old one does not; a second use of the token is refused.
+  - **After:** ID-120
+
+- ⬜ **ID-122 · Password reset revokes sessions**
+  - **Do:** after a password reset, revoke all active sessions created through the email identity.
+  - **Result:** sessions of the email identity cannot be used after the reset; sessions of other identities stay active.
+  - **After:** ID-121
+
+- ⬜ **ID-123 · Rate limit password reset**
+  - **Do:** apply the limiter by IP and by normalized address to the reset request, and by IP to the reset confirmation.
+  - **Result:** exceeding the limit returns 429 on both endpoints.
+  - **After:** ID-11, ID-120, ID-121
+
+- ⬜ **ID-124 · Notify on password change and reset**
+  - **Do:** send a security notification after a password change and after a password reset.
+  - **Result:** each of the two operations sends one notification to the user.
+  - **After:** ID-114, ID-118, ID-121
