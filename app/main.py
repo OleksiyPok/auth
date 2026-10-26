@@ -9,10 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlmodel import SQLModel
 
-from app.bootstrap.superadmin import (
-    create_initial_superadmin,
-    create_initial_superadmin_if_no_users,
-)
+from app.bootstrap.superadmin import create_initial_superadmin_if_no_users
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.db.engine import engine

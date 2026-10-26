@@ -169,7 +169,7 @@ class UserService(UserServiceInterface):
         await self._username_identity_repository.delete_by_user_id(user.id)
         await self._email_identity_repository.delete_by_user_id(user.id)
         await self._google_auth_repository.delete_by_user_id(user.id)
-
+        await self._contact_repository.delete_by_user_id(user.id)
         await self._repository.delete(user)
 
     async def _update(
