@@ -2,6 +2,7 @@
 
 from app.auth.rbac.role_permissions import validate_role
 from app.auth.rbac.roles import Role
+from app.contacts.repository.repository_interface import ContactRepositoryInterface
 from app.email_auth.repository.repository_interface import (
     EmailIdentityRepositoryInterface,
 )
@@ -44,6 +45,7 @@ class UserService(UserServiceInterface):
         email_identity_repository: EmailIdentityRepositoryInterface,
         google_auth_repository: GoogleAuthRepositoryInterface,
         merge_proof_repository: MergeProofRepositoryInterface,
+        contact_repository: ContactRepositoryInterface,
     ):
         self._repository = repository
         self._session_service = session_service
@@ -53,6 +55,7 @@ class UserService(UserServiceInterface):
         self._email_identity_repository = email_identity_repository
         self._google_auth_repository = google_auth_repository
         self._merge_proof_repository = merge_proof_repository
+        self._contact_repository = contact_repository
 
     async def get_user(
         self,

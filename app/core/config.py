@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     FRESH_SESSION_MINUTES: int = 15
     # How long a merge proof can be used after it was created.
     MERGE_PROOF_EXPIRE_MINUTES: int = 10
+    # Fernet key for encrypting stored secrets (see app/infrastructure/encryption.py).
+    SECRETS_ENCRYPTION_KEY: str | None = None
     # How often expired or used short-lived rows are deleted.
     CLEANUP_INTERVAL_SECONDS: int = 3600
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30

@@ -465,7 +465,7 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows a recovery code works once.
   - **After:** ID-81
 
-- ⬜ **ID-83 · Secret encryption helper**
+- ✅ **ID-83 · Secret encryption helper**
   - **Do:** add encrypt / decrypt functions in `infrastructure` with the key from settings.
   - **Result:** unit test: round trip works, a wrong key fails.
   - **After:** —
@@ -573,7 +573,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** a test shows a user links two Google accounts and Merge reports no Google conflict.
   - **After:** ID-25 (decision: accept), ID-18, ID-62
 
-- ⬜ **ID-26 · `Contact` model and repository**
+- ✅ **ID-26 · `Contact` model and repository**
   - **Do:** store unverified emails and phones per user; never used for login or linking.
   - **Result:** repository test passes.
   - **After:** —

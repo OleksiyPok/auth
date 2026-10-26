@@ -3,6 +3,8 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.contacts.repository.repository import ContactRepository
+from app.contacts.repository.repository_interface import ContactRepositoryInterface
 from app.db.session import get_session
 from app.email_auth.repository.repository import EmailIdentityRepository
 from app.email_auth.repository.repository_interface import (
@@ -67,6 +69,12 @@ async def get_user_merge_proof_repository(
     return MergeProofRepository(session)
 
 
+async def get_user_contact_repository(
+    session: AsyncSession = Depends(get_session),
+) -> ContactRepositoryInterface:
+    return ContactRepository(session)
+
+
 async def get_user_service(
     repository: UserRepositoryInterface = Depends(get_user_repository),
     session_service: SessionServiceInterface = Depends(get_sessions_service),
@@ -86,6 +94,9 @@ async def get_user_service(
     merge_proof_repository: MergeProofRepositoryInterface = Depends(
         get_user_merge_proof_repository
     ),
+    contact_repository: ContactRepositoryInterface = Depends(
+        get_user_contact_repository
+    ),
 ) -> UserServiceInterface:
     return UserService(
         repository,
@@ -96,4 +107,5 @@ async def get_user_service(
         email_identity_repository,
         google_auth_repository,
         merge_proof_repository,
+        contact_repository,
     )
