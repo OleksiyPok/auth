@@ -2,6 +2,10 @@
 
 from datetime import datetime, timedelta, timezone
 
+from app.core.identifiers import normalize_email
+from app.email_auth.repository.repository_interface import (
+    EmailIdentityRepositoryInterface,
+)
 from app.google_auth.exceptions import (
     GoogleEmailNotVerifiedError,
     GoogleOAuthStateError,
@@ -11,7 +15,11 @@ from app.google_auth.purpose import GoogleOAuthPurpose
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
-from app.google_auth.schemas import GoogleCallbackResponse, GoogleLinkResponseSchema
+from app.google_auth.schemas import (
+    GoogleCallbackResponse,
+    GoogleLinkResponseSchema,
+    GoogleLoginResponseSchema,
+)
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.identities.exceptions import IdentityConflictError, IdentityTypeConflictError
 from app.identities.types import IdentityType
@@ -39,11 +47,13 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         user_repository: UserRepositoryInterface,
         two_factor_service: TwoFactorServiceInterface,
         merge_proof_service: MergeProofServiceInterface,
+        email_repository: EmailIdentityRepositoryInterface,
     ):
         self._repository = repository
         self._user_repository = user_repository
         self._two_factor_service = two_factor_service
         self._merge_proof_service = merge_proof_service
+        self._email_repository = email_repository
 
     async def create_authorization_url(
         self,
@@ -110,6 +120,8 @@ class GoogleAuthService(GoogleAuthServiceInterface):
             google_user_id,
         )
 
+        email_match = False
+
         if identity is None:
             user = await self._user_repository.create(
                 User(
@@ -125,6 +137,14 @@ class GoogleAuthService(GoogleAuthServiceInterface):
                 )
             )
 
+            # Only reported: nothing is linked automatically.
+            email_match = (
+                await self._email_repository.get_by_email(
+                    normalize_email(google_user["email"])
+                )
+                is not None
+            )
+
         user = await self._user_repository.get_by_id(
             identity.user_id,
         )
@@ -135,12 +155,17 @@ class GoogleAuthService(GoogleAuthServiceInterface):
         if not user.is_active:
             raise InactiveUserError()
 
-        return await self._two_factor_service.authenticate_or_challenge(
+        authentication = await self._two_factor_service.authenticate_or_challenge(
             user=user,
             identity_id=identity.id,
             identity_type=IdentityType.GOOGLE,
             ip_address=ip_address,
             user_agent=user_agent,
+        )
+
+        return GoogleLoginResponseSchema(
+            **authentication.model_dump(),
+            email_match=email_match,
         )
 
     async def _link_google(

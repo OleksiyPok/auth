@@ -6,6 +6,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
+from app.email_auth.repository.repository_interface import (
+    EmailIdentityRepositoryInterface,
+)
 from app.google_auth.repository.repository import GoogleAuthRepository
 from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
@@ -14,7 +17,10 @@ from app.google_auth.services.service import GoogleAuthService
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 from app.merge.dependencies import get_merge_proof_service
 from app.merge.services.proof_service_interface import MergeProofServiceInterface
-from app.two_factor.dependencies import get_two_factor_service
+from app.two_factor.dependencies import (
+    get_email_identity_repository,
+    get_two_factor_service,
+)
 from app.two_factor.services.service_interface import TwoFactorServiceInterface
 from app.users.dependencies import get_user_repository
 from app.users.repository.repository_interface import UserRepositoryInterface
@@ -46,10 +52,15 @@ async def get_google_auth_service(
         MergeProofServiceInterface,
         Depends(get_merge_proof_service),
     ],
+    email_repository: Annotated[
+        EmailIdentityRepositoryInterface,
+        Depends(get_email_identity_repository),
+    ],
 ) -> GoogleAuthServiceInterface:
     return GoogleAuthService(
         repository,
         user_repository,
         two_factor_service,
         merge_proof_service,
+        email_repository,
     )
