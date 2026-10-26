@@ -10,17 +10,24 @@ from app.google_auth.repository.repository_interface import (
     GoogleAuthRepositoryInterface,
 )
 from app.identities.exceptions import (
+    CurrentIdentityError,
     IdentityAlreadyOwnedError,
     IdentityConflictError,
+    IdentityNotFoundError,
+    IdentityNotOwnedError,
     IdentityTypeConflictError,
+    LastIdentityError,
 )
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.identities.types import IdentityType
 from app.infrastructure.password import hash_password
+from app.sessions.repository.repository_interface import SessionRepositoryInterface
 from app.username_auth.models import UsernameIdentity
 from app.username_auth.repository.repository_interface import (
     UsernameIdentityRepositoryInterface,
 )
+from app.users.exceptions import UserNotFoundError
+from app.users.repository.repository_interface import UserRepositoryInterface
 
 
 def _identity_type(
@@ -43,10 +50,14 @@ class IdentityService(IdentityServiceInterface):
         email_repository: EmailIdentityRepositoryInterface,
         username_repository: UsernameIdentityRepositoryInterface,
         google_repository: GoogleAuthRepositoryInterface,
+        user_repository: UserRepositoryInterface,
+        session_repository: SessionRepositoryInterface,
     ):
         self._email_repository = email_repository
         self._username_repository = username_repository
         self._google_repository = google_repository
+        self._user_repository = user_repository
+        self._session_repository = session_repository
 
     async def get_owner_id(
         self,
@@ -175,6 +186,37 @@ class IdentityService(IdentityServiceInterface):
         }
 
         return [t for t in IdentityType if t in first_types and t in second_types]
+
+    async def unlink_identity(
+        self,
+        user_id: str,
+        identity_id: str,
+        current_identity_id: str,
+    ) -> None:
+        """Remove a sign-in method of the user.
+
+        The user is locked first, so that two parallel removals cannot both
+        pass the "not the last one" check. The sessions created through the
+        removed identity are revoked, the others stay active.
+        """
+        if await self._user_repository.get_for_update(user_id) is None:
+            raise UserNotFoundError()
+
+        identity = await self.get_identity(identity_id)
+        if identity is None:
+            raise IdentityNotFoundError()
+
+        if identity.user_id != user_id:
+            raise IdentityNotOwnedError()
+
+        if len(await self.list_identities(user_id)) <= 1:
+            raise LastIdentityError()
+
+        if identity.id == current_identity_id:
+            raise CurrentIdentityError()
+
+        await self.delete_identity(identity)
+        await self._session_repository.deactivate_identity_sessions(identity_id)
 
     async def link_username(
         self,

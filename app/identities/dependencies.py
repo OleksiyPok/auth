@@ -10,7 +10,9 @@ from app.email_auth.repository.repository import EmailIdentityRepository
 from app.google_auth.repository.repository import GoogleAuthRepository
 from app.identities.services.service import IdentityService
 from app.identities.services.service_interface import IdentityServiceInterface
+from app.sessions.repository.repository import SessionRepository
 from app.username_auth.repository.repository import UsernameIdentityRepository
+from app.users.repository.repository import UserRepository
 
 
 async def get_identity_service(
@@ -23,4 +25,6 @@ async def get_identity_service(
         EmailIdentityRepository(session),
         UsernameIdentityRepository(session),
         GoogleAuthRepository(session),
+        UserRepository(session),
+        SessionRepository(session),
     )

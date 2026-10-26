@@ -50,6 +50,14 @@ class IdentityServiceInterface(ABC):
     ) -> list[IdentityType]: ...
 
     @abstractmethod
+    async def unlink_identity(
+        self,
+        user_id: str,
+        identity_id: str,
+        current_identity_id: str,
+    ) -> None: ...
+
+    @abstractmethod
     async def link_username(
         self,
         user_id: str,

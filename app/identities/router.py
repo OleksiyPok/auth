@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_session, get_current_user
 from app.auth.rbac.dependencies import (
     require_self_identities_read,
     require_self_identities_write,
@@ -27,6 +27,7 @@ from app.identities.dependencies import get_identity_service
 from app.identities.schemas import IdentityResponseSchema, LinkUsernameRequestSchema
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.identities.types import IdentityType
+from app.sessions.schemas import CurrentSessionSchema
 from app.username_auth.models import UsernameIdentity
 from app.users.models import User
 
@@ -84,6 +85,39 @@ async def get_identities(
     identities = await service.list_identities(current_user.id)
 
     return [_to_response(identity) for identity in identities]
+
+
+@router.delete(
+    "/{identity_id}",
+    summary="Remove a sign-in method",
+    description=(
+        "Remove a sign-in method of the current user. The last method and the "
+        "method used by the current session cannot be removed. Sessions "
+        "created through the removed method are revoked."
+    ),
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_self_identities_write())],
+)
+async def unlink_identity(
+    identity_id: str,
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    current_session: Annotated[
+        CurrentSessionSchema,
+        Depends(get_current_session),
+    ],
+    service: Annotated[
+        IdentityServiceInterface,
+        Depends(get_identity_service),
+    ],
+) -> None:
+    await service.unlink_identity(
+        user_id=current_user.id,
+        identity_id=identity_id,
+        current_identity_id=current_session.identity_id,
+    )
 
 
 @router.post(

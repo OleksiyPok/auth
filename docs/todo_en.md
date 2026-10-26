@@ -270,17 +270,17 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** the endpoint returns the user's identities and requires authentication and the read permission.
   - **After:** ID-13, ID-51
 
-- ⬜ **ID-16 · `DELETE /identities/{identity_id}` (Unlink)**
+- ✅ **ID-16 · `DELETE /identities/{identity_id}` (Unlink)**
   - **Do:** remove an identity of the current user; refuse an unknown id, another user's id and the last identity; lock the user first.
   - **Result:** a test shows removal of a non-last identity, 404 / 403 for foreign or unknown ids, and refusal for the last one.
   - **After:** ID-47, ID-48, ID-15, ID-51, ID-79
 
-- ⬜ **ID-55 · Unlink refuses the current session's identity**
+- ✅ **ID-55 · Unlink refuses the current session's identity**
   - **Do:** reject removal of the identity the current session was created through.
   - **Result:** a test shows the refusal.
   - **After:** ID-16, ID-53
 
-- ⬜ **ID-56 · Unlink revokes sessions of the removed identity**
+- ✅ **ID-56 · Unlink revokes sessions of the removed identity**
   - **Do:** revoke active sessions created through the removed identity; sessions of other identities stay active.
   - **Result:** a test shows the removed identity's session cannot be used and another session still works.
   - **After:** ID-16
