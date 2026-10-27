@@ -696,3 +696,13 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Do:** send a security notification after a password change and after a password reset.
   - **Result:** each of the two operations sends one notification to the user.
   - **After:** ID-114, ID-118, ID-121
+
+- ⬜ **ID-125 · Delete expired or used password reset tokens**
+  - **Do:** add a repository method that deletes expired or used password reset tokens and call it from the periodic cleanup job.
+  - **Result:** a test shows expired and used rows are removed and valid ones stay; the cleanup job removes them without any request.
+  - **After:** ID-42, ID-120
+
+- ⬜ **ID-126 · Merge notification through the security notification service**
+  - **Do:** send the Merge notification to the target user through the security notification service.
+  - **Result:** a target with a default email method gets it at that address; a target with only an email identity gets it at that address; a target with neither gets none.
+  - **After:** ID-71, ID-114
