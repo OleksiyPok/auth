@@ -1,5 +1,6 @@
 # app/two_factor/services/service.py
 
+import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -23,6 +24,7 @@ from app.two_factor.exceptions import (
     TwoFactorMethodAlreadyExistsError,
     TwoFactorMethodNotAvailableError,
     TwoFactorMethodNotFoundError,
+    TwoFactorNotEnabledError,
     TwoFactorResendTooEarlyError,
     TwoFactorTooManyAttemptsError,
 )
@@ -41,6 +43,26 @@ CHALLENGE_EXPIRE_MINUTES = fa_settings.CHALLENGE_EXPIRE_MINUTES
 MAX_ATTEMPTS = fa_settings.MAX_ATTEMPTS
 CODE_LENGTH = fa_settings.CODE_LENGTH
 RESEND_COOLDOWN_SECONDS = fa_settings.RESEND_COOLDOWN_SECONDS
+
+
+RECOVERY_CODE_COUNT = 10
+RECOVERY_CODE_LENGTH = 10
+# No look-alike characters (0/O, 1/I): the codes are written down and retyped.
+RECOVERY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _normalize_recovery_code(code: str) -> str:
+    return code.replace("-", "").replace(" ", "").upper()
+
+
+def _is_recovery_code(code: str) -> bool:
+    return len(_normalize_recovery_code(code)) == RECOVERY_CODE_LENGTH
+
+
+def _hash_recovery_code(code: str) -> str:
+    # The codes are long and random, so a fast hash is enough and allows a
+    # lookup by hash.
+    return hashlib.sha256(_normalize_recovery_code(code).encode()).hexdigest()
 
 
 class TwoFactorService(TwoFactorServiceInterface):
@@ -172,6 +194,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         challenge_id: str,
         code: str,
         purpose: str,
+        allow_recovery_code: bool = False,
     ) -> TwoFactorChallenge:
         challenge = await self._repository.get_challenge(challenge_id)
 
@@ -184,7 +207,12 @@ class TwoFactorService(TwoFactorServiceInterface):
         if challenge.attempts >= MAX_ATTEMPTS:
             raise TwoFactorTooManyAttemptsError()
 
-        if not verify_password(code, challenge.code_hash):
+        if allow_recovery_code and _is_recovery_code(code):
+            valid = await self._use_recovery_code(challenge.user_id, code)
+        else:
+            valid = verify_password(code, challenge.code_hash)
+
+        if not valid:
             attempts = await self._repository.increment_challenge_attempts(challenge.id)
 
             if attempts >= MAX_ATTEMPTS:
@@ -195,6 +223,38 @@ class TwoFactorService(TwoFactorServiceInterface):
         challenge.used = True
         await self._repository.update_challenge(challenge)
         return challenge
+
+    async def _use_recovery_code(self, user_id: str, code: str) -> bool:
+        recovery_code = await self._repository.get_unused_recovery_code(
+            user_id,
+            _hash_recovery_code(code),
+        )
+        if recovery_code is None:
+            return False
+
+        recovery_code.used = True
+        await self._repository.update_recovery_code(recovery_code)
+        return True
+
+    async def generate_recovery_codes(self, user: User) -> list[str]:
+        if not await self.is_enabled(user.id):
+            raise TwoFactorNotEnabledError()
+
+        codes = [
+            "".join(
+                secrets.choice(RECOVERY_CODE_ALPHABET)
+                for _ in range(RECOVERY_CODE_LENGTH)
+            )
+            for _ in range(RECOVERY_CODE_COUNT)
+        ]
+
+        # The new set replaces the old one; only hashes are stored.
+        await self._repository.replace_recovery_codes(
+            user.id,
+            [_hash_recovery_code(code) for code in codes],
+        )
+
+        return [f"{code[:5]}-{code[5:]}" for code in codes]
 
     async def is_enabled(
         self,
@@ -247,6 +307,7 @@ class TwoFactorService(TwoFactorServiceInterface):
         self,
         challenge_id: str,
         code: str,
+        allow_recovery_code=True,
     ) -> AuthenticationResponseSchema:
         challenge = await self._verify_challenge(
             challenge_id,
@@ -386,6 +447,9 @@ class TwoFactorService(TwoFactorServiceInterface):
 
         settings.two_factor_enabled = False
         await self._repository.update_settings(settings)
+
+        # Old recovery codes must not come back when 2FA is enabled again.
+        await self._repository.delete_recovery_codes(user.id)
 
         await self._send_action_notification(
             await self._get_notification_email(user.id),

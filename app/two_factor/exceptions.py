@@ -33,6 +33,12 @@ class TwoFactorAlreadyEnabledError(TwoFactorError):
     message = "Two-factor authentication is already enabled"
 
 
+class TwoFactorNotEnabledError(TwoFactorError):
+    status_code = status.HTTP_409_CONFLICT
+    code = "TWO_FACTOR_NOT_ENABLED"
+    message = "Two-factor authentication is not enabled"
+
+
 class TwoFactorAlreadyDisabledError(TwoFactorError):
     status_code = status.HTTP_409_CONFLICT
     code = "TWO_FACTOR_ALREADY_DISABLED"

@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 
 from app.two_factor.models import (
+    RecoveryCode,
     TwoFactorChallenge,
     TwoFactorMethod,
     UserSecuritySettings,
@@ -81,6 +82,26 @@ class TwoFactorRepositoryInterface(ABC):
 
     @abstractmethod
     async def delete_expired_or_used_challenges(self) -> None: ...
+
+    @abstractmethod
+    async def replace_recovery_codes(
+        self,
+        user_id: str,
+        code_hashes: list[str],
+    ) -> None: ...
+
+    @abstractmethod
+    async def get_unused_recovery_code(
+        self,
+        user_id: str,
+        code_hash: str,
+    ) -> RecoveryCode | None: ...
+
+    @abstractmethod
+    async def update_recovery_code(self, code: RecoveryCode) -> RecoveryCode: ...
+
+    @abstractmethod
+    async def delete_recovery_codes(self, user_id: str) -> None: ...
 
     @abstractmethod
     async def delete_by_user_id(self, user_id: str) -> None: ...

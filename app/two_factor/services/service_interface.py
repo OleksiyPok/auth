@@ -42,6 +42,9 @@ class TwoFactorServiceInterface(ABC):
     ) -> AuthenticationResponseSchema: ...
 
     @abstractmethod
+    async def generate_recovery_codes(self, user: User) -> list[str]: ...
+
+    @abstractmethod
     async def request_enable(
         self,
         user: User,

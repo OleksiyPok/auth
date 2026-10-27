@@ -465,12 +465,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a test shows removal and the refusal.
   - **After:** ID-23
 
-- ⬜ **ID-81 · Recovery codes: generate**
+- ✅ **ID-81 · Recovery codes: generate**
   - **Do:** model storing hashed one-time codes; endpoint that requires enabled 2FA, replaces existing codes and returns the new codes once.
   - **Result:** a test shows codes are returned once and only hashes are stored.
   - **After:** —
 
-- ⬜ **ID-82 · Recovery codes: use at login**
+- ✅ **ID-82 · Recovery codes: use at login**
   - **Do:** 2FA login confirm accepts a recovery code instead of the emailed code and marks it used.
   - **Result:** a test shows a recovery code works once.
   - **After:** ID-81

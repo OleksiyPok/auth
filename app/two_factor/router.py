@@ -12,6 +12,7 @@ from app.two_factor.schemas import (
     TwoFactorChallengeResponseSchema,
     TwoFactorConfirmRequestSchema,
     TwoFactorLoginConfirmResponseSchema,
+    TwoFactorRecoveryCodesResponseSchema,
     TwoFactorResendRequestSchema,
     TwoFactorStatusResponseSchema,
 )
@@ -75,6 +76,20 @@ async def remove_method(
     service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
 ):
     await service.remove_method(current_user, method_id)
+
+
+@router.post(
+    "/recovery-codes",
+    response_model=TwoFactorRecoveryCodesResponseSchema,
+    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+)
+async def generate_recovery_codes(
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
+):
+    return TwoFactorRecoveryCodesResponseSchema(
+        codes=await service.generate_recovery_codes(current_user)
+    )
 
 
 @router.post(

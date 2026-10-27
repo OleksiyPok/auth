@@ -19,6 +19,11 @@ class TwoFactorResendRequestSchema(BaseModel):
     challenge_id: str
 
 
+class TwoFactorRecoveryCodesResponseSchema(BaseModel):
+    # Shown once: only hashes are stored.
+    codes: list[str]
+
+
 class TwoFactorConfirmRequestSchema(BaseModel):
     challenge_id: str
     code: str

@@ -48,6 +48,22 @@ class TwoFactorMethod(SQLModel, table=True):
     )
 
 
+class RecoveryCode(SQLModel, table=True):
+    """A one-time code that replaces the emailed code at login."""
+
+    __tablename__ = "two_factor_recovery_codes"
+
+    id: str = Field(default_factory=lambda: str(uuid7()), primary_key=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
+    code_hash: str = Field(index=True)
+    used: bool = Field(default=False, nullable=False)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=UTCDateTime,
+        nullable=False,
+    )
+
+
 class TwoFactorChallenge(SQLModel, table=True):
     __tablename__ = "two_factor_challenges"
 

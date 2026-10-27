@@ -8,6 +8,7 @@ from sqlmodel import col, select
 
 from app.db.session import session_factory
 from app.two_factor.models import (
+    RecoveryCode,
     TwoFactorChallenge,
     TwoFactorMethod,
     UserSecuritySettings,
@@ -167,6 +168,43 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
             )
         )
 
+    async def replace_recovery_codes(
+        self,
+        user_id: str,
+        code_hashes: list[str],
+    ) -> None:
+        await self.delete_recovery_codes(user_id)
+
+        for code_hash in code_hashes:
+            self._session.add(RecoveryCode(user_id=user_id, code_hash=code_hash))
+
+        await self._session.flush()
+
+    async def get_unused_recovery_code(
+        self,
+        user_id: str,
+        code_hash: str,
+    ) -> RecoveryCode | None:
+        result = await self._session.execute(
+            select(RecoveryCode).where(
+                RecoveryCode.user_id == user_id,
+                RecoveryCode.code_hash == code_hash,
+                RecoveryCode.used == False,
+            )
+        )
+        return result.scalars().first()
+
+    async def update_recovery_code(self, code: RecoveryCode) -> RecoveryCode:
+        self._session.add(code)
+        await self._session.flush()
+        await self._session.refresh(code)
+        return code
+
+    async def delete_recovery_codes(self, user_id: str) -> None:
+        await self._session.execute(
+            delete(RecoveryCode).where(col(RecoveryCode.user_id) == user_id)
+        )
+
     async def delete_by_user_id(self, user_id: str) -> None:
         await self._session.execute(
             delete(TwoFactorChallenge).where(col(TwoFactorChallenge.user_id) == user_id)
@@ -174,6 +212,9 @@ class TwoFactorRepository(TwoFactorRepositoryInterface):
         await self._session.execute(
             delete(TwoFactorMethod).where(col(TwoFactorMethod.user_id) == user_id)
         )
+
+        await self.delete_recovery_codes(user_id)
+
         await self._session.execute(
             delete(UserSecuritySettings).where(
                 col(UserSecuritySettings.user_id) == user_id
