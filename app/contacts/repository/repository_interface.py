@@ -17,6 +17,9 @@ class ContactRepositoryInterface(ABC):
     async def list_by_user_id(self, user_id: str) -> list[Contact]: ...
 
     @abstractmethod
+    async def move_to_user(self, from_user_id: str, to_user_id: str) -> None: ...
+
+    @abstractmethod
     async def delete(self, contact: Contact) -> None: ...
 
     @abstractmethod

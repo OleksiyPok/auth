@@ -36,6 +36,21 @@ class ContactRepository(ContactRepositoryInterface):
         )
         return list(result.scalars().all())
 
+    async def move_to_user(self, from_user_id: str, to_user_id: str) -> None:
+        # A contact the new owner already has is not duplicated: it is dropped.
+        existing = {
+            (contact.type, contact.value)
+            for contact in await self.list_by_user_id(to_user_id)
+        }
+
+        for contact in await self.list_by_user_id(from_user_id):
+            if (contact.type, contact.value) in existing:
+                await self._session.delete(contact)
+            else:
+                contact.user_id = to_user_id
+
+        await self._session.flush()
+
     async def delete(self, contact: Contact) -> None:
         await self._session.delete(contact)
         await self._session.flush()

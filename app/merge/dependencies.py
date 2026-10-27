@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.contacts.repository.repository import ContactRepository
 from app.db.session import get_session
 from app.email_auth.repository.repository import EmailIdentityRepository
 from app.identities.dependencies import get_identity_service
@@ -87,4 +88,5 @@ async def get_merge_service(
         TwoFactorRepository(session),
         merge_proof_repository,
         email_service,
+        ContactRepository(session),
     )

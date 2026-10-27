@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 
+from app.contacts.repository.repository_interface import ContactRepositoryInterface
 from app.email_auth.models import EmailIdentity
 from app.identities.services.service_interface import IdentityServiceInterface
 from app.infrastructure.email.base import EmailService
@@ -38,6 +39,7 @@ class MergeService(MergeServiceInterface):
         two_factor_repository: TwoFactorRepositoryInterface,
         merge_proof_repository: MergeProofRepositoryInterface,
         email_service: EmailService,
+        contact_repository: ContactRepositoryInterface,
     ):
         self._user_repository = user_repository
         self._user_service = user_service
@@ -45,6 +47,7 @@ class MergeService(MergeServiceInterface):
         self._two_factor_repository = two_factor_repository
         self._merge_proof_repository = merge_proof_repository
         self._email_service = email_service
+        self._contact_repository = contact_repository
 
     async def merge(
         self,
@@ -76,6 +79,9 @@ class MergeService(MergeServiceInterface):
 
         for identity in await self._identity_service.list_identities(source.id):
             await self._identity_service.transfer_identity(identity, target.id)
+
+        # Contacts are not identities: they move to the target as they are.
+        await self._contact_repository.move_to_user(source.id, target.id)
 
         # The two-factor settings of the source do not carry over: the target
         # keeps its own.

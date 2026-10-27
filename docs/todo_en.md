@@ -603,7 +603,7 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Result:** repository test passes.
   - **After:** —
 
-- ⬜ **ID-90 · Merge moves contacts**
+- ✅ **ID-90 · Merge moves contacts**
   - **Do:** transfer the source user's contacts to the target during Merge.
   - **Result:** a test shows contacts belong to the target after Merge.
   - **After:** ID-26, ID-69
