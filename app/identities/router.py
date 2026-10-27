@@ -4,12 +4,24 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_session, get_current_user
+from app.auth.dependencies import (
+    get_current_session,
+    get_current_user,
+    require_fresh_session,
+)
 from app.auth.rbac.dependencies import (
     require_self_identities_read,
     require_self_identities_write,
 )
-from app.core.identifiers import mask_email
+from app.core.identifiers import mask_email, normalize_email
+from app.core.rate_limit import (
+    CONFIRM_IP,
+    LINK_EMAIL,
+    LINK_IP,
+    UNLINK_IP,
+    limit_by_ip,
+    rate_limiter,
+)
 from app.email_auth.dependencies import get_email_link_service
 from app.email_auth.models import EmailIdentity
 from app.email_auth.schemas import (
@@ -96,7 +108,11 @@ async def get_identities(
         "created through the removed method are revoked."
     ),
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_self_identities_write())],
+    dependencies=[
+        Depends(limit_by_ip(UNLINK_IP)),
+        Depends(require_fresh_session),
+        Depends(require_self_identities_write()),
+    ],
 )
 async def unlink_identity(
     identity_id: str,
@@ -126,7 +142,11 @@ async def unlink_identity(
     description="Add a username and password sign-in method to the current user.",
     response_model=IdentityResponseSchema,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_self_identities_write())],
+    dependencies=[
+        Depends(limit_by_ip(LINK_IP)),
+        Depends(require_fresh_session),
+        Depends(require_self_identities_write()),
+    ],
 )
 async def link_username(
     data: LinkUsernameRequestSchema,
@@ -157,7 +177,11 @@ async def link_username(
     ),
     response_model=EmailLinkChallengeResponseSchema,
     status_code=status.HTTP_202_ACCEPTED,
-    dependencies=[Depends(require_self_identities_write())],
+    dependencies=[
+        Depends(limit_by_ip(LINK_IP)),
+        Depends(require_fresh_session),
+        Depends(require_self_identities_write()),
+    ],
 )
 async def request_email_link(
     data: EmailLinkRequestSchema,
@@ -170,6 +194,7 @@ async def request_email_link(
         Depends(get_email_link_service),
     ],
 ) -> EmailLinkChallengeResponseSchema:
+    rate_limiter.hit(LINK_EMAIL, normalize_email(data.email))
     return await service.request_link(current_user.id, data)
 
 
@@ -181,7 +206,11 @@ async def request_email_link(
     ),
     response_model=IdentityResponseSchema,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_self_identities_write())],
+    dependencies=[
+        Depends(limit_by_ip(CONFIRM_IP)),
+        Depends(require_fresh_session),
+        Depends(require_self_identities_write()),
+    ],
 )
 async def confirm_email_link(
     data: EmailLinkConfirmRequestSchema,
@@ -208,7 +237,11 @@ async def confirm_email_link(
     ),
     response_model=GoogleAuthorizationResponseSchema,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_self_identities_write())],
+    dependencies=[
+        Depends(limit_by_ip(LINK_IP)),
+        Depends(require_fresh_session),
+        Depends(require_self_identities_write()),
+    ],
 )
 async def start_google_link(
     current_user: Annotated[

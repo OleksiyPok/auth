@@ -4,8 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.auth.dependencies import get_current_user
-from app.core.rate_limit import CONFIRM_IP, SEND_CODE_IP, limit_by_ip
+from app.auth.dependencies import get_current_user, require_fresh_session
+from app.core.rate_limit import CONFIRM_IP, SEND_CODE_IP, UNLINK_IP, limit_by_ip
 from app.two_factor.dependencies import get_two_factor_service
 from app.two_factor.schemas import (
     TwoFactorAddEmailMethodRequestSchema,
@@ -39,7 +39,10 @@ async def get_status(
 @router.post(
     "/methods/email",
     response_model=TwoFactorChallengeResponseSchema,
-    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+    dependencies=[
+        Depends(limit_by_ip(SEND_CODE_IP)),
+        Depends(require_fresh_session),
+    ],
 )
 async def add_email_method(
     data: TwoFactorAddEmailMethodRequestSchema,
@@ -69,6 +72,10 @@ async def confirm_add_email_method(
 @router.delete(
     "/methods/{method_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[
+        Depends(limit_by_ip(UNLINK_IP)),
+        Depends(require_fresh_session),
+    ],
 )
 async def remove_method(
     method_id: str,
@@ -147,7 +154,10 @@ async def confirm_enable(
 @router.post(
     "/disable",
     response_model=TwoFactorChallengeResponseSchema,
-    dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
+    dependencies=[
+        Depends(limit_by_ip(SEND_CODE_IP)),
+        Depends(require_fresh_session),
+    ],
 )
 async def disable(
     current_user: Annotated[User, Depends(get_current_user)],

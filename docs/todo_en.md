@@ -212,12 +212,12 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11
 
-- ⬜ **ID-112 · Rate limit Link endpoints**
+- ✅ **ID-112 · Rate limit Link endpoints**
   - **Do:** apply the limiter by IP to `POST /identities/username`, `POST /identities/email`, `POST /identities/email/confirm` and `POST /identities/google`, and by normalized address to `POST /identities/email`.
   - **Result:** exceeding the limit returns 429 on each of the four endpoints.
   - **After:** ID-11, ID-17, ID-58, ID-59, ID-61
 
-- ⬜ **ID-113 · Rate limit Unlink and 2FA method removal**
+- ✅ **ID-113 · Rate limit Unlink and 2FA method removal**
   - **Do:** apply the limiter by IP to `DELETE /identities/{identity_id}` and `DELETE /auth/2fa/methods/{method_id}`.
   - **Result:** exceeding the limit returns 429 on both endpoints.
   - **After:** ID-11, ID-16, ID-80
@@ -504,17 +504,17 @@ Existing tests use outdated model fields and request schemas.
   - **Result:** a request from `user` or `admin` returns 403; a request from `superadmin` returns 204.
   - **After:** ID-92
 
-- ⬜ **ID-109 · Fresh session before Unlink**
+- ✅ **ID-109 · Fresh session before Unlink**
   - **Do:** require the fresh session (`FRESH_SESSION_MINUTES`) on `DELETE /identities/{identity_id}`.
   - **Result:** a request with an older session is refused with `FRESH_SESSION_REQUIRED`; a request with a fresh session proceeds.
   - **After:** ID-16, ID-106
 
-- ⬜ **ID-110 · Fresh session before Link**
+- ✅ **ID-110 · Fresh session before Link**
   - **Do:** require the fresh session on `POST /identities/username`, `POST /identities/email`, `POST /identities/email/confirm` and `POST /identities/google`.
   - **Result:** a request with an older session is refused with `FRESH_SESSION_REQUIRED` on each of the four endpoints; a request with a fresh session proceeds.
   - **After:** ID-17, ID-58, ID-59, ID-61, ID-106
 
-- ⬜ **ID-111 · Fresh session before 2FA changes**
+- ✅ **ID-111 · Fresh session before 2FA changes**
   - **Do:** require the fresh session on `POST /auth/2fa/methods/email`, `DELETE /auth/2fa/methods/{method_id}` and `POST /auth/2fa/disable`.
   - **Result:** a request with an older session is refused with `FRESH_SESSION_REQUIRED` on each of the three endpoints; a request with a fresh session proceeds.
   - **After:** ID-76, ID-80, ID-106
