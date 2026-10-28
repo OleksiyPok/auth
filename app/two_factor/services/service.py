@@ -313,6 +313,7 @@ class TwoFactorService(TwoFactorServiceInterface):
             challenge_id,
             code,
             "login",
+            allow_recovery_code,
         )
 
         if challenge.identity_id is None or challenge.identity_type is None:
