@@ -500,8 +500,8 @@ Existing tests use outdated model fields and request schemas.
   - **After:** —
 
 - ✅ **ID-93 · Restrict `POST /api/v1/dev/email/send` to superadmin**
-  - **Do:** require superadmin access on the endpoint, using the checks from `app/auth/rbac/dependencies.py`.
-  - **Result:** a request from `user` or `admin` returns 403; a request from `superadmin` returns 204.
+  - **Do:** require superadmin or admin access on the endpoint, using the checks from `app/auth/rbac/dependencies.py`.
+  - **Result:** a request from `user` returns 403; a request from `superadmin` and `admin` returns 204.
   - **After:** ID-92
 
 - ✅ **ID-109 · Fresh session before Unlink**
