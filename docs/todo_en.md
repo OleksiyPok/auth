@@ -706,3 +706,31 @@ A user has one status. Deactivation sets a status other than `active` and remove
   - **Do:** send the Merge notification to the target user through the security notification service.
   - **Result:** a target with a default email method gets it at that address; a target with only an email identity gets it at that address; a target with neither gets none.
   - **After:** ID-71, ID-114
+
+
+## 18. API structure and documentation
+
+- ⬜ **ID-127 · Decide the API structure**
+  - **Do:** decide and record in the docs: the levels of the API (public authentication, self-service, admin, business) and their URL prefixes; the naming scheme of Swagger tags; where each authentication method lives under `/auth`; where the self-service and admin routes of users live.
+  - **Result:** a section in the docs states the levels, the prefixes, the tag scheme and the place of every existing router.
+  - **After:** —
+
+- ⬜ **ID-128 · Swagger tags follow the decided scheme**
+  - **Do:** rename the tags of all routers to the decided scheme, so that all authentication routes are found in adjacent groups by the first part of their path.
+  - **Result:** in Swagger every route is found in the group that matches its path and the decided scheme; no URL changes.
+  - **After:** ID-127
+
+- ⬜ **ID-129 · Authentication URLs follow the decided layout**
+  - **Do:** move the routes of every authentication method to the paths decided in ID-127, including the Google routes and the redirect URI setting that depends on them.
+  - **Result:** all authentication routes are under the decided paths; the old paths do not exist; the Google redirect URI matches the new callback path.
+  - **After:** ID-127
+
+- ⬜ **ID-130 · Users routes follow the decided layout**
+  - **Do:** split the user routes into self-service and admin routes at the paths decided in ID-127; the permissions stay as they are.
+  - **Result:** self-service routes and admin routes are in separate routers under the decided prefixes; every route keeps its permission; the old paths do not exist.
+  - **After:** ID-127
+
+- ⬜ **ID-131 · Admin routes require the admin level once**
+  - **Do:** put the role or permission check of the admin level on the admin router as a whole, so a new admin route needs no separate check to be protected.
+  - **Result:** a route added to the admin router refuses a user without the required permission without any dependency on the route itself.
+  - **After:** ID-130
