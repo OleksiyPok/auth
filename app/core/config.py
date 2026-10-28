@@ -69,8 +69,9 @@ class Settings(BaseSettings):
     SUPERADMIN_LOGIN: str
     SUPERADMIN_PASSWORD: str
     SUPERADMIN_EMAIL: str
-    SUPERADMIN_FIRST_NAME: str = "System"
-    SUPERADMIN_LAST_NAME: str = "Superadministrator"
+    SUPERADMIN_FIRST_NAME: str = "Superadministrator"
+    SUPERADMIN_LAST_NAME: str = "System"
+
 
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
