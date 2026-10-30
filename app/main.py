@@ -72,7 +72,7 @@ def custom_openapi():
             "type": "oauth2",
             "flows": {
                 "password": {
-                    "tokenUrl": "/api/v1/auth/login",
+                    "tokenUrl": "/api/v1/auth/username/login",
                 },
             },
         },

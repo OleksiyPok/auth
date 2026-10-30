@@ -13,7 +13,7 @@ from app.google_auth.schemas import (
 from app.google_auth.services.service_interface import GoogleAuthServiceInterface
 
 router = APIRouter(
-    prefix="/google/auth",
+    prefix="/auth/google",
     tags=["Google Authentication"],
 )
 

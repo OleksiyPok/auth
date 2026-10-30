@@ -32,7 +32,7 @@ from app.username_auth.services.register_service_interface import (
 )
 
 router = APIRouter(
-    prefix="/auth",
+    prefix="/auth/username",
     tags=["Username Authentication"],
 )
 

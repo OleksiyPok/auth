@@ -27,7 +27,7 @@ from app.users.models import User
 from app.users.repository.repository_interface import UserRepositoryInterface
 
 username_auth_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/v1/auth/login",
+    tokenUrl="/api/v1/auth/username/login",
     scheme_name="Username Authentication",
     auto_error=False,
 )
