@@ -28,12 +28,12 @@ from app.users.status import UserStatus
 
 router = APIRouter(
     prefix="/users",
-    tags=["Users"],
 )
 
 
 @router.get(
     "",
+    tags=["User Management"],
     summary="Get all users",
     description="Get all registered users.",
     response_model=list[UserResponseSchema],
@@ -58,6 +58,7 @@ async def get_all(
 
 @router.get(
     "/me",
+    tags=["Account"],
     summary="Get current user",
     description="Get current authenticated user.",
     response_model=UserResponseSchema,
@@ -80,6 +81,7 @@ async def get_me(
 
 @router.get(
     "/{user_id}",
+    tags=["User Management"],
     summary="Get a user",
     description="Get a registered user.",
     response_model=UserDetailedResponseSchema,
@@ -108,6 +110,7 @@ async def get_by_id(
 
 @router.patch(
     "/me",
+    tags=["Account"],
     summary="Update a user data",
     description="Update a user data.",
     response_model=UserResponseSchema,
@@ -140,6 +143,7 @@ async def update_self(
 
 @router.patch(
     "/{user_id}/role",
+    tags=["User Management"],
     summary="Assign a role to a user",
     description="Assign an existing role to another user. Requires admin privileges.",
     response_model=UserResponseSchema,
@@ -168,6 +172,7 @@ async def assign_role(
 
 @router.post(
     "/me/deactivate",
+    tags=["Account"],
     summary="Deactivate current user",
     description="Deactivate the account of the current user.",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -186,6 +191,7 @@ async def deactivate_me(
 
 @router.post(
     "/{user_id}/deactivate",
+    tags=["User Management"],
     summary="Deactivate a user",
     description="Deactivate another user. Requires the permission to deactivate users.",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -213,6 +219,7 @@ async def deactivate_user(
 
 @router.delete(
     "/{user_id}",
+    tags=["User Management"],
     summary="Purge a deactivated user",
     description=(
         "Permanently remove a deactivated user and all rows that reference "

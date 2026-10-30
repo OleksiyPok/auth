@@ -12,6 +12,7 @@ from sqlmodel import SQLModel
 from app.bootstrap.superadmin import create_initial_superadmin_if_no_users
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
+from app.core.openapi import OPENAPI_TAGS
 from app.db.engine import engine
 from app.db.session import session_factory
 from app.health.router import router as health_router
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     lifespan=lifespan,
+    openapi_tags=OPENAPI_TAGS,
     swagger_ui_parameters={
         "docExpansion": "none",
         # "tagsSorter": "alpha",
