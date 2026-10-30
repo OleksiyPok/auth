@@ -22,7 +22,7 @@ DEV_USERS = [
     {
         "type": "username",
         "username": "Username_user",
-        "password": "Username_user",
+        "password": "Password123!",
         "first_name": "Username_user",
         "last_name": "Develop",
     },
@@ -30,7 +30,7 @@ DEV_USERS = [
         "type": "email",
         "email": "email_user@example.com",
         "password": "Email_user",
-        "first_name": "Email_user",
+        "first_name": "Password123!",
         "last_name": "Develop",
     },
     {

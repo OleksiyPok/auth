@@ -58,7 +58,7 @@ python -m pip install -r requirements.txt
 ```
 JWT_SECRET_KEY=СЮДА_СЕКРЕТ
 SUPERADMIN_LOGIN=superadmin
-SUPERADMIN_PASSWORD=Sup3rAdmin!123
+SUPERADMIN_PASSWORD=Password123!
 SUPERADMIN_EMAIL=superadmin@example.com
 GOOGLE_CLIENT_ID=dummy
 GOOGLE_CLIENT_SECRET=dummy
@@ -162,7 +162,7 @@ python scripts\check_db.py "select id, first_name, role, status from users"
 
 ### 1.9. Тестовые данные
 
-Пароль всех тестовых пользователей: `Passw0rd!123`. Пользователи создаются в тех разделах, где нужны:
+Пароль всех тестовых пользователей: `Password123!`. Пользователи создаются в тех разделах, где нужны:
 
 | Пользователь | Способ входа | Где создаётся |
 |---|---|---|
@@ -188,7 +188,7 @@ python scripts\check_db.py "select id, first_name, role, status from users"
 | 2.3 | Открыть `http://127.0.0.1:8000/health` | `{"status":"ok"}` |
 | 2.4 | Открыть `http://127.0.0.1:8000/health/ready` | `{"status":"ok"}` (при недоступной базе было бы 503) |
 | 2.5 | Вывести все маршруты (команда ниже) | Список совпадает с таблицей маршрутов ниже |
-| 2.6 | Войти суперадмином: `POST /api/v1/auth/login` (группа Username Authentication), `username=superadmin`, `password=Sup3rAdmin!123` | 200. В ответе `access_token`, `refresh_token`, `token_type: bearer`, `requires_two_factor: false`, `challenge_id: null` |
+| 2.6 | Войти суперадмином: `POST /api/v1/auth/login` (группа Username Authentication), `username=superadmin`, `password=Password123!` | 200. В ответе `access_token`, `refresh_token`, `token_type: bearer`, `requires_two_factor: false`, `challenge_id: null` |
 | 2.7 | Авторизоваться токеном (п. 1.6), `GET /api/v1/users/me` | 200: `id`, `first_name: Superadministrator`, `last_name: System`, `role: superadmin` |
 | 2.8 | Остановить сервис (Ctrl+C) и запустить снова | Запуск без ошибок. Второй суперадмин не создаётся: `python scripts\check_db.py "select count(*) from users"` даёт `(1,)` |
 | 2.9 | Войти суперадмином по email: `POST /api/v1/auth/email/login`, в поле `username` указать `superadmin@example.com` | 200 и токены |
@@ -226,10 +226,10 @@ python scripts\check_db.py "select id, first_name, role, status from users"
 
 | Шаг | Действие | Ожидаемый результат |
 |---|---|---|
-| 3.1 | `POST /api/v1/auth/register`: `{"username":"alice","password":"Passw0rd!123","first_name":"Alice","last_name":"Test"}` | 201: `id`, `username: alice`, `first_name`, `last_name`, `role: user`. Запишите `id` как `aliceId` |
+| 3.1 | `POST /api/v1/auth/register`: `{"username":"alice","password":"Password123!","first_name":"Alice","last_name":"Test"}` | 201: `id`, `username: alice`, `first_name`, `last_name`, `role: user`. Запишите `id` как `aliceId` |
 | 3.2 | Повторить тот же запрос | 409, `USER_ALREADY_EXISTS` |
 | 3.3 | Повторить с `"username":"  ALICE  "` | 409, `USER_ALREADY_EXISTS`: имя нормализуется (обрезаются пробелы, регистр не важен) |
-| 3.4 | `POST /api/v1/auth/login`: `alice` / `Passw0rd!123` | 200, `access_token`, `refresh_token`, `requires_two_factor: false` |
+| 3.4 | `POST /api/v1/auth/login`: `alice` / `Password123!` | 200, `access_token`, `refresh_token`, `requires_two_factor: false` |
 | 3.5 | Вход с `ALICE` | 200 |
 | 3.6 | Вход с неверным паролем | 401, `INVALID_CREDENTIALS` |
 | 3.7 | Вход с несуществующим username | 401, `INVALID_CREDENTIALS` (тот же код, что в 3.6) |
@@ -246,15 +246,15 @@ python scripts\check_db.py "select id, first_name, role, status from users"
 
 | Шаг | Действие | Ожидаемый результат |
 |---|---|---|
-| 4.1 | `POST /api/v1/auth/email/register`: `{"email":"bob@example.com","password":"Passw0rd!123","first_name":"Bob","last_name":"Test"}` | 202: `registration_id`, `expires_at`, `message` |
+| 4.1 | `POST /api/v1/auth/email/register`: `{"email":"bob@example.com","password":"Password123!","first_name":"Bob","last_name":"Test"}` | 202: `registration_id`, `expires_at`, `message` |
 | 4.2 | Письмо в логе (п. 1.5) | `To: bob@example.com`, `Subject: Confirm your email registration`, код из 6 цифр и ссылка `http://localhost:3000/register/confirm?registration_id=...` с тем же `registration_id` |
-| 4.3 | `POST /api/v1/auth/email/login`, `username=bob@example.com`, пароль `Passw0rd!123` | 401, `INVALID_EMAIL_CREDENTIALS`: пока код не введён, пользователя нет |
+| 4.3 | `POST /api/v1/auth/email/login`, `username=bob@example.com`, пароль `Password123!` | 401, `INVALID_EMAIL_CREDENTIALS`: пока код не введён, пользователя нет |
 | 4.4 | `POST /api/v1/auth/email/register/confirm`: `registration_id` и неверный код `000000` | 401, `INVALID_EMAIL_VERIFICATION_CODE` |
 | 4.5 | Сразу `POST /api/v1/auth/email/register/resend`: `{"registration_id":"..."}` | 429, `EMAIL_VERIFICATION_RESEND_TOO_EARLY` (пауза 60 секунд с момента отправки) |
 | 4.6 | Подождать 60 секунд, повторить resend | 202, в логе новое письмо с новым кодом. Старый код больше не подходит |
 | 4.7 | `register/confirm` с кодом из нового письма | 201: `id`, `email: bob@example.com`, `role: user`. Запишите `id` как `bobId` |
 | 4.8 | Повторить confirm тем же кодом | 404, `EMAIL_REGISTRATION_NOT_FOUND` |
-| 4.9 | `POST /auth/email/login`, `username=bob@example.com`, `Passw0rd!123` | 200, токены |
+| 4.9 | `POST /auth/email/login`, `username=bob@example.com`, `Password123!` | 200, токены |
 | 4.10 | Вход с `username=  BOB@Example.com ` | 200: адрес нормализуется |
 | 4.11 | Вход с неверным паролем | 401, `INVALID_EMAIL_CREDENTIALS` |
 | 4.12 | `POST /auth/email/register` с уже занятым `bob@example.com` | 409, `USER_ALREADY_EXISTS` сразу на регистрации |
@@ -314,13 +314,13 @@ python scripts\check_db.py "select id, first_name, role, status from users"
 
 | Шаг | Действие | Ожидаемый результат |
 |---|---|---|
-| 6.1 | `aliceU`: `POST /api/v1/identities/email`: `{"email":"alice@example.com","password":"Passw0rd!123"}` | 202: `challenge_id`, `expires_at` |
+| 6.1 | `aliceU`: `POST /api/v1/identities/email`: `{"email":"alice@example.com","password":"Password123!"}` | 202: `challenge_id`, `expires_at` |
 | 6.2 | Лог писем | `To: alice@example.com`, `Subject: Confirm your email address`, 6-значный код |
 | 6.3 | `GET /identities` до подтверждения | Всё ещё один способ (username) |
 | 6.4 | `POST /identities/email/confirm`: `challenge_id` и неверный код | 401, `INVALID_EMAIL_VERIFICATION_CODE` |
 | 6.5 | Confirm с верным кодом | 201: `type: email`, `display_identifier: a***@example.com`, `id`. Запишите как `idE` |
 | 6.6 | `GET /identities` | Два способа: username и email |
-| 6.7 | Войти по email: `POST /auth/email/login`, `alice@example.com` / `Passw0rd!123` | 200, токен `aliceE`. `GET /users/me` им показывает того же пользователя (тот же `id`, `first_name: Alicia`) |
+| 6.7 | Войти по email: `POST /auth/email/login`, `alice@example.com` / `Password123!` | 200, токен `aliceE`. `GET /users/me` им показывает того же пользователя (тот же `id`, `first_name: Alicia`) |
 | 6.8 | `aliceU`: повторить `POST /identities/email` (email у alice уже есть) | 409, `IDENTITY_TYPE_CONFLICT` |
 | 6.9 | `aliceU`: `POST /identities/username` (username уже есть) с любым именем | 409, `IDENTITY_TYPE_CONFLICT` |
 | 6.10 | `aliceU`: `confirm` с чужим или выдуманным `challenge_id` | 404, `EMAIL_LINK_REQUEST_NOT_FOUND` |
@@ -329,11 +329,11 @@ python scripts\check_db.py "select id, first_name, role, status from users"
 
 | Шаг | Действие | Ожидаемый результат |
 |---|---|---|
-| 6.11 | Войти bob по email (свежий токен). `POST /identities/username`: `{"username":"bob","password":"Passw0rd!123"}` | 201: `type: username`, `display_identifier: bob` |
-| 6.12 | Вход `POST /auth/login`, `bob` / `Passw0rd!123` | 200, это тот же пользователь (`id` = `bobId`) |
+| 6.11 | Войти bob по email (свежий токен). `POST /identities/username`: `{"username":"bob","password":"Password123!}` | 201: `type: username`, `display_identifier: bob` |
+| 6.12 | Вход `POST /auth/login`, `bob` / `Password123!` | 200, это тот же пользователь (`id` = `bobId`) |
 | 6.13 | Повторить 6.11 | 409, `IDENTITY_TYPE_CONFLICT` |
-| 6.14 | Создать `frank@example.com` (регистрация по email, как в разделе 4), войти. `POST /identities/username`: `{"username":"alice","password":"Passw0rd!123"}` | 409, `IDENTITY_CONFLICT` (имя `alice` уже занято) |
-| 6.15 | Создать `carol` (регистрация username, раздел 3), войти. `POST /identities/email`: `{"email":"alice@example.com","password":"Passw0rd!123"}` | 409, `IDENTITY_CONFLICT` (адрес занят) |
+| 6.14 | Создать `frank@example.com` (регистрация по email, как в разделе 4), войти. `POST /identities/username`: `{"username":"alice","password":"Password123!"}` | 409, `IDENTITY_CONFLICT` (имя `alice` уже занято) |
+| 6.15 | Создать `carol` (регистрация username, раздел 3), войти. `POST /identities/email`: `{"email":"alice@example.com","password":"Password123!"}` | 409, `IDENTITY_CONFLICT` (адрес занят) |
 | 6.16 | Link без токена | 401, `INVALID_TOKEN` |
 
 ### Google (необязательно)
@@ -468,15 +468,15 @@ $env:RESEND_COOLDOWN_SECONDS="5"
 |---|---|---|
 | 9.2.1 | `tokenCarol`: `POST /api/v1/users/me/merge/proofs/email`: `{"email":"dave@example.com","password":"неверный"}` | 403, `MERGE_INVALID_CREDENTIALS` |
 | 9.2.2 | То же с несуществующим email | 403, `MERGE_INVALID_CREDENTIALS` (код одинаковый: ответ не выдаёт, существует ли аккаунт) |
-| 9.2.3 | `POST /users/me/merge/proofs/username`: `{"username":"carol","password":"Passw0rd!123"}` (собственный аккаунт) | 400, `MERGE_SAME_USER` |
-| 9.2.4 | `POST /users/me/merge/proofs/email`: `{"email":"dave@example.com","password":"Passw0rd!123"}` | 201: `proof_id`, `expires_at`, `requires_two_factor: false`, `challenge_id: null` |
+| 9.2.3 | `POST /users/me/merge/proofs/username`: `{"username":"carol","password":"Password123!"}` (собственный аккаунт) | 400, `MERGE_SAME_USER` |
+| 9.2.4 | `POST /users/me/merge/proofs/email`: `{"email":"dave@example.com","password":"Password123!"}` | 201: `proof_id`, `expires_at`, `requires_two_factor: false`, `challenge_id: null` |
 | 9.2.5 | `POST /users/me/merge`: `{"proof_id":"выдуманный"}` | 404, `MERGE_PROOF_NOT_FOUND` |
 | 9.2.6 | `POST /users/me/merge/proofs/confirm` с этим `proof_id` и кодом `123456` | 409, `MERGE_PROOF_CONFIRMATION_NOT_REQUIRED` (2FA у источника нет) |
 | 9.2.7 | `POST /users/me/merge`: `{"proof_id":"<из 9.2.4>"}` | 204 |
 | 9.2.8 | `tokenCarol`: `GET /identities` | Два способа: username `carol` и email `d***@example.com` |
 | 9.2.9 | Повторить `POST /users/me/merge` с тем же `proof_id` | 409, `MERGE_PROOF_USED` |
 | 9.2.10 | `tokenDave`: `GET /users/me` | 401, `SESSION_REVOKED` (сессии источника закрыты) |
-| 9.2.11 | `POST /auth/email/login`, `dave@example.com` / `Passw0rd!123` | 200. `GET /users/me` этим токеном возвращает аккаунт carol (`id` carol): способ входа теперь принадлежит ей |
+| 9.2.11 | `POST /auth/email/login`, `dave@example.com` / `Password123!` | 200. `GET /users/me` этим токеном возвращает аккаунт carol (`id` carol): способ входа теперь принадлежит ей |
 | 9.2.12 | Войти superadmin. `GET /users/{daveId}` | 200: `status: deactivated_by_merge` |
 | 9.2.13 | Лог писем | `To: dave@example.com`, `Subject: Accounts merged` |
 
@@ -486,9 +486,9 @@ $env:RESEND_COOLDOWN_SECONDS="5"
 
 | Шаг | Действие | Ожидаемый результат |
 |---|---|---|
-| 9.3.1 | `erin1`: `POST /users/me/merge/proofs/username`: `{"username":"erin2","password":"Passw0rd!123"}` | 201, `proof_id` |
+| 9.3.1 | `erin1`: `POST /users/me/merge/proofs/username`: `{"username":"erin2","password":"Password123!"}` | 201, `proof_id` |
 | 9.3.2 | `POST /users/me/merge` с этим `proof_id` | 409, `MERGE_TYPE_CONFLICT`: у обоих есть username-способ |
-| 9.3.3 | Проверить `erin2`: вход `erin2` / `Passw0rd!123` и `GET /identities` | Всё как раньше: операция откатилась целиком |
+| 9.3.3 | Проверить `erin2`: вход `erin2` / `Password123!` и `GET /identities` | Всё как раньше: операция откатилась целиком |
 | 9.3.4 | Повторить `POST /users/me/merge` с тем же `proof_id` | Снова 409 `MERGE_TYPE_CONFLICT` (при откате доказательство не расходуется) |
 | 9.3.5 | `POST /users/me/merge` без токена | 401, `INVALID_TOKEN` |
 | 9.3.6 | Merge со старой сессией (см. раздел 11) | 403, `FRESH_SESSION_REQUIRED` |
@@ -499,7 +499,7 @@ $env:RESEND_COOLDOWN_SECONDS="5"
 
 | Шаг | Действие | Ожидаемый результат |
 |---|---|---|
-| 9.4.1 | `gina` (свежий вход): `POST /users/me/merge/proofs/email`: `{"email":"hank@example.com","password":"Passw0rd!123"}` | 201: `requires_two_factor: true`, `challenge_id`. Письмо `Subject: Confirm the merge of accounts` на адрес метода hank |
+| 9.4.1 | `gina` (свежий вход): `POST /users/me/merge/proofs/email`: `{"email":"hank@example.com","password":"Password123!"}` | 201: `requires_two_factor: true`, `challenge_id`. Письмо `Subject: Confirm the merge of accounts` на адрес метода hank |
 | 9.4.2 | `POST /users/me/merge` с этим `proof_id` до подтверждения | 403, `MERGE_PROOF_NOT_CONFIRMED` |
 | 9.4.3 | `POST /users/me/merge/proofs/confirm`: `{"proof_id":"...","code":"000000"}` | 401, `INVALID_TWO_FACTOR_CODE` |
 | 9.4.4 | Confirm с верным кодом из письма | 200: `proof_id`, `expires_at` |
@@ -546,7 +546,7 @@ $env:RESEND_COOLDOWN_SECONDS="5"
 |---|---|---|
 | 10.2.1 | Войти ivan (`tokenIvan`). `POST /users/me/deactivate` | 204 |
 | 10.2.2 | `tokenIvan`: `GET /users/me` | 401, `SESSION_REVOKED` |
-| 10.2.3 | Вход `ivan` / `Passw0rd!123` | 403, `USER_INACTIVE` |
+| 10.2.3 | Вход `ivan` / `Password123!` | 403, `USER_INACTIVE` |
 | 10.2.4 | `tokenSA`: `GET /users/{ivanId}` | `status: deactivated_by_user` |
 | 10.2.5 | `tokenSA`: `POST /users/{ivanId}/deactivate` (уже неактивен) | 409, `USER_ALREADY_DEACTIVATED` |
 | 10.2.6 | `tokenSA`: `POST /users/{judyId}/deactivate` | 204. `GET /users/{judyId}`: `status: deactivated_by_admin`. Вход judy: 403 `USER_INACTIVE` |
