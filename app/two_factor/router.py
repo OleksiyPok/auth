@@ -21,11 +21,14 @@ from app.users.models import User
 
 router = APIRouter(
     prefix="/auth/2fa",
-    tags=["Two-Factor Authentication"],
 )
 
 
-@router.get("/status", response_model=TwoFactorStatusResponseSchema)
+@router.get(
+    "/status",
+    tags=["Two-Factor Settings"],
+    response_model=TwoFactorStatusResponseSchema,
+)
 async def get_status(
     current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[TwoFactorServiceInterface, Depends(get_two_factor_service)],
@@ -38,6 +41,7 @@ async def get_status(
 
 @router.post(
     "/methods/email",
+    tags=["Two-Factor Settings"],
     response_model=TwoFactorChallengeResponseSchema,
     dependencies=[
         Depends(limit_by_ip(SEND_CODE_IP)),
@@ -54,6 +58,7 @@ async def add_email_method(
 
 @router.post(
     "/methods/email/confirm",
+    tags=["Two-Factor Settings"],
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
 )
@@ -71,6 +76,7 @@ async def confirm_add_email_method(
 
 @router.delete(
     "/methods/{method_id}",
+    tags=["Two-Factor Settings"],
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[
         Depends(limit_by_ip(UNLINK_IP)),
@@ -87,6 +93,7 @@ async def remove_method(
 
 @router.post(
     "/recovery-codes",
+    tags=["Two-Factor Settings"],
     response_model=TwoFactorRecoveryCodesResponseSchema,
     dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
 )
@@ -101,6 +108,7 @@ async def generate_recovery_codes(
 
 @router.post(
     "/login/confirm",
+    tags=["Two-Factor Login"],
     response_model=TwoFactorLoginConfirmResponseSchema,
     dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
 )
@@ -116,6 +124,7 @@ async def confirm_login(
 
 @router.post(
     "/login/resend",
+    tags=["Two-Factor Login"],
     response_model=TwoFactorChallengeResponseSchema,
     dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
 )
@@ -128,6 +137,7 @@ async def resend_login_code(
 
 @router.post(
     "/enable",
+    tags=["Two-Factor Settings"],
     response_model=TwoFactorChallengeResponseSchema,
     dependencies=[Depends(limit_by_ip(SEND_CODE_IP))],
 )
@@ -140,6 +150,7 @@ async def enable(
 
 @router.post(
     "/enable/confirm",
+    tags=["Two-Factor Settings"],
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
 )
@@ -153,6 +164,7 @@ async def confirm_enable(
 
 @router.post(
     "/disable",
+    tags=["Two-Factor Settings"],
     response_model=TwoFactorChallengeResponseSchema,
     dependencies=[
         Depends(limit_by_ip(SEND_CODE_IP)),
@@ -168,6 +180,7 @@ async def disable(
 
 @router.post(
     "/disable/confirm",
+    tags=["Two-Factor Settings"],
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(limit_by_ip(CONFIRM_IP))],
 )

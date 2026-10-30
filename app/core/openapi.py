@@ -26,6 +26,15 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         ),
     },
     {
+        "name": "Two-Factor Login",
+        "description": (
+            "Second step of sign-in for accounts with two-factor authentication "
+            "enabled: confirm the login challenge with a one-time code. "
+            "No access token is needed; the challenge id from the login "
+            "response is used."
+        ),
+    },
+    {
         "name": "Auth",
         "description": (
             "Token lifecycle: refresh an access token and log out. "
@@ -33,17 +42,17 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         ),
     },
     {
-        "name": "Two-Factor Authentication",
-        "description": (
-            "Enable and disable two-factor authentication, confirm a login "
-            "challenge with a one-time code, and view the status."
-        ),
-    },
-    {
         "name": "Account",
         "description": (
             "Actions of the signed-in user on their own account: view, update "
             "and deactivate."
+        ),
+    },
+    {
+        "name": "Two-Factor Settings",
+        "description": (
+            "Two-factor authentication of the current user: view the status "
+            "and methods, enable and disable it with a confirmation code."
         ),
     },
     {
